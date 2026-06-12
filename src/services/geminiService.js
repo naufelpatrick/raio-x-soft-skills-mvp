@@ -1,19 +1,8 @@
-import { buildReportPrompt } from "./reportPrompt";
-
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-
-export async function generateNarrativeReport({ scores, openAnswers }) {
-  if (!API_KEY) {
-    throw new Error("Chave da API Gemini não configurada.");
-  }
-
-  const prompt = buildReportPrompt({
-    scores,
-    openAnswers,
-  });
+export async function generateNarrativeReport() {
+  const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${API_KEY}`,
     {
       method: "POST",
       headers: {
@@ -24,7 +13,7 @@ export async function generateNarrativeReport({ scores, openAnswers }) {
           {
             parts: [
               {
-                text: prompt,
+                text: "Responda apenas: Olá mundo",
               },
             ],
           },
@@ -33,14 +22,10 @@ export async function generateNarrativeReport({ scores, openAnswers }) {
     }
   );
 
-  if (!response.ok) {
-    throw new Error("Erro ao gerar relatório com Gemini.");
-  }
-
   const data = await response.json();
 
-  return (
-    data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-    "Não foi possível gerar o relatório narrativo."
-  );
+  console.log("RESPOSTA COMPLETA:");
+  console.log(data);
+
+  return JSON.stringify(data, null, 2);
 }
