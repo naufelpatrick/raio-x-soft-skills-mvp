@@ -1,31 +1,26 @@
-export async function generateNarrativeReport() {
-  const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+import { buildReportPrompt } from "./reportPrompt";
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${API_KEY}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: "Responda apenas: Olá mundo",
-              },
-            ],
-          },
-        ],
-      }),
-    }
-  );
+export async function generateNarrativeReport({ scores, openAnswers }) {
+  const prompt = buildReportPrompt({ scores, openAnswers });
+
+  const response = await fetch("/api/generate-report", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ prompt }),
+  });
 
   const data = await response.json();
 
-  console.log("RESPOSTA COMPLETA:");
-  console.log(data);
+  if (!response.ok) {
+    console.error("ERRO GEMINI:", data);
+    throw new Error(
+      data?.error?.message ||
+        data?.error ||
+        "Erro ao gerar relatório com Gemini."
+    );
+  }
 
-  return JSON.stringify(data, null, 2);
+  return data.text;
 }
