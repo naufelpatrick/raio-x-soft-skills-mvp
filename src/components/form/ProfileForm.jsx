@@ -1,7 +1,6 @@
 import { useState } from "react";
 
-export default function ProfileForm({ onSubmit }) {
-  const [profile, setProfile] = useState({
+const emptyProfile = {
     name: "",
     age: "",
     experience: "",
@@ -10,13 +9,18 @@ export default function ProfileForm({ onSubmit }) {
     mainArea: "",
     careerGoal: "",
     currentChallenge: "",
-  });
+};
+
+export default function ProfileForm({ initialProfile, onProgress, onSubmit }) {
+  const [profile, setProfile] = useState(() => ({
+    ...emptyProfile,
+    ...initialProfile,
+  }));
 
   function handleChange(field, value) {
-    setProfile((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    const next = { ...profile, [field]: value };
+    setProfile(next);
+    onProgress?.(next);
   }
 
   function handleSubmit(event) {

@@ -1,14 +1,10 @@
-import { buildReportPrompt } from "./reportPrompt";
-
 export async function generateNarrativeReport({ profile, scores, openAnswers }) {
-  const prompt = buildReportPrompt({ profile, scores, openAnswers });
-
   const response = await fetch("/api/generate-report", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ prompt }),
+    body: JSON.stringify({ profile, scores, openAnswers }),
   });
 
   const data = await response.json();

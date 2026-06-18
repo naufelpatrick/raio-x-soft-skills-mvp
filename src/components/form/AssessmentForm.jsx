@@ -4,10 +4,10 @@ import { questions, openQuestions } from "../../data/questions";
 import ProgressBar from "./ProgressBar";
 import QuestionGroup from "./QuestionGroup";
 
-export default function AssessmentForm({ onSubmit }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [openAnswers, setOpenAnswers] = useState({});
+export default function AssessmentForm({ initialDraft, onProgress, onStepComplete, onSubmit }) {
+  const [currentIndex, setCurrentIndex] = useState(initialDraft?.currentIndex || 0);
+  const [answers, setAnswers] = useState(initialDraft?.answers || {});
+  const [openAnswers, setOpenAnswers] = useState(initialDraft?.openAnswers || {});
 
   const totalSteps = competencies.length + 1;
   const isOpenQuestionsStep = currentIndex === competencies.length;
@@ -23,17 +23,15 @@ export default function AssessmentForm({ onSubmit }) {
   }, [currentCompetency, isOpenQuestionsStep]);
 
   function handleAnswerChange(questionKey, value) {
-    setAnswers((prev) => ({
-      ...prev,
-      [questionKey]: value,
-    }));
+    const next = { ...answers, [questionKey]: value };
+    setAnswers(next);
+    onProgress?.({ currentIndex, answers: next, openAnswers });
   }
 
   function handleOpenAnswerChange(index, value) {
-    setOpenAnswers((prev) => ({
-      ...prev,
-      [`open_${index + 1}`]: value,
-    }));
+    const next = { ...openAnswers, [`open_${index + 1}`]: value };
+    setOpenAnswers(next);
+    onProgress?.({ currentIndex, answers, openAnswers: next });
   }
 
   function isCurrentStepComplete() {
@@ -57,11 +55,15 @@ export default function AssessmentForm({ onSubmit }) {
     }
 
     if (currentIndex < totalSteps - 1) {
-      setCurrentIndex((prev) => prev + 1);
+      const nextIndex = currentIndex + 1;
+      onStepComplete?.(currentIndex, currentCompetency?.id || "open_questions");
+      setCurrentIndex(nextIndex);
+      onProgress?.({ currentIndex: nextIndex, answers, openAnswers });
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
+    onStepComplete?.(currentIndex, "open_questions");
     onSubmit({
       answers,
       openAnswers,
@@ -70,7 +72,9 @@ export default function AssessmentForm({ onSubmit }) {
 
   function handlePrevious() {
     if (currentIndex > 0) {
-      setCurrentIndex((prev) => prev - 1);
+      const previousIndex = currentIndex - 1;
+      setCurrentIndex(previousIndex);
+      onProgress?.({ currentIndex: previousIndex, answers, openAnswers });
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }

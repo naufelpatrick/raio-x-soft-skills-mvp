@@ -1,17 +1,67 @@
-# React + Vite
+# Raio-X de Soft Skills
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+MVP de autoavaliação comportamental para profissionais de Design. A aplicação avalia 10 competências, apresenta perfil predominante, forças, oportunidades e um PDI de 90 dias. Uma devolutiva adicional pode ser gerada pelo Gemini.
 
-Currently, two official plugins are available:
+## Fluxo
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. Landing page e consentimento.
+2. Contexto profissional do participante.
+3. 50 perguntas de escala e 3 perguntas abertas.
+4. Relatório básico calculado localmente.
+5. Análise aprofundada opcional com IA.
+6. Pesquisa curta de validação do MVP.
 
-## React Compiler
+O progresso é salvo no `localStorage`, permitindo retomar a avaliação no mesmo navegador.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Desenvolvimento
 
-## Expanding the ESLint configuration
+```bash
+npm install
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-# raio-x-soft-skills
+Validações disponíveis:
+
+```bash
+npm run lint
+npm run build
+```
+
+As rotas em `api/` são funções serverless da Vercel. Para testá-las localmente, use a CLI da Vercel ou publique um ambiente de preview.
+
+## Configuração
+
+Copie `.env.example` para `.env.local` e preencha as variáveis necessárias.
+
+- `GEMINI_API_KEY`: obrigatória para gerar a análise com IA.
+- `GEMINI_MODEL`: modelo usado na geração; possui valor padrão.
+- `APP_ORIGIN`: domínio autorizado a chamar as APIs. Aceita origens separadas por vírgula.
+- `FEEDBACK_WEBHOOK_URL`: opcional. Encaminha feedbacks para Make, Zapier, Google Apps Script ou serviço equivalente.
+- `VITE_GA_MEASUREMENT_ID`: opcional. Ativa eventos no Google Analytics 4 após consentimento.
+
+Sem webhook, os feedbacks continuam registrados nos logs das funções da Vercel com o prefixo `VALIDATION_FEEDBACK`.
+
+## Eventos de validação
+
+Quando o GA4 está configurado, o app envia apenas identificadores anônimos e dados agregados:
+
+- `assessment_started`
+- `session_resumed`
+- `profile_completed`
+- `assessment_step_completed`
+- `assessment_completed`
+- `report_viewed`
+- `ai_report_requested`
+- `ai_report_succeeded`
+- `ai_report_failed`
+- `feedback_submitted`
+
+Nome, respostas abertas, objetivo e desafio profissional não são enviados ao analytics.
+
+## Segurança e privacidade
+
+- O navegador não envia um prompt arbitrário à API; o prompt é montado no servidor.
+- Payloads, origem e frequência de chamadas são validados.
+- O limitador em memória reduz abuso básico por instância serverless. Para escala maior, use um rate limiter persistente.
+- Dados da avaliação só são enviados ao Gemini após ação explícita do participante.
+- O produto é apresentado como autoavaliação profissional, não diagnóstico psicológico.

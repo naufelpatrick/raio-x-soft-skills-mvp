@@ -25,6 +25,7 @@ export default function RadarChartBlock({ competencies }) {
           height="100%"
           minWidth={0}
           minHeight={420}
+          initialDimension={{ width: 800, height: 420 }}
         >
           <RadarChart data={data}>
             <PolarGrid />
