@@ -23,6 +23,7 @@ import PDISection from "./components/report/PDISection";
 import NarrativeReport from "./components/report/NarrativeReport";
 import DesignerProfileCard from "./components/report/DesignerProfileCard";
 import FeedbackSection from "./components/report/FeedbackSection";
+import InterestSection from "./components/report/InterestSection";
 
 export default function App() {
   const [initialSession] = useState(loadSession);
@@ -54,6 +55,12 @@ export default function App() {
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(
     Boolean(initialSession?.feedbackSubmitted)
   );
+  const [feedbackSummary, setFeedbackSummary] = useState(
+    initialSession?.feedbackSummary || null
+  );
+  const [interestSubmitted, setInterestSubmitted] = useState(
+    Boolean(initialSession?.interestSubmitted)
+  );
 
   useEffect(() => {
     if (!consented || stage === "landing") return;
@@ -69,12 +76,16 @@ export default function App() {
       result,
       narrativeReport,
       feedbackSubmitted,
+      feedbackSummary,
+      interestSubmitted,
     });
   }, [
     assessmentDraft,
     completedSteps,
     consented,
     feedbackSubmitted,
+    feedbackSummary,
+    interestSubmitted,
     narrativeReport,
     profile,
     result,
@@ -169,13 +180,25 @@ export default function App() {
   }
 
   function handleFeedbackSubmitted(feedback) {
-    setFeedbackSubmitted(true);
-    trackEvent("feedback_submitted", {
+    const summary = {
       accuracy: Number(feedback.accuracy),
       recommendation: Number(feedback.recommendation),
-      useful_part: feedback.usefulPart,
+      usefulPart: feedback.usefulPart,
+    };
+
+    setFeedbackSubmitted(true);
+    setFeedbackSummary(summary);
+    trackEvent("feedback_submitted", {
+      accuracy: summary.accuracy,
+      recommendation: summary.recommendation,
+      useful_part: summary.usefulPart,
       used_ai: Boolean(narrativeReport),
     });
+  }
+
+  function handleInterestSubmitted({ interest }) {
+    setInterestSubmitted(true);
+    trackEvent("interest_submitted", { interest });
   }
 
   function handleReset() {
@@ -197,6 +220,8 @@ export default function App() {
     setNarrativeReport("");
     setReportError("");
     setFeedbackSubmitted(false);
+    setFeedbackSummary(null);
+    setInterestSubmitted(false);
   }
 
   if (showLanding) {
@@ -277,6 +302,17 @@ export default function App() {
             sessionId={sessionId}
             usedAI={Boolean(narrativeReport)}
             onSubmitted={handleFeedbackSubmitted}
+          />
+        )}
+
+        {feedbackSubmitted && (
+          <InterestSection
+            sessionId={sessionId}
+            defaultName={result.profile?.name}
+            recommendation={feedbackSummary?.recommendation}
+            submitted={interestSubmitted}
+            onOpened={() => trackEvent("interest_form_opened")}
+            onSubmitted={handleInterestSubmitted}
           />
         )}
       </div>

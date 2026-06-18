@@ -10,6 +10,7 @@ MVP de autoavaliação comportamental para profissionais de Design. A aplicaçã
 4. Relatório básico calculado localmente.
 5. Análise aprofundada opcional com IA.
 6. Pesquisa curta de validação do MVP.
+7. Inscrição opcional para participar da próxima versão.
 
 O progresso é salvo no `localStorage`, permitindo retomar a avaliação no mesmo navegador.
 
@@ -37,9 +38,11 @@ Copie `.env.example` para `.env.local` e preencha as variáveis necessárias.
 - `GEMINI_MODEL`: modelo usado na geração; possui valor padrão.
 - `APP_ORIGIN`: domínio autorizado a chamar as APIs. Aceita origens separadas por vírgula.
 - `FEEDBACK_WEBHOOK_URL`: opcional. Encaminha feedbacks para Make, Zapier, Google Apps Script ou serviço equivalente.
+- `INTEREST_WEBHOOK_URL`: opcional. Encaminha nome, e-mail, consentimento e interesse principal para o fluxo de relacionamento.
 - `VITE_GA_MEASUREMENT_ID`: opcional. Ativa eventos no Google Analytics 4 após consentimento.
 
 Sem webhook, os feedbacks continuam registrados nos logs das funções da Vercel com o prefixo `VALIDATION_FEEDBACK`.
+As inscrições para a próxima versão usam o prefixo `VALIDATION_INTEREST` quando não há webhook configurado.
 
 ## Eventos de validação
 
@@ -55,8 +58,10 @@ Quando o GA4 está configurado, o app envia apenas identificadores anônimos e d
 - `ai_report_succeeded`
 - `ai_report_failed`
 - `feedback_submitted`
+- `interest_form_opened`
+- `interest_submitted`
 
-Nome, respostas abertas, objetivo e desafio profissional não são enviados ao analytics.
+Nome, e-mail, respostas abertas, objetivo e desafio profissional não são enviados ao analytics.
 
 ## Segurança e privacidade
 

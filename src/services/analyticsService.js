@@ -14,6 +14,8 @@ const allowedEvents = new Set([
   "ai_report_succeeded",
   "ai_report_failed",
   "feedback_submitted",
+  "interest_form_opened",
+  "interest_submitted",
 ]);
 
 export function initializeAnalytics(sessionId) {
