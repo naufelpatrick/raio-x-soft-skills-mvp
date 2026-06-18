@@ -1,5 +1,7 @@
 import { useState } from "react";
 import AssessmentForm from "./components/form/AssessmentForm";
+import ProfileForm from "./components/form/ProfileForm";
+
 import { calculateAssessmentResults } from "./services/scoringService";
 import { generateNarrativeReport } from "./services/geminiService";
 
@@ -13,7 +15,11 @@ import OpportunitiesSection from "./components/report/OpportunitiesSection";
 import RecommendationsSection from "./components/report/RecommendationsSection";
 import NarrativeReport from "./components/report/NarrativeReport";
 
+import DesignerProfileCard from "./components/report/DesignerProfileCard";
+
 export default function App() {
+  const [profile, setProfile] = useState(null);
+
   const [result, setResult] = useState(null);
   const [narrativeReport, setNarrativeReport] = useState("");
   const [loadingReport, setLoadingReport] = useState(false);
@@ -24,6 +30,7 @@ export default function App() {
 
     setResult({
       ...data,
+      profile,
       scores,
     });
 
@@ -39,6 +46,7 @@ export default function App() {
 
     try {
       const report = await generateNarrativeReport({
+        profile: result.profile,
         scores: result.scores,
         openAnswers: result.openAnswers,
       });
@@ -51,10 +59,18 @@ export default function App() {
     }
   }
 
+  // PRIMEIRA ETAPA
+  if (!profile) {
+    return <ProfileForm onSubmit={setProfile} />;
+  }
+
+  // SEGUNDA ETAPA
   if (result) {
     return (
       <main className="min-h-screen bg-slate-50 p-8">
         <div className="max-w-5xl mx-auto space-y-6">
+          <DesignerProfileCard profile={result.profile} />
+          
           <GeneralScoreCard
             score={result.scores.generalScore}
             level={result.scores.generalLevel}
@@ -91,9 +107,9 @@ export default function App() {
 
             <p className="text-slate-600 mt-3 max-w-2xl">
               O relatório básico acima já apresenta seus principais resultados.
-              A análise completa aprofunda sua leitura de maturidade, interpreta
-              seus padrões comportamentais e sugere um plano de desenvolvimento
-              individual para os próximos 90 dias.
+              A análise completa aprofunda sua leitura de maturidade,
+              interpreta seus padrões comportamentais e sugere um plano
+              de desenvolvimento individual para os próximos 90 dias.
             </p>
 
             <button
@@ -118,5 +134,6 @@ export default function App() {
     );
   }
 
+  // TERCEIRA ETAPA
   return <AssessmentForm onSubmit={handleSubmit} />;
 }
