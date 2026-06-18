@@ -1,7 +1,7 @@
 import { buildReportPrompt } from "./reportPrompt";
 
-export async function generateNarrativeReport({ scores, openAnswers }) {
-  const prompt = buildReportPrompt({ scores, openAnswers });
+export async function generateNarrativeReport({ profile, scores, openAnswers }) {
+  const prompt = buildReportPrompt({ profile, scores, openAnswers });
 
   const response = await fetch("/api/generate-report", {
     method: "POST",

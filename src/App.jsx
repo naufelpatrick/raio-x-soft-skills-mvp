@@ -13,6 +13,7 @@ import CompetencyTable from "./components/report/CompetencyTable";
 import StrengthsSection from "./components/report/StrengthsSection";
 import OpportunitiesSection from "./components/report/OpportunitiesSection";
 import RecommendationsSection from "./components/report/RecommendationsSection";
+import PDISection from "./components/report/PDISection";
 import NarrativeReport from "./components/report/NarrativeReport";
 
 import DesignerProfileCard from "./components/report/DesignerProfileCard";
@@ -95,6 +96,8 @@ export default function App() {
           <RecommendationsSection
             opportunities={result.scores.opportunities}
           />
+
+          <PDISection pdi={result.scores.pdi} />
 
           <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
             <p className="text-sm uppercase tracking-widest text-violet-600 font-semibold">

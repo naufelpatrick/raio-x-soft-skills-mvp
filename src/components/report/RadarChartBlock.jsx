@@ -7,8 +7,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-console.log("RadarChartBlock carregado");
-
 export default function RadarChartBlock({ competencies }) {
   const data = competencies.map((item) => ({
     competency: item.name,
@@ -22,7 +20,12 @@ export default function RadarChartBlock({ competencies }) {
       </h3>
 
       <div className="h-[420px]">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+          minWidth={0}
+          minHeight={420}
+        >
           <RadarChart data={data}>
             <PolarGrid />
             <PolarAngleAxis dataKey="competency" tick={{ fontSize: 12 }} />
