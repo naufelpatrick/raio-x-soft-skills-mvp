@@ -62,7 +62,7 @@ export default function FeedbackSection({ sessionId, usedAI, onSubmitted }) {
 
   return (
     <section className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
-      <p className="text-sm uppercase tracking-widest text-violet-600 font-semibold">Validação do MVP</p>
+      <p className="text-sm uppercase tracking-widest text-violet-600 font-semibold">Dê seu feedback sobre a ferramenta</p>
       <h3 className="text-2xl font-bold text-slate-900 mt-3">Este resultado foi útil para você?</h3>
       <p className="text-slate-600 mt-2">Leva menos de um minuto e ajuda a melhorar esta experiência.</p>
 
