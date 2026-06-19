@@ -1,6 +1,6 @@
 import ReactMarkdown from "react-markdown";
 
-export default function NarrativeReport({ report, loading, error }) {
+export default function NarrativeReport({ report, loading, error, warning }) {
   if (loading) {
     return (
       <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
@@ -32,6 +32,12 @@ export default function NarrativeReport({ report, loading, error }) {
       <p className="text-sm uppercase tracking-widest text-violet-600 font-semibold">
         Relatório Narrativo
       </p>
+
+      {warning && (
+        <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800" role="alert">
+          {warning}
+        </div>
+      )}
 
       <div className="prose prose-slate max-w-none mt-6">
         <ReactMarkdown>{report}</ReactMarkdown>

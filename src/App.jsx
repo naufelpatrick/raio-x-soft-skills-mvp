@@ -52,6 +52,9 @@ export default function App() {
   );
   const [loadingReport, setLoadingReport] = useState(false);
   const [reportError, setReportError] = useState("");
+  const [reportWarning, setReportWarning] = useState(
+    initialSession?.reportWarning || ""
+  );
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(
     Boolean(initialSession?.feedbackSubmitted)
   );
@@ -75,6 +78,7 @@ export default function App() {
       completedSteps,
       result,
       narrativeReport,
+      reportWarning,
       feedbackSubmitted,
       feedbackSummary,
       interestSubmitted,
@@ -88,6 +92,7 @@ export default function App() {
     interestSubmitted,
     narrativeReport,
     profile,
+    reportWarning,
     result,
     sessionId,
     stage,
@@ -145,6 +150,7 @@ export default function App() {
     setAssessmentDraft({ ...data, currentIndex: 10 });
     setNarrativeReport("");
     setReportError("");
+    setReportWarning("");
     setStage("report");
 
     trackEvent("assessment_completed", { duration_seconds: durationSeconds });
@@ -160,6 +166,7 @@ export default function App() {
 
     setLoadingReport(true);
     setReportError("");
+    setReportWarning("");
     trackEvent("ai_report_requested");
 
     try {
@@ -169,7 +176,12 @@ export default function App() {
         openAnswers: result.openAnswers,
       });
 
-      setNarrativeReport(report);
+      setNarrativeReport(report.text);
+      setReportWarning(
+        report.truncated
+          ? "A análise atingiu o limite de tamanho e pode estar incompleta. Gere novamente para obter uma nova versão."
+          : ""
+      );
       trackEvent("ai_report_succeeded");
     } catch (error) {
       setReportError(error.message);
@@ -219,6 +231,7 @@ export default function App() {
     setResult(null);
     setNarrativeReport("");
     setReportError("");
+    setReportWarning("");
     setFeedbackSubmitted(false);
     setFeedbackSummary(null);
     setInterestSubmitted(false);
@@ -295,7 +308,12 @@ export default function App() {
           </button>
         </section>
 
-        <NarrativeReport report={narrativeReport} loading={loadingReport} error={reportError} />
+        <NarrativeReport
+          report={narrativeReport}
+          loading={loadingReport}
+          error={reportError}
+          warning={reportWarning}
+        />
 
         {!feedbackSubmitted && (
           <FeedbackSection

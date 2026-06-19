@@ -116,20 +116,29 @@ export default async function handler(req, res) {
 
     const prompt = buildReportPrompt({ profile, scores, openAnswers });
     const model = process.env.GEMINI_MODEL || "gemini-3.5-flash";
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.5,
-            maxOutputTokens: 4096,
-          },
-        }),
-      }
-    );
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 55_000);
+    let response;
+
+    try {
+      response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              temperature: 0.5,
+              maxOutputTokens: 8192,
+            },
+          }),
+        }
+      );
+    } finally {
+      clearTimeout(timeout);
+    }
 
     const data = await response.json();
 
@@ -138,14 +147,23 @@ export default async function handler(req, res) {
       return res.status(502).json({ error: "A análise está indisponível no momento." });
     }
 
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const candidate = data?.candidates?.[0];
+    const text = candidate?.content?.parts?.[0]?.text;
     if (!text) {
       return res.status(502).json({ error: "A IA não retornou uma análise válida." });
     }
 
-    return res.status(200).json({ text });
+    const finishReason = candidate?.finishReason || "UNKNOWN";
+    const truncated = finishReason === "MAX_TOKENS";
+
+    return res.status(200).json({ text, truncated, finishReason });
   } catch (error) {
     console.error("Generate report error", error);
+
+    if (error?.name === "AbortError") {
+      return res.status(504).json({ error: "A análise demorou mais que o esperado. Tente novamente." });
+    }
+
     return res.status(400).json({ error: "Não foi possível processar a avaliação." });
   }
 }
