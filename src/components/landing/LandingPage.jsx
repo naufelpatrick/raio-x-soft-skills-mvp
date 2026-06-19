@@ -184,7 +184,7 @@ export default function LandingPage({ onStart, hasSavedSession, onResume }) {
             </h1>
 
             <p className="mt-7 max-w-2xl text-lg leading-relaxed text-slate-300 sm:text-xl">
-              Transforme percepções soltas em um diagnóstico claro das suas habilidades humanas — com prioridades e um plano prático para o próximo passo da sua carreira.
+              Transforme percepções soltas em um diagnóstico claro das suas habilidades comportamentais — com prioridades e um plano prático para o próximo passo da sua carreira.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
