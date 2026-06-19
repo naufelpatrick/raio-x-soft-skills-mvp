@@ -60,6 +60,7 @@ Responda em português do Brasil com:
 6. Plano de Desenvolvimento Individual para 30, 60 e 90 dias
 7. Conclusão Final
 
+O relatório completo deve ter no máximo 1.000 palavras. Seja sintético nas seções 1 a 5, concentre o maior detalhamento no PDI e reserve de 80 a 120 palavras para uma conclusão completa.
 Use o cargo, a senioridade, a experiência, o objetivo e o desafio profissional para contextualizar toda a análise.
 No PDI, adapte as ações-base à realidade do respondente, estabeleça resultados observáveis e mantenha o horizonte de 30, 60 e 90 dias.
 Não invente fatos, experiências ou diagnósticos psicológicos. Evite clichês motivacionais. Seja direto, humano, analítico e prático.
