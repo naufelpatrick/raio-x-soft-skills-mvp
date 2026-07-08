@@ -5,8 +5,13 @@ import {
 } from "recharts";
 import {
   ChevronLeft, ArrowRight, BarChart2, BookOpen, Target,
-  Zap, Check, RefreshCw, Sparkles, Loader2,
+  Zap, Check, RefreshCw, Sparkles, Loader2, Lock,
+  Brain, Calendar, MessageCircle,
 } from "lucide-react";
+
+// ─── CONFIG ──────────────────────────────────────────────────────────────────
+const OWNER_WHATSAPP = "5511991106400";
+const PRODUCT_PRICE = "R$ 97";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -199,10 +204,7 @@ const LEVEL_COLORS = {
 
 function calculateScores(answers) {
   return COMPETENCIES.map((c) => {
-    const raw = [1, 2, 3, 4, 5].reduce(
-      (sum, i) => sum + (answers[`${c.id}_${i}`] || 0),
-      0
-    );
+    const raw = [1, 2, 3, 4, 5].reduce((sum, i) => sum + (answers[`${c.id}_${i}`] || 0), 0);
     const score = Math.round(((raw - 5) / 20) * 100);
     return { id: c.id, name: c.name, score, level: getLevel(score) };
   });
@@ -222,9 +224,7 @@ function getProfileResult(scores) {
 function getCrossResults(scores) {
   const map = Object.fromEntries(scores.map((s) => [s.id, s.score]));
   return CROSS_ANALYSIS.filter(
-    (r) =>
-      r.high.every((id) => (map[id] || 0) >= 60) &&
-      r.low.every((id) => (map[id] || 0) <= 50)
+    (r) => r.high.every((id) => (map[id] || 0) >= 60) && r.low.every((id) => (map[id] || 0) <= 50)
   ).slice(0, 4);
 }
 
@@ -240,12 +240,9 @@ function Landing({ onStart }) {
           <div className="w-7 h-7 bg-primary rounded-sm flex items-center justify-center">
             <BarChart2 className="w-3.5 h-3.5 text-primary-foreground" />
           </div>
-          <span className="text-sm font-medium tracking-tight text-foreground">Raio-X de Soft Skills</span>
+          <span className="text-sm font-medium tracking-tight">Raio-X de Soft Skills</span>
         </div>
-        <button
-          onClick={onStart}
-          className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity"
-        >
+        <button onClick={onStart} className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity">
           Começar <ArrowRight className="w-4 h-4" />
         </button>
       </nav>
@@ -253,33 +250,22 @@ function Landing({ onStart }) {
       <section className="grid grid-cols-1 lg:grid-cols-[1fr_420px] min-h-[88vh]">
         <div className="flex flex-col justify-center px-6 lg:px-16 py-20">
           <div className="inline-flex items-center gap-2 border border-primary/30 text-primary px-3 py-1 rounded-full text-xs font-medium mb-10 w-fit">
-            <Zap className="w-3 h-3" />
-            Avaliação gratuita · 15 minutos
+            <Zap className="w-3 h-3" /> Avaliação gratuita · 15 minutos
           </div>
-          <h1
-            className="text-5xl lg:text-[64px] leading-[1.1] mb-6 tracking-tight"
-            style={{ fontFamily: "var(--font-display, Georgia, serif)" }}
-          >
-            Descubra o mapa<br />
-            das suas{" "}
+          <h1 className="text-5xl lg:text-[64px] leading-[1.1] mb-6 tracking-tight" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>
+            Descubra o mapa<br />das suas{" "}
             <em className="text-primary not-italic">competências humanas</em>
           </h1>
           <p className="text-muted-foreground text-lg leading-relaxed mb-10 max-w-lg">
-            50 perguntas, 10 competências, 1 diagnóstico preciso. Identifique seus pontos fortes,
-            oportunidades e receba um plano de ação personalizado.
+            50 perguntas, 10 competências, 1 diagnóstico preciso. Identifique seus pontos fortes, oportunidades e receba um plano de ação personalizado.
           </p>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-            <button
-              onClick={onStart}
-              className="flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-sm font-medium hover:opacity-90 transition-opacity"
-            >
+            <button onClick={onStart} className="flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-sm font-medium hover:opacity-90 transition-opacity">
               Iniciar diagnóstico <ArrowRight className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               {["Gratuito", "Sem cadastro", "Resultado imediato"].map((t) => (
-                <span key={t} className="flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-primary" /> {t}
-                </span>
+                <span key={t} className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-primary" /> {t}</span>
               ))}
             </div>
           </div>
@@ -287,35 +273,20 @@ function Landing({ onStart }) {
 
         <div className="hidden lg:flex items-center justify-center bg-card border-l border-border px-10 py-16">
           <div className="w-full space-y-3">
-            <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-6">
-              Prévia do diagnóstico
-            </p>
+            <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-6">Prévia do diagnóstico</p>
             {COMPETENCIES.map((c, i) => (
               <div key={c.id} className="flex items-center gap-3">
                 <span className="text-xs text-muted-foreground w-36 truncate text-right">{c.name}</span>
                 <div className="flex-1 bg-secondary rounded-full h-1.5">
-                  <div
-                    className="h-1.5 rounded-full"
-                    style={{
-                      width: `${DEMO_SCORES[i]}%`,
-                      backgroundColor: LEVEL_COLORS[getLevel(DEMO_SCORES[i])],
-                      opacity: 0.7,
-                    }}
-                  />
+                  <div className="h-1.5 rounded-full" style={{ width: `${DEMO_SCORES[i]}%`, backgroundColor: LEVEL_COLORS[getLevel(DEMO_SCORES[i])], opacity: 0.7 }} />
                 </div>
-                <span className="text-xs font-mono text-muted-foreground w-6 text-right">
-                  {DEMO_SCORES[i]}
-                </span>
+                <span className="text-xs font-mono text-muted-foreground w-6 text-right">{DEMO_SCORES[i]}</span>
               </div>
             ))}
             <div className="pt-5 mt-2 border-t border-border">
-              <div className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-1">
-                Índice geral
-              </div>
+              <div className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-1">Índice geral</div>
               <div className="text-4xl font-mono font-medium text-primary">77</div>
-              <div className="text-sm text-muted-foreground mt-0.5">
-                Nível <span className="text-primary">Avançado</span>
-              </div>
+              <div className="text-sm text-muted-foreground mt-0.5">Nível <span className="text-primary">Avançado</span></div>
             </div>
           </div>
         </div>
@@ -323,27 +294,18 @@ function Landing({ onStart }) {
 
       <section className="px-6 lg:px-16 py-20 border-t border-border">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-4">
-            Como funciona
-          </p>
-          <h2
-            className="text-3xl lg:text-4xl mb-14"
-            style={{ fontFamily: "var(--font-display, Georgia, serif)" }}
-          >
-            Três etapas para um diagnóstico preciso
-          </h2>
+          <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-4">Como funciona</p>
+          <h2 className="text-3xl lg:text-4xl mb-14" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Três etapas para um diagnóstico preciso</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {[
               { step: "01", Icon: BookOpen, title: "Avaliação", desc: "Responda 50 afirmações sobre comportamentos reais no trabalho, em escala de 1 a 5." },
               { step: "02", Icon: BarChart2, title: "Diagnóstico", desc: "Receba seu score em 10 competências, seu perfil predominante e padrões comportamentais." },
-              { step: "03", Icon: Target, title: "Plano de Ação", desc: "Um PDI personalizado com ações concretas para 30, 60 e 90 dias." },
+              { step: "03", Icon: Target, title: "Plano de Ação", desc: "Um PDI personalizado com ações concretas para 30, 60 e 90 dias — disponível no plano completo." },
             ].map(({ step, Icon, title, desc }) => (
               <div key={step}>
                 <div className="flex items-center gap-3 mb-5">
                   <span className="font-mono text-xs text-muted-foreground">{step}</span>
-                  <div className="w-9 h-9 bg-primary/10 rounded-sm flex items-center justify-center">
-                    <Icon className="w-4 h-4 text-primary" />
-                  </div>
+                  <div className="w-9 h-9 bg-primary/10 rounded-sm flex items-center justify-center"><Icon className="w-4 h-4 text-primary" /></div>
                 </div>
                 <h3 className="font-medium mb-2">{title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
@@ -355,19 +317,9 @@ function Landing({ onStart }) {
 
       <section className="px-6 lg:px-16 py-20 bg-card border-t border-border">
         <div className="max-w-2xl">
-          <h2
-            className="text-3xl mb-4"
-            style={{ fontFamily: "var(--font-display, Georgia, serif)" }}
-          >
-            Pronto para se conhecer melhor?
-          </h2>
-          <p className="text-muted-foreground mb-8">
-            A avaliação leva cerca de 15 minutos e o resultado é imediato.
-          </p>
-          <button
-            onClick={onStart}
-            className="flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-sm font-medium hover:opacity-90 transition-opacity"
-          >
+          <h2 className="text-3xl mb-4" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Pronto para se conhecer melhor?</h2>
+          <p className="text-muted-foreground mb-8">A avaliação leva cerca de 15 minutos e o resultado é imediato.</p>
+          <button onClick={onStart} className="flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-sm font-medium hover:opacity-90 transition-opacity">
             Iniciar agora <ArrowRight className="w-5 h-5" />
           </button>
         </div>
@@ -379,112 +331,51 @@ function Landing({ onStart }) {
 // ─── PROFILE FORM ─────────────────────────────────────────────────────────────
 
 function ProfileForm({ onSubmit, onBack }) {
-  const [form, setForm] = useState({
-    name: "", age: "", experience: "", currentRole: "",
-    professionalLevel: "", mainArea: "", careerGoal: "", currentChallenge: "",
-  });
-
+  const [form, setForm] = useState({ name: "", age: "", experience: "", currentRole: "", professionalLevel: "", mainArea: "", careerGoal: "", currentChallenge: "" });
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
   const canSubmit = Object.values(form).every((v) => v.trim().length > 0);
-
-  const inputCls =
-    "w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors";
+  const inputCls = "w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors";
   const labelCls = "block text-xs text-muted-foreground font-mono uppercase tracking-wider mb-2";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <nav className="flex items-center justify-between px-6 lg:px-12 py-5 border-b border-border sticky top-0 bg-background z-10">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm transition-colors"
-        >
+        <button onClick={onBack} className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm transition-colors">
           <ChevronLeft className="w-4 h-4" /> Voltar
         </button>
         <span className="text-xs text-muted-foreground font-mono">Etapa 1/3 — Perfil</span>
       </nav>
-
       <div className="max-w-2xl mx-auto px-6 py-16">
-        <h1
-          className="text-3xl lg:text-4xl mb-2"
-          style={{ fontFamily: "var(--font-display, Georgia, serif)" }}
-        >
-          Seu perfil profissional
-        </h1>
-        <p className="text-muted-foreground mb-10">
-          Essas informações personalizam a análise e o plano de desenvolvimento.
-        </p>
-
+        <h1 className="text-3xl lg:text-4xl mb-2" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Seu perfil profissional</h1>
+        <p className="text-muted-foreground mb-10">Essas informações personalizam a análise e o plano de desenvolvimento.</p>
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelCls}>Nome</label>
-              <input type="text" placeholder="Seu nome completo" value={form.name} onChange={update("name")} className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Idade</label>
-              <input type="number" placeholder="Ex: 32" value={form.age} onChange={update("age")} className={inputCls} />
-            </div>
+            <div><label className={labelCls}>Nome</label><input type="text" placeholder="Seu nome completo" value={form.name} onChange={update("name")} className={inputCls} /></div>
+            <div><label className={labelCls}>Idade</label><input type="number" placeholder="Ex: 32" value={form.age} onChange={update("age")} className={inputCls} /></div>
           </div>
-
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelCls}>Cargo atual</label>
-              <input type="text" placeholder="Ex: Product Designer" value={form.currentRole} onChange={update("currentRole")} className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Tempo de experiência</label>
-              <input type="text" placeholder="Ex: 5 anos" value={form.experience} onChange={update("experience")} className={inputCls} />
-            </div>
+            <div><label className={labelCls}>Cargo atual</label><input type="text" placeholder="Ex: Product Designer" value={form.currentRole} onChange={update("currentRole")} className={inputCls} /></div>
+            <div><label className={labelCls}>Tempo de experiência</label><input type="text" placeholder="Ex: 5 anos" value={form.experience} onChange={update("experience")} className={inputCls} /></div>
           </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className={labelCls}>Nível profissional</label>
               <select value={form.professionalLevel} onChange={update("professionalLevel")} className={inputCls}>
                 <option value="">Selecione</option>
-                {["Júnior", "Pleno", "Sênior", "Especialista", "Líder", "Gestor"].map((v) => (
-                  <option key={v}>{v}</option>
-                ))}
+                {["Júnior", "Pleno", "Sênior", "Especialista", "Líder", "Gestor"].map((v) => <option key={v}>{v}</option>)}
               </select>
             </div>
             <div>
               <label className={labelCls}>Área principal</label>
               <select value={form.mainArea} onChange={update("mainArea")} className={inputCls}>
                 <option value="">Selecione</option>
-                {["Pesquisa", "UX", "UI", "Product Design", "Design System", "Liderança", "Generalista", "Outro"].map((v) => (
-                  <option key={v}>{v}</option>
-                ))}
+                {["Pesquisa", "UX", "UI", "Product Design", "Design System", "Liderança", "Generalista", "Outro"].map((v) => <option key={v}>{v}</option>)}
               </select>
             </div>
           </div>
-
-          <div>
-            <label className={labelCls}>Objetivo de carreira (próximos 12 meses)</label>
-            <textarea
-              placeholder="O que você quer alcançar profissionalmente no próximo ano?"
-              value={form.careerGoal}
-              onChange={update("careerGoal")}
-              rows={3}
-              className={inputCls + " resize-none"}
-            />
-          </div>
-
-          <div>
-            <label className={labelCls}>Principal desafio atual</label>
-            <textarea
-              placeholder="Qual é o maior obstáculo que você enfrenta hoje?"
-              value={form.currentChallenge}
-              onChange={update("currentChallenge")}
-              rows={3}
-              className={inputCls + " resize-none"}
-            />
-          </div>
-
-          <button
-            onClick={() => canSubmit && onSubmit(form)}
-            disabled={!canSubmit}
-            className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-4 rounded-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"
-          >
+          <div><label className={labelCls}>Objetivo de carreira (próximos 12 meses)</label><textarea placeholder="O que você quer alcançar profissionalmente no próximo ano?" value={form.careerGoal} onChange={update("careerGoal")} rows={3} className={inputCls + " resize-none"} /></div>
+          <div><label className={labelCls}>Principal desafio atual</label><textarea placeholder="Qual é o maior obstáculo que você enfrenta hoje?" value={form.currentChallenge} onChange={update("currentChallenge")} rows={3} className={inputCls + " resize-none"} /></div>
+          <button onClick={() => canSubmit && onSubmit(form)} disabled={!canSubmit} className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-4 rounded-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
             Iniciar avaliação <ArrowRight className="w-5 h-5" />
           </button>
         </div>
@@ -502,9 +393,7 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
   const isOpen = step === 10;
 
   const stepAnswered = () => {
-    if (!isOpen) {
-      return [1, 2, 3, 4, 5].every((i) => answers[`${competency.id}_${i}`]);
-    }
+    if (!isOpen) return [1, 2, 3, 4, 5].every((i) => answers[`${competency.id}_${i}`]);
     return OPEN_QUESTIONS.every((_, i) => (answers[`open_${i + 1}`] || "").trim().length > 0);
   };
 
@@ -524,41 +413,27 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <nav className="sticky top-0 z-10 bg-background border-b border-border px-6 lg:px-12 py-5 flex items-center gap-6">
-        <button
-          onClick={retreat}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm transition-colors shrink-0"
-        >
+        <button onClick={retreat} className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm transition-colors shrink-0">
           <ChevronLeft className="w-4 h-4" /> {step === 0 ? "Voltar" : "Anterior"}
         </button>
         <div className="flex-1 flex items-center gap-3">
           <div className="flex-1 bg-secondary rounded-full h-1">
-            <div
-              className="bg-primary h-1 rounded-full transition-all duration-500"
-              style={{ width: `${progress}%` }}
-            />
+            <div className="bg-primary h-1 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
           </div>
-          <span className="text-xs text-muted-foreground font-mono shrink-0">
-            {step + 1}/{TOTAL}
-          </span>
+          <span className="text-xs text-muted-foreground font-mono shrink-0">{step + 1}/{TOTAL}</span>
         </div>
       </nav>
-
       <div className="max-w-2xl mx-auto px-6 py-12">
         {!isOpen ? (
           <>
             <div className="flex items-start gap-4 mb-8">
-              <div className="w-11 h-11 bg-primary/10 rounded-sm flex items-center justify-center text-xl shrink-0">
-                {competency.icon}
-              </div>
+              <div className="w-11 h-11 bg-primary/10 rounded-sm flex items-center justify-center text-xl shrink-0">{competency.icon}</div>
               <div>
-                <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-1">
-                  Competência {step + 1}/10
-                </p>
+                <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-1">Competência {step + 1}/10</p>
                 <h2 className="text-2xl font-medium">{competency.name}</h2>
                 <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{competency.desc}</p>
               </div>
             </div>
-
             <div className="space-y-8">
               {QUESTIONS[competency.id].map((q, qi) => {
                 const key = `${competency.id}_${qi + 1}`;
@@ -568,19 +443,10 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
                     <p className="text-sm leading-relaxed mb-4 text-foreground/90">{q}</p>
                     <div className="flex gap-2">
                       {[1, 2, 3, 4, 5].map((v) => (
-                        <button
-                          key={v}
-                          onClick={() => onAnswer(key, v)}
-                          className={`flex-1 flex flex-col items-center gap-1.5 py-3 rounded-sm border text-sm transition-all ${
-                            val === v
-                              ? "border-primary bg-primary/10 text-primary"
-                              : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
-                          }`}
-                        >
+                        <button key={v} onClick={() => onAnswer(key, v)}
+                          className={`flex-1 flex flex-col items-center gap-1.5 py-3 rounded-sm border text-sm transition-all ${val === v ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"}`}>
                           <span className="font-mono font-medium">{v}</span>
-                          <span className="text-[10px] leading-tight text-center hidden sm:block px-1">
-                            {LIKERT_LABELS[v - 1]}
-                          </span>
+                          <span className="text-[10px] leading-tight text-center hidden sm:block px-1">{LIKERT_LABELS[v - 1]}</span>
                         </button>
                       ))}
                     </div>
@@ -592,44 +458,26 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
         ) : (
           <>
             <div className="mb-8">
-              <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-2">
-                Etapa 11/11
-              </p>
-              <h2
-                className="text-3xl"
-                style={{ fontFamily: "var(--font-display, Georgia, serif)" }}
-              >
-                Reflexão final
-              </h2>
-              <p className="text-sm text-muted-foreground mt-2">
-                Três perguntas abertas para aprofundar o diagnóstico.
-              </p>
+              <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-2">Etapa 11/11</p>
+              <h2 className="text-3xl" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Reflexão final</h2>
+              <p className="text-sm text-muted-foreground mt-2">Três perguntas abertas para aprofundar o diagnóstico.</p>
             </div>
             <div className="space-y-8">
               {OPEN_QUESTIONS.map((q, i) => (
                 <div key={i}>
                   <p className="text-sm leading-relaxed mb-3 text-foreground/90">{q}</p>
-                  <textarea
-                    value={answers[`open_${i + 1}`] || ""}
-                    onChange={(e) => onAnswer(`open_${i + 1}`, e.target.value)}
-                    placeholder="Sua resposta..."
-                    rows={4}
-                    className="w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors resize-none"
-                  />
+                  <textarea value={answers[`open_${i + 1}`] || ""} onChange={(e) => onAnswer(`open_${i + 1}`, e.target.value)}
+                    placeholder="Sua resposta..." rows={4}
+                    className="w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors resize-none" />
                 </div>
               ))}
             </div>
           </>
         )}
-
         <div className="mt-12">
-          <button
-            onClick={advance}
-            disabled={!stepAnswered()}
-            className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-4 rounded-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            {step < 10 ? "Próxima competência" : "Ver meu diagnóstico"}
-            <ArrowRight className="w-5 h-5" />
+          <button onClick={advance} disabled={!stepAnswered()}
+            className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-4 rounded-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+            {step < 10 ? "Próxima competência" : "Ver meu diagnóstico"} <ArrowRight className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -637,39 +485,151 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
   );
 }
 
-// ─── RESULTS ──────────────────────────────────────────────────────────────────
+// ─── UPGRADE SECTION ──────────────────────────────────────────────────────────
 
-function NarrativeReport({ text }) {
-  const lines = text.split("\n");
-  const elements = [];
-  lines.forEach((line, i) => {
-    if (line.startsWith("## ")) {
-      elements.push(
-        <h3 key={i} className="text-lg font-medium mt-6 mb-2 text-foreground">
-          {line.replace("## ", "")}
-        </h3>
-      );
-    } else if (line.trim() === "") {
-      elements.push(<div key={i} className="h-2" />);
-    } else {
-      const rendered = line.split(/(\*\*[^*]+\*\*)/).map((part, j) =>
-        part.startsWith("**") && part.endsWith("**")
-          ? <strong key={j} className="text-foreground font-medium">{part.slice(2, -2)}</strong>
-          : part
-      );
-      elements.push(
-        <p key={i} className="text-sm text-muted-foreground leading-relaxed">{rendered}</p>
-      );
-    }
-  });
-  return <div>{elements}</div>;
+function UpgradeSection({ profileData, generalScore, generalLevel, profileName }) {
+  const [showForm, setShowForm] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [lead, setLead] = useState({ name: profileData?.name || "", email: "", whatsapp: "" });
+  const [sending, setSending] = useState(false);
+
+  const inputCls = "w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors";
+  const labelCls = "block text-xs text-muted-foreground font-mono uppercase tracking-wider mb-2";
+
+  const canSubmit = lead.name.trim() && lead.email.trim() && lead.whatsapp.trim();
+
+  function handleSubmit() {
+    if (!canSubmit) return;
+    setSending(true);
+
+    const msg = [
+      `🎯 *Nova lead — Diagnóstico Completo*`,
+      ``,
+      `*Nome:* ${lead.name}`,
+      `*Email:* ${lead.email}`,
+      `*WhatsApp:* ${lead.whatsapp}`,
+      ``,
+      `*Cargo:* ${profileData?.currentRole || "-"} (${profileData?.professionalLevel || "-"})`,
+      `*Área:* ${profileData?.mainArea || "-"}`,
+      `*Índice geral:* ${generalScore}/100 — ${generalLevel}`,
+      `*Perfil:* ${profileName}`,
+      ``,
+      `_Aguardando confirmação de pagamento._`,
+    ].join("\n");
+
+    const url = `https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent(msg)}`;
+    window.open(url, "_blank");
+    setSending(false);
+    setSubmitted(true);
+  }
+
+  const benefits = [
+    { Icon: Brain, label: "Análise narrativa com IA", desc: "Diagnóstico aprofundado gerado pelo Claude com base no seu perfil completo." },
+    { Icon: Target, label: "PDI 30 / 60 / 90 dias", desc: "Plano de Desenvolvimento Individual com ações concretas por competência." },
+    { Icon: Calendar, label: "1 sessão de mentoria", desc: "60 minutos ao vivo para aprofundar seus pontos de atenção e próximos passos." },
+  ];
+
+  if (submitted) {
+    return (
+      <div className="bg-card border border-primary/30 rounded-sm p-8 text-center">
+        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+          <MessageCircle className="w-6 h-6 text-primary" />
+        </div>
+        <h3 className="text-xl font-medium mb-2" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Mensagem enviada!</h3>
+        <p className="text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">
+          Entraremos em contato em até 2h via WhatsApp para confirmar o pagamento e liberar seu acesso completo.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative rounded-sm overflow-hidden border border-primary/20">
+      {/* Header gradient */}
+      <div className="bg-gradient-to-br from-primary/15 via-primary/5 to-transparent p-8 border-b border-border">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs px-3 py-1 rounded-full font-medium mb-3">
+              <Lock className="w-3 h-3" /> Conteúdo exclusivo
+            </div>
+            <h2 className="text-2xl lg:text-3xl mb-2" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>
+              Diagnóstico Completo
+            </h2>
+            <p className="text-muted-foreground text-sm max-w-lg">
+              Vá além dos números. Receba uma análise narrativa personalizada, um plano de ação concreto e uma sessão de mentoria para transformar o diagnóstico em evolução real.
+            </p>
+          </div>
+          <div className="text-right shrink-0">
+            <div className="text-3xl font-mono font-medium text-foreground">{PRODUCT_PRICE}</div>
+            <div className="text-xs text-muted-foreground mt-1">pagamento único</div>
+          </div>
+        </div>
+
+        {/* Benefits */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+          {benefits.map(({ Icon, label, desc }) => (
+            <div key={label} className="flex items-start gap-3">
+              <div className="w-8 h-8 bg-primary/10 rounded-sm flex items-center justify-center shrink-0 mt-0.5">
+                <Icon className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground mb-0.5">{label}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* CTA / Form */}
+      <div className="p-8">
+        {!showForm ? (
+          <button onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-sm font-medium hover:opacity-90 transition-opacity">
+            <Sparkles className="w-4 h-4" /> Quero o diagnóstico completo
+          </button>
+        ) : (
+          <div className="max-w-md">
+            <p className="text-sm text-muted-foreground mb-6">
+              Preencha seus dados e abriremos uma conversa no WhatsApp para finalizar o pagamento.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className={labelCls}>Nome completo</label>
+                <input type="text" value={lead.name} onChange={(e) => setLead((l) => ({ ...l, name: e.target.value }))} placeholder="Seu nome" className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>E-mail</label>
+                <input type="email" value={lead.email} onChange={(e) => setLead((l) => ({ ...l, email: e.target.value }))} placeholder="seu@email.com" className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>WhatsApp (com DDD)</label>
+                <input type="tel" value={lead.whatsapp} onChange={(e) => setLead((l) => ({ ...l, whatsapp: e.target.value }))} placeholder="(11) 99999-9999" className={inputCls} />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button onClick={handleSubmit} disabled={!canSubmit || sending}
+                  className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                  {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />}
+                  Confirmar interesse
+                </button>
+                <button onClick={() => setShowForm(false)} className="px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Cancelar
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Suas informações são usadas apenas para entrar em contato. Nenhum dado é armazenado automaticamente.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
-function Results({ profileData, scores, answers, onReset }) {
-  const [aiText, setAiText] = useState(null);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiError, setAiError] = useState(null);
+// ─── RESULTS ──────────────────────────────────────────────────────────────────
 
+function Results({ profileData, scores, answers, onReset }) {
   const generalScore = Math.round(scores.reduce((s, c) => s + c.score, 0) / scores.length);
   const generalLevel = getLevel(generalScore);
   const profile = getProfileResult(scores);
@@ -683,144 +643,73 @@ function Results({ profileData, scores, answers, onReset }) {
     return { subject: c.name.split(" ")[0], score: s ? s.score : 0, fullMark: 100 };
   });
 
-  async function generateAiReport() {
-    setAiLoading(true);
-    setAiError(null);
-    try {
-      const res = await fetch("/api/generate-report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          profileData,
-          scores,
-          answers,
-          generalScore,
-          generalLevel,
-          profileName: profile.name,
-          profileDesc: profile.desc,
-          strengths,
-          opportunities,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.text) {
-        setAiError(data.error || "Erro desconhecido. Tente novamente.");
-      } else {
-        setAiText(data.text);
-      }
-    } catch {
-      setAiError("Não foi possível conectar ao servidor.");
-    } finally {
-      setAiLoading(false);
-    }
-  }
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       <nav className="flex items-center justify-between px-6 lg:px-12 py-5 border-b border-border">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 bg-primary rounded-sm flex items-center justify-center">
-            <BarChart2 className="w-3.5 h-3.5 text-primary-foreground" />
-          </div>
+          <div className="w-7 h-7 bg-primary rounded-sm flex items-center justify-center"><BarChart2 className="w-3.5 h-3.5 text-primary-foreground" /></div>
           <span className="text-sm font-medium">Raio-X de Soft Skills</span>
         </div>
-        <button
-          onClick={onReset}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm transition-colors"
-        >
+        <button onClick={onReset} className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm transition-colors">
           <RefreshCw className="w-4 h-4" /> Nova avaliação
         </button>
       </nav>
 
       <div className="max-w-4xl mx-auto px-6 py-16 space-y-14">
+
+        {/* Hero */}
         <div className="flex items-start justify-between gap-8 flex-wrap pb-10 border-b border-border">
           <div>
-            <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-3">
-              Diagnóstico de
-            </p>
-            <h1
-              className="text-4xl lg:text-5xl mb-2"
-              style={{ fontFamily: "var(--font-display, Georgia, serif)" }}
-            >
-              {profileData.name}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {profileData.currentRole} · {profileData.professionalLevel} · {profileData.mainArea}
-            </p>
+            <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-3">Diagnóstico de</p>
+            <h1 className="text-4xl lg:text-5xl mb-2" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>{profileData.name}</h1>
+            <p className="text-sm text-muted-foreground">{profileData.currentRole} · {profileData.professionalLevel} · {profileData.mainArea}</p>
           </div>
           <div className="text-right">
-            <div
-              className="text-7xl font-mono font-medium leading-none"
-              style={{ color: LEVEL_COLORS[generalLevel] }}
-            >
-              {generalScore}
-            </div>
-            <div className="text-sm text-muted-foreground mt-2">
-              Índice Geral ·{" "}
-              <span style={{ color: LEVEL_COLORS[generalLevel] }}>{generalLevel}</span>
-            </div>
+            <div className="text-7xl font-mono font-medium leading-none" style={{ color: LEVEL_COLORS[generalLevel] }}>{generalScore}</div>
+            <div className="text-sm text-muted-foreground mt-2">Índice Geral · <span style={{ color: LEVEL_COLORS[generalLevel] }}>{generalLevel}</span></div>
           </div>
         </div>
 
+        {/* Free badge */}
+        <div className="inline-flex items-center gap-2 border border-border rounded-full px-3 py-1 text-xs text-muted-foreground">
+          <Check className="w-3 h-3 text-primary" /> Diagnóstico gratuito — resultados abaixo
+        </div>
+
+        {/* Radar + Profile */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="bg-card border border-border rounded-sm p-6">
-            <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-4">
-              Mapa de competências
-            </p>
+            <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-4">Mapa de competências</p>
             <ResponsiveContainer width="100%" height={280}>
               <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
                 <PolarGrid stroke="rgba(255,255,255,0.06)" />
                 <PolarAngleAxis dataKey="subject" tick={{ fill: "#64748B", fontSize: 11 }} />
                 <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-                <Radar
-                  dataKey="score"
-                  stroke="#818CF8"
-                  fill="#818CF8"
-                  fillOpacity={0.18}
-                  strokeWidth={2}
-                  dot={{ fill: "#818CF8", r: 3, strokeWidth: 0 }}
-                />
+                <Radar dataKey="score" stroke="#818CF8" fill="#818CF8" fillOpacity={0.18} strokeWidth={2} dot={{ fill: "#818CF8", r: 3, strokeWidth: 0 }} />
               </RadarChart>
             </ResponsiveContainer>
           </div>
-
           <div className="bg-card border border-border rounded-sm p-6 flex flex-col">
-            <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-4">
-              Perfil predominante
-            </p>
-            <h3
-              className="text-2xl mb-3"
-              style={{ fontFamily: "var(--font-display, Georgia, serif)" }}
-            >
-              {profile.name}
-            </h3>
+            <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-4">Perfil predominante</p>
+            <h3 className="text-2xl mb-3" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>{profile.name}</h3>
             <p className="text-sm text-muted-foreground leading-relaxed flex-1">{profile.desc}</p>
             <div className="flex flex-wrap gap-2 mt-6 pt-5 border-t border-border">
               {profile.competencies.map((id) => {
                 const c = COMPETENCIES.find((x) => x.id === id);
-                return c ? (
-                  <span key={id} className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full">
-                    {c.name}
-                  </span>
-                ) : null;
+                return c ? <span key={id} className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full">{c.name}</span> : null;
               })}
             </div>
           </div>
         </div>
 
+        {/* Score bars */}
         <div className="bg-card border border-border rounded-sm p-6">
-          <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-6">
-            Pontuação por competência
-          </p>
+          <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-6">Pontuação por competência</p>
           <div className="space-y-4">
             {sorted.map((s) => (
               <div key={s.id} className="flex items-center gap-4">
                 <span className="text-sm text-foreground/80 w-44 shrink-0 truncate">{s.name}</span>
                 <div className="flex-1 bg-secondary rounded-full h-1.5">
-                  <div
-                    className="h-1.5 rounded-full transition-all duration-700"
-                    style={{ width: `${s.score}%`, backgroundColor: LEVEL_COLORS[s.level] }}
-                  />
+                  <div className="h-1.5 rounded-full transition-all duration-700" style={{ width: `${s.score}%`, backgroundColor: LEVEL_COLORS[s.level] }} />
                 </div>
                 <span className="font-mono text-sm w-8 text-right">{s.score}</span>
                 <span className="text-xs text-muted-foreground w-24 text-right">{s.level}</span>
@@ -829,6 +718,7 @@ function Results({ profileData, scores, answers, onReset }) {
           </div>
         </div>
 
+        {/* Strengths + Opportunities */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="bg-card border border-border rounded-sm p-6">
             <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-5">Forças</p>
@@ -847,7 +737,6 @@ function Results({ profileData, scores, answers, onReset }) {
               ))}
             </div>
           </div>
-
           <div className="bg-card border border-border rounded-sm p-6">
             <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-5">Oportunidades</p>
             <div className="space-y-5">
@@ -867,17 +756,11 @@ function Results({ profileData, scores, answers, onReset }) {
           </div>
         </div>
 
+        {/* Cross analysis */}
         {crossResults.length > 0 && (
           <div>
-            <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-2">
-              Padrões comportamentais identificados
-            </p>
-            <h2
-              className="text-2xl mb-6"
-              style={{ fontFamily: "var(--font-display, Georgia, serif)" }}
-            >
-              Como suas competências se combinam
-            </h2>
+            <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-2">Padrões comportamentais identificados</p>
+            <h2 className="text-2xl mb-6" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Como suas competências se combinam</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {crossResults.map((r) => (
                 <div key={r.id} className="bg-card border border-border rounded-sm p-5">
@@ -889,131 +772,25 @@ function Results({ profileData, scores, answers, onReset }) {
           </div>
         )}
 
+        {/* ── PAYWALL ── */}
         <div>
-          <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-2">
-            Plano de Desenvolvimento Individual
-          </p>
-          <h2
-            className="text-2xl mb-8"
-            style={{ fontFamily: "var(--font-display, Georgia, serif)" }}
-          >
-            Ações para os próximos 90 dias
-          </h2>
-          <div className="space-y-5">
-            {opportunities.map((s, oi) => {
-              const pdi = PDI_ACTIONS[s.id];
-              if (!pdi) return null;
-              return (
-                <div key={s.id} className="bg-card border border-border rounded-sm p-6">
-                  <div className="flex items-center gap-3 mb-6 pb-4 border-b border-border">
-                    <span className="font-mono text-xs text-muted-foreground">0{oi + 1}</span>
-                    <h3 className="font-medium">{s.name}</h3>
-                    <span className="ml-auto font-mono text-sm" style={{ color: LEVEL_COLORS[s.level] }}>
-                      {s.score}/100 · {s.level}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {[["30 dias", pdi.days30], ["60 dias", pdi.days60], ["90 dias", pdi.days90]].map(([label, actions]) => (
-                      <div key={label}>
-                        <p className="text-xs text-primary font-mono uppercase tracking-widest mb-3">{label}</p>
-                        <ul className="space-y-2.5">
-                          {actions.map((a, i) => (
-                            <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground leading-relaxed">
-                              <span className="text-primary mt-0.5 shrink-0">→</span>
-                              <span>{a}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex-1 border-t border-border" />
+            <span className="text-xs text-muted-foreground font-mono uppercase tracking-widest px-2">Próximo nível</span>
+            <div className="flex-1 border-t border-border" />
           </div>
+          <UpgradeSection
+            profileData={profileData}
+            generalScore={generalScore}
+            generalLevel={generalLevel}
+            profileName={profile.name}
+          />
         </div>
 
-        <div className="bg-card border border-border rounded-sm p-6">
-          <div className="flex items-start justify-between gap-4 mb-4">
-            <div>
-              <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-1">
-                Diagnóstico avançado
-              </p>
-              <h2 className="text-2xl" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>
-                Análise narrativa com IA
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Interpretação aprofundada do seu perfil gerada pelo Claude.
-              </p>
-            </div>
-            <div className="w-10 h-10 bg-primary/10 rounded-sm flex items-center justify-center shrink-0">
-              <Sparkles className="w-5 h-5 text-primary" />
-            </div>
-          </div>
-
-          {!aiText && !aiLoading && (
-            <button
-              onClick={generateAiReport}
-              className="mt-4 flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity"
-            >
-              <Sparkles className="w-4 h-4" />
-              Gerar diagnóstico com IA
-            </button>
-          )}
-
-          {aiLoading && (
-            <div className="mt-6 flex items-center gap-3 text-muted-foreground text-sm">
-              <Loader2 className="w-4 h-4 animate-spin text-primary" />
-              Analisando seu perfil... isso leva alguns segundos.
-            </div>
-          )}
-
-          {aiError && (
-            <div className="mt-4 text-sm text-red-400 bg-red-400/10 border border-red-400/20 rounded-sm px-4 py-3">
-              {aiError}
-              <button
-                onClick={generateAiReport}
-                className="ml-3 underline hover:opacity-70 transition-opacity"
-              >
-                Tentar novamente
-              </button>
-            </div>
-          )}
-
-          {aiText && (
-            <div className="mt-4 pt-4 border-t border-border">
-              <NarrativeReport text={aiText} />
-            </div>
-          )}
-        </div>
-
-        {answers.open_1 && (
-          <div className="bg-card border border-border rounded-sm p-6">
-            <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-5">
-              Reflexões pessoais
-            </p>
-            <div className="space-y-5">
-              {OPEN_QUESTIONS.map(
-                (q, i) =>
-                  answers[`open_${i + 1}`] && (
-                    <div key={i} className={i > 0 ? "pt-5 border-t border-border" : ""}>
-                      <p className="text-xs text-muted-foreground mb-2">{q}</p>
-                      <p className="text-sm leading-relaxed">{answers[`open_${i + 1}`]}</p>
-                    </div>
-                  )
-              )}
-            </div>
-          </div>
-        )}
-
+        {/* Footer */}
         <div className="border-t border-border pt-8 flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">
-            Raio-X de Soft Skills · {new Date().getFullYear()}
-          </p>
-          <button
-            onClick={onReset}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
+          <p className="text-xs text-muted-foreground">Raio-X de Soft Skills · {new Date().getFullYear()}</p>
+          <button onClick={onReset} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <RefreshCw className="w-4 h-4" /> Nova avaliação
           </button>
         </div>
@@ -1048,26 +825,13 @@ export default function App() {
     <>
       {view === "landing" && <Landing onStart={() => setView("profile")} />}
       {view === "profile" && (
-        <ProfileForm
-          onSubmit={(d) => { setProfileData(d); setView("assessment"); }}
-          onBack={() => setView("landing")}
-        />
+        <ProfileForm onSubmit={(d) => { setProfileData(d); setView("assessment"); }} onBack={() => setView("landing")} />
       )}
       {view === "assessment" && (
-        <AssessmentForm
-          answers={answers}
-          onAnswer={handleAnswer}
-          onComplete={handleComplete}
-          onBack={() => setView("profile")}
-        />
+        <AssessmentForm answers={answers} onAnswer={handleAnswer} onComplete={handleComplete} onBack={() => setView("profile")} />
       )}
       {view === "results" && profileData && (
-        <Results
-          profileData={profileData}
-          scores={scores}
-          answers={answers}
-          onReset={handleReset}
-        />
+        <Results profileData={profileData} scores={scores} answers={answers} onReset={handleReset} />
       )}
     </>
   );
