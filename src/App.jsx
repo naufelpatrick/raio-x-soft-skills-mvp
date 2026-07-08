@@ -6,15 +6,14 @@ import {
 import {
   ChevronLeft, ArrowRight, BarChart2, BookOpen, Target,
   Zap, Check, RefreshCw, Sparkles, Loader2, Lock,
-  Brain, Calendar, MessageCircle,
+  Brain, Calendar, MessageCircle, ExternalLink,
 } from "lucide-react";
 
-// ─── CONFIG ──────────────────────────────────────────────────────────────────
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
 const OWNER_WHATSAPP = "5511991106400";
 const PRODUCT_PRICE = "R$ 97";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
-
 const COMPETENCIES = [
   { id: "comunicacao", name: "Comunicação", icon: "💬", desc: "Transmitir ideias com clareza, reduzir ruídos e adaptar a linguagem ao contexto." },
   { id: "empatia", name: "Empatia", icon: "❤️", desc: "Compreender contextos e perspectivas diversas antes de tirar conclusões." },
@@ -29,76 +28,16 @@ const COMPETENCIES = [
 ];
 
 const QUESTIONS = {
-  comunicacao: [
-    "Procuro confirmar se a outra pessoa realmente compreendeu minha mensagem.",
-    "Adapto minha linguagem de acordo com o público com quem estou falando.",
-    "Costumo simplificar assuntos complexos para facilitar o entendimento.",
-    "Escuto atentamente antes de responder.",
-    "Solicito feedback sobre a clareza da minha comunicação.",
-  ],
-  empatia: [
-    "Busco compreender o contexto antes de tirar conclusões sobre alguém.",
-    "Faço perguntas para entender melhor diferentes perspectivas.",
-    "Consigo reconhecer emoções mesmo quando elas não são verbalizadas.",
-    "Evito julgar rapidamente comportamentos ou decisões de outras pessoas.",
-    "Consigo discordar mantendo respeito e abertura ao diálogo.",
-  ],
-  inteligencia_emocional: [
-    "Consigo perceber minhas emoções antes de reagir impulsivamente.",
-    "Mantenho a calma em situações de pressão ou conflito.",
-    "Consigo separar críticas ao meu trabalho de críticas à minha pessoa.",
-    "Faço pausas para refletir antes de responder em momentos difíceis.",
-    "Reconheço quando minhas emoções estão influenciando minhas decisões.",
-  ],
-  pensamento_critico: [
-    "Procuro evidências antes de defender uma opinião.",
-    "Questiono premissas e soluções antes de aceitá-las.",
-    "Consigo diferenciar fatos, opiniões e interpretações.",
-    "Avalio diferentes perspectivas antes de tomar decisões importantes.",
-    "Reviso minhas próprias crenças quando encontro novas informações.",
-  ],
-  colaboracao: [
-    "Compartilho conhecimento e experiências com outras pessoas.",
-    "Consigo construir soluções em conjunto sem necessidade de impor minhas ideias.",
-    "Dou crédito às contribuições de colegas e parceiros.",
-    "Vejo divergências como oportunidades de melhorar soluções.",
-    "Busco alinhamento antes de acelerar decisões importantes.",
-  ],
-  adaptabilidade: [
-    "Consigo me ajustar rapidamente a mudanças de cenário ou prioridades.",
-    "Estou aberto a aprender novas ferramentas e métodos.",
-    "Reavalio processos quando percebo que já não funcionam bem.",
-    "Vejo mudanças como oportunidades de crescimento.",
-    "Consigo manter produtividade mesmo diante de incertezas.",
-  ],
-  escuta_ativa: [
-    "Evito interromper enquanto outra pessoa está falando.",
-    "Demonstro interesse genuíno durante conversas.",
-    "Faço perguntas para aprofundar minha compreensão.",
-    "Observo sinais não verbais durante interações.",
-    "Confirmo se compreendi corretamente o que a outra pessoa quis dizer.",
-  ],
-  lideranca: [
-    "Assumo responsabilidade pelos resultados das minhas decisões.",
-    "Procuro dar exemplo por meio das minhas atitudes.",
-    "Incentivo a participação de outras pessoas nas decisões.",
-    "Crio um ambiente seguro para opiniões diferentes.",
-    "Ofereço feedbacks respeitosos e construtivos.",
-  ],
-  aprendizado: [
-    "Reservo tempo regularmente para aprender algo novo.",
-    "Busco conteúdos fora da minha área principal de atuação.",
-    "Transformo aprendizado em prática.",
-    "Mantenho curiosidade mesmo em assuntos que já domino.",
-    "Estou aberto a rever conhecimentos e opiniões.",
-  ],
-  proposito: [
-    "Consigo enxergar significado no trabalho que realizo.",
-    "Meus valores influenciam minhas decisões profissionais.",
-    "Percebo como meu trabalho impacta outras pessoas.",
-    "Reflito regularmente sobre minha direção profissional.",
-    "Sinto que minhas atividades estão alinhadas ao que considero importante.",
-  ],
+  comunicacao: ["Procuro confirmar se a outra pessoa realmente compreendeu minha mensagem.", "Adapto minha linguagem de acordo com o público com quem estou falando.", "Costumo simplificar assuntos complexos para facilitar o entendimento.", "Escuto atentamente antes de responder.", "Solicito feedback sobre a clareza da minha comunicação."],
+  empatia: ["Busco compreender o contexto antes de tirar conclusões sobre alguém.", "Faço perguntas para entender melhor diferentes perspectivas.", "Consigo reconhecer emoções mesmo quando elas não são verbalizadas.", "Evito julgar rapidamente comportamentos ou decisões de outras pessoas.", "Consigo discordar mantendo respeito e abertura ao diálogo."],
+  inteligencia_emocional: ["Consigo perceber minhas emoções antes de reagir impulsivamente.", "Mantenho a calma em situações de pressão ou conflito.", "Consigo separar críticas ao meu trabalho de críticas à minha pessoa.", "Faço pausas para refletir antes de responder em momentos difíceis.", "Reconheço quando minhas emoções estão influenciando minhas decisões."],
+  pensamento_critico: ["Procuro evidências antes de defender uma opinião.", "Questiono premissas e soluções antes de aceitá-las.", "Consigo diferenciar fatos, opiniões e interpretações.", "Avalio diferentes perspectivas antes de tomar decisões importantes.", "Reviso minhas próprias crenças quando encontro novas informações."],
+  colaboracao: ["Compartilho conhecimento e experiências com outras pessoas.", "Consigo construir soluções em conjunto sem necessidade de impor minhas ideias.", "Dou crédito às contribuições de colegas e parceiros.", "Vejo divergências como oportunidades de melhorar soluções.", "Busco alinhamento antes de acelerar decisões importantes."],
+  adaptabilidade: ["Consigo me ajustar rapidamente a mudanças de cenário ou prioridades.", "Estou aberto a aprender novas ferramentas e métodos.", "Reavalio processos quando percebo que já não funcionam bem.", "Vejo mudanças como oportunidades de crescimento.", "Consigo manter produtividade mesmo diante de incertezas."],
+  escuta_ativa: ["Evito interromper enquanto outra pessoa está falando.", "Demonstro interesse genuíno durante conversas.", "Faço perguntas para aprofundar minha compreensão.", "Observo sinais não verbais durante interações.", "Confirmo se compreendi corretamente o que a outra pessoa quis dizer."],
+  lideranca: ["Assumo responsabilidade pelos resultados das minhas decisões.", "Procuro dar exemplo por meio das minhas atitudes.", "Incentivo a participação de outras pessoas nas decisões.", "Crio um ambiente seguro para opiniões diferentes.", "Ofereço feedbacks respeitosos e construtivos."],
+  aprendizado: ["Reservo tempo regularmente para aprender algo novo.", "Busco conteúdos fora da minha área principal de atuação.", "Transformo aprendizado em prática.", "Mantenho curiosidade mesmo em assuntos que já domino.", "Estou aberto a rever conhecimentos e opiniões."],
+  proposito: ["Consigo enxergar significado no trabalho que realizo.", "Meus valores influenciam minhas decisões profissionais.", "Percebo como meu trabalho impacta outras pessoas.", "Reflito regularmente sobre minha direção profissional.", "Sinto que minhas atividades estão alinhadas ao que considero importante."],
 };
 
 const OPEN_QUESTIONS = [
@@ -132,60 +71,19 @@ const CROSS_ANALYSIS = [
 ];
 
 const PDI_ACTIONS = {
-  comunicacao: {
-    days30: ["Solicitar feedback sobre clareza em reuniões e apresentações.", "Praticar síntese de informações complexas em poucos minutos."],
-    days60: ["Conduzir uma apresentação ou alinhamento de equipe.", "Treinar adaptação da linguagem para públicos diferentes."],
-    days90: ["Mentorar alguém em comunicação profissional.", "Assumir papel de facilitador em discussões importantes."],
-  },
-  empatia: {
-    days30: ["Antes de reagir, perguntar: 'Qual é o contexto dessa pessoa?'", "Praticar escuta sem interrupção em conversas do dia a dia."],
-    days60: ["Conduzir uma conversa difícil com foco na perspectiva do outro.", "Solicitar feedback sobre como as pessoas se sentem em interações com você."],
-    days90: ["Desenvolver um projeto que exija colaboração com diferentes perfis.", "Criar rituais de check-in emocional em times ou reuniões."],
-  },
-  inteligencia_emocional: {
-    days30: ["Iniciar uma prática diária de registro emocional (journaling).", "Identificar os 3 gatilhos emocionais mais frequentes no trabalho."],
-    days60: ["Praticar pausa consciente antes de responder em situações de pressão.", "Buscar um espaço de reflexão (mentoria, terapia ou coaching)."],
-    days90: ["Conduzir uma conversa difícil com regulação emocional consciente.", "Desenvolver um protocolo pessoal para situações de conflito."],
-  },
-  pensamento_critico: {
-    days30: ["Antes de aceitar uma informação, perguntar: 'Quais são as evidências?'", "Ler um artigo de área diferente e identificar premissas."],
-    days60: ["Aplicar uma estrutura de análise (SWOT, 5 Porquês) em um problema real.", "Apresentar dois pontos de vista opostos sobre um tema do seu trabalho."],
-    days90: ["Liderar uma sessão de questionamento de premissas com um time.", "Documentar um processo de decisão com análise crítica explícita."],
-  },
-  colaboracao: {
-    days30: ["Dar crédito público a alguém que contribuiu com uma ideia.", "Propor uma sessão de co-criação em vez de resolver sozinho."],
-    days60: ["Facilitar um alinhamento entre pessoas com perspectivas diferentes.", "Pedir ajuda explícita em algo que normalmente faria sozinho."],
-    days90: ["Liderar um projeto com responsabilidade compartilhada.", "Criar uma rotina de troca de conhecimento no seu time."],
-  },
-  adaptabilidade: {
-    days30: ["Identificar uma crença rígida e questioná-la conscientemente.", "Experimentar uma nova ferramenta ou método de trabalho."],
-    days60: ["Aceitar voluntariamente uma tarefa fora da sua zona de conforto.", "Reavaliar um processo que usa há mais de 6 meses."],
-    days90: ["Liderar uma mudança ou transição dentro do seu contexto.", "Documentar aprendizados de uma situação de incerteza que enfrentou."],
-  },
-  escuta_ativa: {
-    days30: ["Em conversas, praticar não interromper e esperar o silêncio.", "Após reuniões, resumir o que ouviu para confirmar entendimento."],
-    days60: ["Conduzir uma entrevista ou conversa de descoberta com um colega.", "Registrar sinais não verbais que percebeu em uma conversa importante."],
-    days90: ["Facilitar uma sessão onde você escuta mais do que fala.", "Pedir feedback sobre a qualidade da sua escuta a pessoas próximas."],
-  },
-  lideranca: {
-    days30: ["Assumir responsabilidade por uma decisão — mesmo impopular.", "Oferecer um feedback construtivo e respeitoso a alguém."],
-    days60: ["Criar espaço para que outras pessoas expressem opiniões em reuniões.", "Identificar alguém para desenvolver e oferecer apoio estruturado."],
-    days90: ["Liderar um projeto de ponta a ponta com autonomia e responsabilidade.", "Criar uma prática de reconhecimento de contribuições no time."],
-  },
-  aprendizado: {
-    days30: ["Reservar 20 minutos diários para aprendizado fora da área principal.", "Ler ou assistir algo que desafie sua perspectiva atual."],
-    days60: ["Aplicar um aprendizado recente em um projeto real.", "Compartilhar algo que aprendeu com um colega ou time."],
-    days90: ["Desenvolver uma habilidade nova que pode ser medida.", "Criar um plano de desenvolvimento pessoal com metas concretas."],
-  },
-  proposito: {
-    days30: ["Escrever sobre o impacto que seu trabalho gera nas pessoas ao redor.", "Identificar quais atividades te geram mais energia e significado."],
-    days60: ["Ter uma conversa sobre valores com alguém que você admira.", "Conectar seu trabalho atual a um objetivo de médio prazo."],
-    days90: ["Definir um projeto que esteja alinhado aos seus valores.", "Criar rituais de reflexão periódica sobre direção e propósito."],
-  },
+  comunicacao: { days30: ["Solicitar feedback sobre clareza em reuniões e apresentações.", "Praticar síntese de informações complexas em poucos minutos."], days60: ["Conduzir uma apresentação ou alinhamento de equipe.", "Treinar adaptação da linguagem para públicos diferentes."], days90: ["Mentorar alguém em comunicação profissional.", "Assumir papel de facilitador em discussões importantes."] },
+  empatia: { days30: ["Antes de reagir, perguntar: 'Qual é o contexto dessa pessoa?'", "Praticar escuta sem interrupção em conversas do dia a dia."], days60: ["Conduzir uma conversa difícil com foco na perspectiva do outro.", "Solicitar feedback sobre como as pessoas se sentem em interações com você."], days90: ["Desenvolver um projeto que exija colaboração com diferentes perfis.", "Criar rituais de check-in emocional em times ou reuniões."] },
+  inteligencia_emocional: { days30: ["Iniciar uma prática diária de registro emocional (journaling).", "Identificar os 3 gatilhos emocionais mais frequentes no trabalho."], days60: ["Praticar pausa consciente antes de responder em situações de pressão.", "Buscar um espaço de reflexão (mentoria, terapia ou coaching)."], days90: ["Conduzir uma conversa difícil com regulação emocional consciente.", "Desenvolver um protocolo pessoal para situações de conflito."] },
+  pensamento_critico: { days30: ["Antes de aceitar uma informação, perguntar: 'Quais são as evidências?'", "Ler um artigo de área diferente e identificar premissas."], days60: ["Aplicar uma estrutura de análise (SWOT, 5 Porquês) em um problema real.", "Apresentar dois pontos de vista opostos sobre um tema do seu trabalho."], days90: ["Liderar uma sessão de questionamento de premissas com um time.", "Documentar um processo de decisão com análise crítica explícita."] },
+  colaboracao: { days30: ["Dar crédito público a alguém que contribuiu com uma ideia.", "Propor uma sessão de co-criação em vez de resolver sozinho."], days60: ["Facilitar um alinhamento entre pessoas com perspectivas diferentes.", "Pedir ajuda explícita em algo que normalmente faria sozinho."], days90: ["Liderar um projeto com responsabilidade compartilhada.", "Criar uma rotina de troca de conhecimento no seu time."] },
+  adaptabilidade: { days30: ["Identificar uma crença rígida e questioná-la conscientemente.", "Experimentar uma nova ferramenta ou método de trabalho."], days60: ["Aceitar voluntariamente uma tarefa fora da sua zona de conforto.", "Reavaliar um processo que usa há mais de 6 meses."], days90: ["Liderar uma mudança ou transição dentro do seu contexto.", "Documentar aprendizados de uma situação de incerteza que enfrentou."] },
+  escuta_ativa: { days30: ["Em conversas, praticar não interromper e esperar o silêncio.", "Após reuniões, resumir o que ouviu para confirmar entendimento."], days60: ["Conduzir uma entrevista ou conversa de descoberta com um colega.", "Registrar sinais não verbais que percebeu em uma conversa importante."], days90: ["Facilitar uma sessão onde você escuta mais do que fala.", "Pedir feedback sobre a qualidade da sua escuta a pessoas próximas."] },
+  lideranca: { days30: ["Assumir responsabilidade por uma decisão — mesmo impopular.", "Oferecer um feedback construtivo e respeitoso a alguém."], days60: ["Criar espaço para que outras pessoas expressem opiniões em reuniões.", "Identificar alguém para desenvolver e oferecer apoio estruturado."], days90: ["Liderar um projeto de ponta a ponta com autonomia e responsabilidade.", "Criar uma prática de reconhecimento de contribuições no time."] },
+  aprendizado: { days30: ["Reservar 20 minutos diários para aprendizado fora da área principal.", "Ler ou assistir algo que desafie sua perspectiva atual."], days60: ["Aplicar um aprendizado recente em um projeto real.", "Compartilhar algo que aprendeu com um colega ou time."], days90: ["Desenvolver uma habilidade nova que pode ser medida.", "Criar um plano de desenvolvimento pessoal com metas concretas."] },
+  proposito: { days30: ["Escrever sobre o impacto que seu trabalho gera nas pessoas ao redor.", "Identificar quais atividades te geram mais energia e significado."], days60: ["Ter uma conversa sobre valores com alguém que você admira.", "Conectar seu trabalho atual a um objetivo de médio prazo."], days90: ["Definir um projeto que esteja alinhado aos seus valores.", "Criar rituais de reflexão periódica sobre direção e propósito."] },
 };
 
 // ─── SCORING ─────────────────────────────────────────────────────────────────
-
 function getLevel(score) {
   if (score <= 20) return "Inicial";
   if (score <= 40) return "Emergente";
@@ -194,13 +92,7 @@ function getLevel(score) {
   return "Referência";
 }
 
-const LEVEL_COLORS = {
-  Inicial: "#f87171",
-  Emergente: "#fb923c",
-  Consistente: "#facc15",
-  Avançado: "#818cf8",
-  Referência: "#34d399",
-};
+const LEVEL_COLORS = { Inicial: "#f87171", Emergente: "#fb923c", Consistente: "#facc15", Avançado: "#818cf8", Referência: "#34d399" };
 
 function calculateScores(answers) {
   return COMPETENCIES.map((c) => {
@@ -212,8 +104,7 @@ function calculateScores(answers) {
 
 function getProfileResult(scores) {
   const map = Object.fromEntries(scores.map((s) => [s.id, s.score]));
-  let best = PROFILES[0];
-  let bestAvg = -1;
+  let best = PROFILES[0]; let bestAvg = -1;
   for (const p of PROFILES) {
     const avg = p.competencies.reduce((sum, id) => sum + (map[id] || 0), 0) / p.competencies.length;
     if (avg > bestAvg) { bestAvg = avg; best = p; }
@@ -223,47 +114,102 @@ function getProfileResult(scores) {
 
 function getCrossResults(scores) {
   const map = Object.fromEntries(scores.map((s) => [s.id, s.score]));
-  return CROSS_ANALYSIS.filter(
-    (r) => r.high.every((id) => (map[id] || 0) >= 60) && r.low.every((id) => (map[id] || 0) <= 50)
-  ).slice(0, 4);
+  return CROSS_ANALYSIS.filter((r) => r.high.every((id) => (map[id] || 0) >= 60) && r.low.every((id) => (map[id] || 0) <= 50)).slice(0, 4);
+}
+
+// ─── SHARED NAV ───────────────────────────────────────────────────────────────
+function TopNav({ onAbout, onStart, rightSlot }) {
+  return (
+    <nav className="flex items-center justify-between px-6 lg:px-12 py-5 border-b border-border">
+      <div className="flex items-center gap-2.5">
+        <div className="w-7 h-7 bg-primary rounded-sm flex items-center justify-center">
+          <BarChart2 className="w-3.5 h-3.5 text-primary-foreground" />
+        </div>
+        <span className="text-sm font-medium tracking-tight">Raio-X de Soft Skills</span>
+      </div>
+      <div className="flex items-center gap-4">
+        {onAbout && (
+          <button onClick={onAbout} className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
+            Sobre nós
+          </button>
+        )}
+        {rightSlot || (onStart && (
+          <button onClick={onStart} className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity">
+            Começar <ArrowRight className="w-4 h-4" />
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+// ─── SHARED FOOTER ────────────────────────────────────────────────────────────
+function PageFooter({ onAbout }) {
+  return (
+    <footer className="border-t border-border px-6 lg:px-12 py-8">
+      <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-5 h-5 bg-primary rounded-sm flex items-center justify-center">
+              <BarChart2 className="w-2.5 h-2.5 text-primary-foreground" />
+            </div>
+            <span className="text-xs font-medium">Raio-X de Soft Skills</span>
+          </div>
+          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} · Ferramenta de autoconhecimento profissional</p>
+        </div>
+        <div className="flex items-center gap-6">
+          {onAbout && (
+            <button onClick={onAbout} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              Sobre nós
+            </button>
+          )}
+          <a href={`https://wa.me/${OWNER_WHATSAPP}`} target="_blank" rel="noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+            Contato
+          </a>
+        </div>
+      </div>
+    </footer>
+  );
 }
 
 // ─── LANDING ─────────────────────────────────────────────────────────────────
-
 const DEMO_SCORES = [85, 72, 68, 91, 77, 63, 88, 74, 80, 59];
 
-function Landing({ onStart }) {
+const RESEARCH_STATS = [
+  { value: "89%", label: "dos profissionais que falham em novas posições falham por razões comportamentais, não técnicas.", source: "LinkedIn Global Talent Trends, 2024" },
+  { value: "Top 5", label: "das habilidades mais demandadas até 2030 incluem IE, pensamento crítico e adaptabilidade.", source: "WEF Future of Jobs Report, 2025" },
+  { value: "90%", label: "do desempenho em posições de liderança é explicado pela inteligência emocional.", source: "Daniel Goleman — Harvard Business Review" },
+  { value: "26×", label: "mais rápido: o crescimento da demanda por habilidades emocionais vs. técnicas até 2030.", source: "McKinsey Global Institute, 2019" },
+];
+
+function Landing({ onStart, onAbout }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <nav className="flex items-center justify-between px-6 lg:px-12 py-5 border-b border-border">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 bg-primary rounded-sm flex items-center justify-center">
-            <BarChart2 className="w-3.5 h-3.5 text-primary-foreground" />
-          </div>
-          <span className="text-sm font-medium tracking-tight">Raio-X de Soft Skills</span>
-        </div>
-        <button onClick={onStart} className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity">
-          Começar <ArrowRight className="w-4 h-4" />
-        </button>
-      </nav>
+      <TopNav onAbout={onAbout} onStart={onStart} />
 
-      <section className="grid grid-cols-1 lg:grid-cols-[1fr_420px] min-h-[88vh]">
-        <div className="flex flex-col justify-center px-6 lg:px-16 py-20">
-          <div className="inline-flex items-center gap-2 border border-primary/30 text-primary px-3 py-1 rounded-full text-xs font-medium mb-10 w-fit">
+      {/* ── HERO ── */}
+      <section className="grid grid-cols-1 lg:grid-cols-[1fr_400px] min-h-[90vh] border-b border-border">
+        <div className="flex flex-col justify-center px-6 lg:px-16 py-24">
+          <div className="inline-flex items-center gap-2 border border-primary/30 text-primary px-3 py-1 rounded-full text-xs font-medium mb-12 w-fit">
             <Zap className="w-3 h-3" /> Avaliação gratuita · 15 minutos
           </div>
-          <h1 className="text-5xl lg:text-[64px] leading-[1.1] mb-6 tracking-tight" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>
-            Descubra o mapa<br />das suas{" "}
-            <em className="text-primary not-italic">competências humanas</em>
+
+          <h1 className="leading-[1.05] mb-8 tracking-tight" style={{ fontFamily: "var(--font-display, Georgia, serif)", fontSize: "clamp(3rem, 6vw, 5.5rem)" }}>
+            Descubra o que<br />
+            <em className="not-italic" style={{ color: "var(--color-primary, #818CF8)" }}>move</em>
+            {" — ou trava —"}<br />
+            sua carreira.
           </h1>
-          <p className="text-muted-foreground text-lg leading-relaxed mb-10 max-w-lg">
-            50 perguntas, 10 competências, 1 diagnóstico preciso. Identifique seus pontos fortes, oportunidades e receba um plano de ação personalizado.
+
+          <p className="text-muted-foreground text-lg leading-relaxed mb-12 max-w-md">
+            50 perguntas calibradas. 10 competências mapeadas. 1 diagnóstico preciso sobre quem você é — e quem pode se tornar.
           </p>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-            <button onClick={onStart} className="flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-sm font-medium hover:opacity-90 transition-opacity">
-              Iniciar diagnóstico <ArrowRight className="w-5 h-5" />
+
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+            <button onClick={onStart} className="flex items-center gap-2.5 bg-primary text-primary-foreground px-8 py-4 rounded-sm font-medium hover:opacity-90 transition-opacity text-sm">
+              Fazer o diagnóstico <ArrowRight className="w-4 h-4" />
             </button>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
               {["Gratuito", "Sem cadastro", "Resultado imediato"].map((t) => (
                 <span key={t} className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-primary" /> {t}</span>
               ))}
@@ -271,43 +217,99 @@ function Landing({ onStart }) {
           </div>
         </div>
 
-        <div className="hidden lg:flex items-center justify-center bg-card border-l border-border px-10 py-16">
-          <div className="w-full space-y-3">
-            <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-6">Prévia do diagnóstico</p>
+        {/* Preview card */}
+        <div className="hidden lg:flex items-center justify-center bg-card border-l border-border px-8 py-16">
+          <div className="w-full space-y-2.5">
+            <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-6">Prévia · diagnóstico</p>
             {COMPETENCIES.map((c, i) => (
               <div key={c.id} className="flex items-center gap-3">
-                <span className="text-xs text-muted-foreground w-36 truncate text-right">{c.name}</span>
-                <div className="flex-1 bg-secondary rounded-full h-1.5">
-                  <div className="h-1.5 rounded-full" style={{ width: `${DEMO_SCORES[i]}%`, backgroundColor: LEVEL_COLORS[getLevel(DEMO_SCORES[i])], opacity: 0.7 }} />
+                <span className="text-[11px] text-muted-foreground w-36 truncate text-right leading-tight">{c.name}</span>
+                <div className="flex-1 bg-secondary rounded-full h-1">
+                  <div className="h-1 rounded-full" style={{ width: `${DEMO_SCORES[i]}%`, backgroundColor: LEVEL_COLORS[getLevel(DEMO_SCORES[i])], opacity: 0.8 }} />
                 </div>
-                <span className="text-xs font-mono text-muted-foreground w-6 text-right">{DEMO_SCORES[i]}</span>
+                <span className="text-[11px] font-mono text-muted-foreground w-5 text-right">{DEMO_SCORES[i]}</span>
               </div>
             ))}
-            <div className="pt-5 mt-2 border-t border-border">
-              <div className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-1">Índice geral</div>
-              <div className="text-4xl font-mono font-medium text-primary">77</div>
-              <div className="text-sm text-muted-foreground mt-0.5">Nível <span className="text-primary">Avançado</span></div>
+            <div className="pt-6 mt-2 border-t border-border">
+              <div className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-2">Índice geral</div>
+              <div className="font-mono font-medium text-primary" style={{ fontSize: "3rem", lineHeight: 1 }}>77</div>
+              <div className="text-sm text-muted-foreground mt-1.5">Nível <span className="text-primary font-medium">Avançado</span></div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="px-6 lg:px-16 py-20 border-t border-border">
+      {/* ── RESEARCH STATS ── */}
+      <section className="border-b border-border">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          {RESEARCH_STATS.map((s, i) => (
+            <div key={i} className={`px-8 py-10 ${i < RESEARCH_STATS.length - 1 ? "border-b sm:border-b-0 sm:border-r border-border" : ""}`}>
+              <div className="font-mono font-medium mb-3" style={{ fontSize: "2.5rem", lineHeight: 1, color: "#FBBF24" }}>{s.value}</div>
+              <p className="text-sm text-foreground/80 leading-relaxed mb-3">{s.label}</p>
+              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">{s.source}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── WHY SECTION ── */}
+      <section className="px-6 lg:px-16 py-24 border-b border-border">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-16 items-start">
+          <div>
+            <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-6">Por que isso importa</p>
+            <h2 className="leading-[1.1] mb-0" style={{ fontFamily: "var(--font-display, Georgia, serif)", fontSize: "clamp(2rem, 3.5vw, 2.8rem)" }}>
+              Em um mundo de habilidades técnicas descartáveis, o que sobrevive é{" "}
+              <em className="not-italic text-primary">genuinamente humano.</em>
+            </h2>
+          </div>
+          <div className="space-y-5 text-sm text-muted-foreground leading-relaxed">
+            <p>
+              Ferramentas mudam. Frameworks ficam obsoletos. Linguagens de programação vêm e vão. Mas a capacidade de se comunicar com clareza, de ouvir de verdade, de se adaptar sem perder o fio — essas habilidades nunca saem de moda.
+            </p>
+            <p>
+              O problema é que tratamos competências humanas como algo que "se tem ou não se tem". Raramente as mapeamos com a mesma seriedade com que avaliamos portfólios ou certificações. O resultado: profissionais talentosos travados por pontos cegos que nunca foram nomeados.
+            </p>
+            <p>
+              Para designers, isso é ainda mais crítico. Empatia, comunicação, escuta ativa e pensamento crítico não são soft skills adjacentes ao nosso trabalho — <strong className="text-foreground font-medium">elas são o trabalho.</strong> Um diagnóstico honesto dessas dimensões é, talvez, a ferramenta de carreira mais subutilizada da nossa área.
+            </p>
+            <p>
+              O Raio-X de Soft Skills nasceu dessa lacuna. Uma avaliação séria, baseada em pesquisa, construída por designers para designers — com resultado imediato e plano de ação concreto.
+            </p>
+            <div className="pt-4 border-t border-border space-y-1.5">
+              {[
+                "LinkedIn Global Talent Trends Report, 2024",
+                "World Economic Forum — Future of Jobs Report, 2025",
+                "Goleman, D. (1998). What Makes a Leader? Harvard Business Review.",
+                "McKinsey Global Institute — The Future of Work in America, 2019",
+              ].map((ref) => (
+                <p key={ref} className="text-[10px] font-mono text-muted-foreground/70 flex items-start gap-1.5">
+                  <ExternalLink className="w-2.5 h-2.5 shrink-0 mt-0.5 opacity-50" /> {ref}
+                </p>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ── */}
+      <section className="px-6 lg:px-16 py-24 border-b border-border">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-4">Como funciona</p>
-          <h2 className="text-3xl lg:text-4xl mb-14" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Três etapas para um diagnóstico preciso</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-4">Como funciona</p>
+          <h2 className="text-3xl mb-16" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Três etapas. Quinze minutos.</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-border">
             {[
-              { step: "01", Icon: BookOpen, title: "Avaliação", desc: "Responda 50 afirmações sobre comportamentos reais no trabalho, em escala de 1 a 5." },
-              { step: "02", Icon: BarChart2, title: "Diagnóstico", desc: "Receba seu score em 10 competências, seu perfil predominante e padrões comportamentais." },
-              { step: "03", Icon: Target, title: "Plano de Ação", desc: "Um PDI personalizado com ações concretas para 30, 60 e 90 dias — disponível no plano completo." },
+              { step: "01", Icon: BookOpen, title: "Avaliação", desc: "50 afirmações sobre comportamentos reais no trabalho. Escala Likert de 1 a 5. Sem respostas certas ou erradas." },
+              { step: "02", Icon: BarChart2, title: "Diagnóstico imediato", desc: "Score em 10 competências, perfil predominante, forças, oportunidades e padrões comportamentais — grátis." },
+              { step: "03", Icon: Target, title: "Plano completo", desc: "PDI com ações para 30, 60 e 90 dias + análise narrativa com IA + 1 sessão de mentoria ao vivo. Plano pago." },
             ].map(({ step, Icon, title, desc }) => (
-              <div key={step}>
-                <div className="flex items-center gap-3 mb-5">
+              <div key={step} className="bg-background px-8 py-10">
+                <div className="flex items-center gap-3 mb-6">
                   <span className="font-mono text-xs text-muted-foreground">{step}</span>
-                  <div className="w-9 h-9 bg-primary/10 rounded-sm flex items-center justify-center"><Icon className="w-4 h-4 text-primary" /></div>
+                  <div className="w-8 h-8 bg-primary/10 rounded-sm flex items-center justify-center">
+                    <Icon className="w-3.5 h-3.5 text-primary" />
+                  </div>
                 </div>
-                <h3 className="font-medium mb-2">{title}</h3>
+                <h3 className="font-medium mb-2 text-sm">{title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
               </div>
             ))}
@@ -315,21 +317,143 @@ function Landing({ onStart }) {
         </div>
       </section>
 
-      <section className="px-6 lg:px-16 py-20 bg-card border-t border-border">
+      {/* ── CTA ── */}
+      <section className="px-6 lg:px-16 py-24 bg-card border-b border-border">
         <div className="max-w-2xl">
-          <h2 className="text-3xl mb-4" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Pronto para se conhecer melhor?</h2>
-          <p className="text-muted-foreground mb-8">A avaliação leva cerca de 15 minutos e o resultado é imediato.</p>
-          <button onClick={onStart} className="flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-sm font-medium hover:opacity-90 transition-opacity">
-            Iniciar agora <ArrowRight className="w-5 h-5" />
+          <h2 className="text-4xl mb-4" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>
+            Você sabe criar.<br />Agora conheça quem cria.
+          </h2>
+          <p className="text-muted-foreground mb-10 text-lg leading-relaxed">
+            Designers excepcionais dominam ferramentas — mas também dominam a si mesmos. Comece pelo diagnóstico.
+          </p>
+          <button onClick={onStart} className="flex items-center gap-2.5 bg-primary text-primary-foreground px-8 py-4 rounded-sm font-medium hover:opacity-90 transition-opacity text-sm">
+            Fazer o diagnóstico — grátis <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </section>
+
+      <PageFooter onAbout={onAbout} />
+    </div>
+  );
+}
+
+// ─── ABOUT PAGE ───────────────────────────────────────────────────────────────
+const MENTORS = [
+  {
+    initials: "PN",
+    name: "Patrick A. G. Naufel",
+    role: "Designer · Professor · Mentor",
+    linkedin: "https://www.linkedin.com/in/naufelpatrick",
+    bio: "Designer há 20 anos e especialista em UX e Produtos Digitais, Patrick une duas décadas de prática com o rigor de quem também ensina — é professor universitário há mais de 5 anos e mentor ativo na Fóton/Caixa. Sua convicção: o autoconhecimento é o primeiro movimento de qualquer evolução profissional real.",
+    highlights: ["20 anos em design", "UX & Produtos Digitais", "Professor universitário", "Mentor na Fóton/Caixa"],
+  },
+  {
+    initials: "CA",
+    name: "Carlos Guilherme Alencar",
+    role: "Designer · Líder de Mentores",
+    linkedin: "https://www.linkedin.com/in/ocarlosguilherme/",
+    bio: "Designer de UI/UX há 8 anos com domínio profundo em interfaces, prototipagem e design systems, Carlos é Líder de Mentores na Fóton/Caixa. Para ele, design centrado no usuário começa pelo autoconhecimento de quem cria — e equipes excelentes são feitas de pessoas que sabem onde precisam crescer.",
+    highlights: ["8 anos em UI/UX", "Design systems", "Prototipagem", "Líder de mentores na Fóton/Caixa"],
+  },
+];
+
+function AboutPage({ onBack, onStart }) {
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <TopNav
+        onAbout={null}
+        rightSlot={
+          <button onClick={onBack} className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm transition-colors">
+            <ChevronLeft className="w-4 h-4" /> Voltar
+          </button>
+        }
+      />
+
+      {/* Header */}
+      <section className="px-6 lg:px-16 py-24 border-b border-border">
+        <div className="max-w-3xl">
+          <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-6">Sobre nós</p>
+          <h1 className="leading-[1.1] mb-6" style={{ fontFamily: "var(--font-display, Georgia, serif)", fontSize: "clamp(2.5rem, 5vw, 4rem)" }}>
+            Dois designers que acreditam no poder do autoconhecimento.
+          </h1>
+          <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl">
+            O Raio-X de Soft Skills nasceu da observação de um padrão recorrente: profissionais talentosos travando não por falta de técnica, mas por falta de consciência sobre suas próprias competências humanas. Construímos a ferramenta que gostaríamos de ter tido.
+          </p>
+        </div>
+      </section>
+
+      {/* Mentor cards */}
+      <section className="px-6 lg:px-16 py-20 border-b border-border">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-px bg-border">
+          {MENTORS.map((m) => (
+            <div key={m.name} className="bg-background p-10">
+              {/* Avatar */}
+              <div className="w-14 h-14 rounded-sm bg-primary flex items-center justify-center mb-6">
+                <span className="font-mono font-medium text-primary-foreground text-lg">{m.initials}</span>
+              </div>
+
+              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1">{m.role}</p>
+              <h3 className="text-xl font-medium mb-1" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>{m.name}</h3>
+
+              <a href={m.linkedin} target="_blank" rel="noreferrer"
+                className="inline-flex items-center gap-1.5 text-[11px] text-primary hover:opacity-70 transition-opacity font-mono mb-6">
+                LinkedIn <ExternalLink className="w-2.5 h-2.5" />
+              </a>
+
+              <p className="text-sm text-muted-foreground leading-relaxed mb-6">{m.bio}</p>
+
+              <div className="flex flex-wrap gap-2">
+                {m.highlights.map((h) => (
+                  <span key={h} className="text-[11px] bg-secondary text-muted-foreground px-3 py-1 rounded-full">{h}</span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Mission */}
+      <section className="px-6 lg:px-16 py-20 border-b border-border">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-16 items-start">
+          <div>
+            <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-4">Nossa missão</p>
+            <h2 className="text-2xl leading-snug" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>
+              Tornar o autoconhecimento profissional acessível, preciso e acionável.
+            </h2>
+          </div>
+          <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
+            <p>
+              Existem inúmeras ferramentas para avaliar habilidades técnicas. Poucas — com seriedade e profundidade — avaliam o que realmente diferencia profissionais ao longo do tempo: como pensam, como se relacionam, como reagem sob pressão.
+            </p>
+            <p>
+              O Raio-X de Soft Skills é nossa resposta a essa lacuna. Uma ferramenta construída com rigor metodológico, linguagem humana e resultado acionável. Não um quiz de entretenimento — um diagnóstico profissional que pode ser o ponto de inflexão em uma carreira.
+            </p>
+            <p>
+              Nasceu de anos de experiência em design, mentoria e ensino. E foi feito especialmente para quem vive de criar — porque criar bem começa por se conhecer bem.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="px-6 lg:px-16 py-20 bg-card">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8">
+          <div>
+            <h3 className="text-2xl mb-2" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Pronto para começar?</h3>
+            <p className="text-sm text-muted-foreground">O diagnóstico é gratuito e leva 15 minutos.</p>
+          </div>
+          <button onClick={onStart} className="flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-sm font-medium hover:opacity-90 transition-opacity text-sm shrink-0">
+            Fazer o diagnóstico <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      </section>
+
+      <PageFooter onAbout={null} />
     </div>
   );
 }
 
 // ─── PROFILE FORM ─────────────────────────────────────────────────────────────
-
 function ProfileForm({ onSubmit, onBack }) {
   const [form, setForm] = useState({ name: "", age: "", experience: "", currentRole: "", professionalLevel: "", mainArea: "", careerGoal: "", currentChallenge: "" });
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
@@ -385,7 +509,6 @@ function ProfileForm({ onSubmit, onBack }) {
 }
 
 // ─── ASSESSMENT ───────────────────────────────────────────────────────────────
-
 function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
   const [step, setStep] = useState(0);
   const TOTAL = 11;
@@ -398,17 +521,8 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
   };
 
   const progress = Math.round((step / TOTAL) * 100);
-
-  const advance = () => {
-    if (!stepAnswered()) return;
-    if (step < 10) { setStep((s) => s + 1); window.scrollTo(0, 0); }
-    else onComplete();
-  };
-
-  const retreat = () => {
-    if (step === 0) onBack();
-    else { setStep((s) => s - 1); window.scrollTo(0, 0); }
-  };
+  const advance = () => { if (!stepAnswered()) return; if (step < 10) { setStep((s) => s + 1); window.scrollTo(0, 0); } else onComplete(); };
+  const retreat = () => { if (step === 0) onBack(); else { setStep((s) => s - 1); window.scrollTo(0, 0); } };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -417,8 +531,8 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
           <ChevronLeft className="w-4 h-4" /> {step === 0 ? "Voltar" : "Anterior"}
         </button>
         <div className="flex-1 flex items-center gap-3">
-          <div className="flex-1 bg-secondary rounded-full h-1">
-            <div className="bg-primary h-1 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
+          <div className="flex-1 bg-secondary rounded-full h-px">
+            <div className="bg-primary h-px rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
           </div>
           <span className="text-xs text-muted-foreground font-mono shrink-0">{step + 1}/{TOTAL}</span>
         </div>
@@ -426,27 +540,27 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
       <div className="max-w-2xl mx-auto px-6 py-12">
         {!isOpen ? (
           <>
-            <div className="flex items-start gap-4 mb-8">
-              <div className="w-11 h-11 bg-primary/10 rounded-sm flex items-center justify-center text-xl shrink-0">{competency.icon}</div>
+            <div className="flex items-start gap-4 mb-10">
+              <div className="w-10 h-10 bg-primary/10 rounded-sm flex items-center justify-center text-lg shrink-0">{competency.icon}</div>
               <div>
-                <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-1">Competência {step + 1}/10</p>
+                <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-1">Competência {step + 1} de 10</p>
                 <h2 className="text-2xl font-medium">{competency.name}</h2>
                 <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{competency.desc}</p>
               </div>
             </div>
-            <div className="space-y-8">
+            <div className="space-y-10">
               {QUESTIONS[competency.id].map((q, qi) => {
                 const key = `${competency.id}_${qi + 1}`;
                 const val = answers[key];
                 return (
                   <div key={qi}>
-                    <p className="text-sm leading-relaxed mb-4 text-foreground/90">{q}</p>
+                    <p className="text-sm leading-relaxed mb-5 text-foreground/90">{q}</p>
                     <div className="flex gap-2">
                       {[1, 2, 3, 4, 5].map((v) => (
                         <button key={v} onClick={() => onAnswer(key, v)}
-                          className={`flex-1 flex flex-col items-center gap-1.5 py-3 rounded-sm border text-sm transition-all ${val === v ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"}`}>
-                          <span className="font-mono font-medium">{v}</span>
-                          <span className="text-[10px] leading-tight text-center hidden sm:block px-1">{LIKERT_LABELS[v - 1]}</span>
+                          className={`flex-1 flex flex-col items-center gap-1.5 py-3.5 rounded-sm border text-sm transition-all ${val === v ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"}`}>
+                          <span className="font-mono font-medium text-base">{v}</span>
+                          <span className="text-[9px] leading-tight text-center hidden sm:block px-1 opacity-70">{LIKERT_LABELS[v - 1]}</span>
                         </button>
                       ))}
                     </div>
@@ -457,8 +571,8 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
           </>
         ) : (
           <>
-            <div className="mb-8">
-              <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-2">Etapa 11/11</p>
+            <div className="mb-10">
+              <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-2">Etapa 11 de 11</p>
               <h2 className="text-3xl" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Reflexão final</h2>
               <p className="text-sm text-muted-foreground mt-2">Três perguntas abertas para aprofundar o diagnóstico.</p>
             </div>
@@ -474,10 +588,10 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
             </div>
           </>
         )}
-        <div className="mt-12">
+        <div className="mt-14">
           <button onClick={advance} disabled={!stepAnswered()}
-            className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-4 rounded-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
-            {step < 10 ? "Próxima competência" : "Ver meu diagnóstico"} <ArrowRight className="w-5 h-5" />
+            className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-4 rounded-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed text-sm">
+            {step < 10 ? "Próxima competência" : "Ver meu diagnóstico"} <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -486,39 +600,20 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
 }
 
 // ─── UPGRADE SECTION ──────────────────────────────────────────────────────────
-
 function UpgradeSection({ profileData, generalScore, generalLevel, profileName }) {
   const [showForm, setShowForm] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [lead, setLead] = useState({ name: profileData?.name || "", email: "", whatsapp: "" });
   const [sending, setSending] = useState(false);
-
   const inputCls = "w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors";
   const labelCls = "block text-xs text-muted-foreground font-mono uppercase tracking-wider mb-2";
-
   const canSubmit = lead.name.trim() && lead.email.trim() && lead.whatsapp.trim();
 
   function handleSubmit() {
     if (!canSubmit) return;
     setSending(true);
-
-    const msg = [
-      `🎯 *Nova lead — Diagnóstico Completo*`,
-      ``,
-      `*Nome:* ${lead.name}`,
-      `*Email:* ${lead.email}`,
-      `*WhatsApp:* ${lead.whatsapp}`,
-      ``,
-      `*Cargo:* ${profileData?.currentRole || "-"} (${profileData?.professionalLevel || "-"})`,
-      `*Área:* ${profileData?.mainArea || "-"}`,
-      `*Índice geral:* ${generalScore}/100 — ${generalLevel}`,
-      `*Perfil:* ${profileName}`,
-      ``,
-      `_Aguardando confirmação de pagamento._`,
-    ].join("\n");
-
-    const url = `https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent(msg)}`;
-    window.open(url, "_blank");
+    const msg = [`🎯 *Nova lead — Diagnóstico Completo*`, ``, `*Nome:* ${lead.name}`, `*Email:* ${lead.email}`, `*WhatsApp:* ${lead.whatsapp}`, ``, `*Cargo:* ${profileData?.currentRole || "-"} (${profileData?.professionalLevel || "-"})`, `*Área:* ${profileData?.mainArea || "-"}`, `*Índice geral:* ${generalScore}/100 — ${generalLevel}`, `*Perfil:* ${profileName}`, ``, `_Aguardando confirmação de pagamento._`].join("\n");
+    window.open(`https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent(msg)}`, "_blank");
     setSending(false);
     setSubmitted(true);
   }
@@ -531,9 +626,9 @@ function UpgradeSection({ profileData, generalScore, generalLevel, profileName }
 
   if (submitted) {
     return (
-      <div className="bg-card border border-primary/30 rounded-sm p-8 text-center">
-        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <MessageCircle className="w-6 h-6 text-primary" />
+      <div className="bg-card border border-primary/30 rounded-sm p-10 text-center">
+        <div className="w-12 h-12 bg-primary/10 rounded-sm flex items-center justify-center mx-auto mb-5">
+          <MessageCircle className="w-5 h-5 text-primary" />
         </div>
         <h3 className="text-xl font-medium mb-2" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Mensagem enviada!</h3>
         <p className="text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">
@@ -544,81 +639,56 @@ function UpgradeSection({ profileData, generalScore, generalLevel, profileName }
   }
 
   return (
-    <div className="relative rounded-sm overflow-hidden border border-primary/20">
-      {/* Header gradient */}
-      <div className="bg-gradient-to-br from-primary/15 via-primary/5 to-transparent p-8 border-b border-border">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
+    <div className="rounded-sm overflow-hidden border border-primary/20">
+      <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-8 lg:p-10 border-b border-border">
+        <div className="flex items-start justify-between gap-6 flex-wrap mb-8">
           <div>
-            <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs px-3 py-1 rounded-full font-medium mb-3">
-              <Lock className="w-3 h-3" /> Conteúdo exclusivo
+            <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-[10px] px-3 py-1 rounded-full font-mono uppercase tracking-widest mb-4">
+              <Lock className="w-2.5 h-2.5" /> Conteúdo exclusivo
             </div>
-            <h2 className="text-2xl lg:text-3xl mb-2" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>
-              Diagnóstico Completo
-            </h2>
-            <p className="text-muted-foreground text-sm max-w-lg">
-              Vá além dos números. Receba uma análise narrativa personalizada, um plano de ação concreto e uma sessão de mentoria para transformar o diagnóstico em evolução real.
+            <h2 className="text-2xl lg:text-3xl mb-2" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Diagnóstico Completo</h2>
+            <p className="text-sm text-muted-foreground max-w-lg leading-relaxed">
+              Vá além dos números. Análise narrativa personalizada, plano de ação concreto e uma sessão de mentoria para transformar o diagnóstico em evolução real.
             </p>
           </div>
           <div className="text-right shrink-0">
-            <div className="text-3xl font-mono font-medium text-foreground">{PRODUCT_PRICE}</div>
-            <div className="text-xs text-muted-foreground mt-1">pagamento único</div>
+            <div className="text-3xl font-mono font-medium">{PRODUCT_PRICE}</div>
+            <div className="text-xs text-muted-foreground mt-1 font-mono">pagamento único</div>
           </div>
         </div>
-
-        {/* Benefits */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {benefits.map(({ Icon, label, desc }) => (
             <div key={label} className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-primary/10 rounded-sm flex items-center justify-center shrink-0 mt-0.5">
-                <Icon className="w-4 h-4 text-primary" />
+              <div className="w-7 h-7 bg-primary/10 rounded-sm flex items-center justify-center shrink-0 mt-0.5">
+                <Icon className="w-3.5 h-3.5 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground mb-0.5">{label}</p>
+                <p className="text-sm font-medium mb-0.5">{label}</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
               </div>
             </div>
           ))}
         </div>
       </div>
-
-      {/* CTA / Form */}
-      <div className="p-8">
+      <div className="p-8 lg:p-10">
         {!showForm ? (
-          <button onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-sm font-medium hover:opacity-90 transition-opacity">
+          <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-primary text-primary-foreground px-7 py-3.5 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity">
             <Sparkles className="w-4 h-4" /> Quero o diagnóstico completo
           </button>
         ) : (
           <div className="max-w-md">
-            <p className="text-sm text-muted-foreground mb-6">
-              Preencha seus dados e abriremos uma conversa no WhatsApp para finalizar o pagamento.
-            </p>
+            <p className="text-sm text-muted-foreground mb-6">Preencha seus dados e abriremos uma conversa no WhatsApp para finalizar o pagamento.</p>
             <div className="space-y-4">
-              <div>
-                <label className={labelCls}>Nome completo</label>
-                <input type="text" value={lead.name} onChange={(e) => setLead((l) => ({ ...l, name: e.target.value }))} placeholder="Seu nome" className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>E-mail</label>
-                <input type="email" value={lead.email} onChange={(e) => setLead((l) => ({ ...l, email: e.target.value }))} placeholder="seu@email.com" className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>WhatsApp (com DDD)</label>
-                <input type="tel" value={lead.whatsapp} onChange={(e) => setLead((l) => ({ ...l, whatsapp: e.target.value }))} placeholder="(11) 99999-9999" className={inputCls} />
-              </div>
+              <div><label className={labelCls}>Nome completo</label><input type="text" value={lead.name} onChange={(e) => setLead((l) => ({ ...l, name: e.target.value }))} placeholder="Seu nome" className={inputCls} /></div>
+              <div><label className={labelCls}>E-mail</label><input type="email" value={lead.email} onChange={(e) => setLead((l) => ({ ...l, email: e.target.value }))} placeholder="seu@email.com" className={inputCls} /></div>
+              <div><label className={labelCls}>WhatsApp (com DDD)</label><input type="tel" value={lead.whatsapp} onChange={(e) => setLead((l) => ({ ...l, whatsapp: e.target.value }))} placeholder="(11) 99999-9999" className={inputCls} /></div>
               <div className="flex gap-3 pt-2">
-                <button onClick={handleSubmit} disabled={!canSubmit || sending}
-                  className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
-                  {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />}
-                  Confirmar interesse
+                <button onClick={handleSubmit} disabled={!canSubmit || sending} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                  {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />} Confirmar interesse
                 </button>
-                <button onClick={() => setShowForm(false)} className="px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Cancelar
-                </button>
+                <button onClick={() => setShowForm(false)} className="px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors">Cancelar</button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Suas informações são usadas apenas para entrar em contato. Nenhum dado é armazenado automaticamente.
-              </p>
+              <p className="text-[10px] text-muted-foreground">Suas informações são usadas apenas para entrar em contato. Nenhum dado é armazenado automaticamente.</p>
             </div>
           </div>
         )}
@@ -628,8 +698,7 @@ function UpgradeSection({ profileData, generalScore, generalLevel, profileName }
 }
 
 // ─── RESULTS ──────────────────────────────────────────────────────────────────
-
-function Results({ profileData, scores, answers, onReset }) {
+function Results({ profileData, scores, answers, onReset, onAbout }) {
   const generalScore = Math.round(scores.reduce((s, c) => s + c.score, 0) / scores.length);
   const generalLevel = getLevel(generalScore);
   const profile = getProfileResult(scores);
@@ -656,60 +725,52 @@ function Results({ profileData, scores, answers, onReset }) {
       </nav>
 
       <div className="max-w-4xl mx-auto px-6 py-16 space-y-14">
-
-        {/* Hero */}
         <div className="flex items-start justify-between gap-8 flex-wrap pb-10 border-b border-border">
           <div>
-            <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-3">Diagnóstico de</p>
+            <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-3">Diagnóstico de</p>
             <h1 className="text-4xl lg:text-5xl mb-2" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>{profileData.name}</h1>
             <p className="text-sm text-muted-foreground">{profileData.currentRole} · {profileData.professionalLevel} · {profileData.mainArea}</p>
           </div>
           <div className="text-right">
-            <div className="text-7xl font-mono font-medium leading-none" style={{ color: LEVEL_COLORS[generalLevel] }}>{generalScore}</div>
+            <div className="font-mono font-medium leading-none" style={{ fontSize: "5rem", color: LEVEL_COLORS[generalLevel] }}>{generalScore}</div>
             <div className="text-sm text-muted-foreground mt-2">Índice Geral · <span style={{ color: LEVEL_COLORS[generalLevel] }}>{generalLevel}</span></div>
           </div>
         </div>
 
-        {/* Free badge */}
-        <div className="inline-flex items-center gap-2 border border-border rounded-full px-3 py-1 text-xs text-muted-foreground">
-          <Check className="w-3 h-3 text-primary" /> Diagnóstico gratuito — resultados abaixo
+        <div className="inline-flex items-center gap-2 border border-border rounded-full px-3 py-1 text-[11px] text-muted-foreground font-mono">
+          <Check className="w-3 h-3 text-primary" /> Diagnóstico gratuito
         </div>
 
-        {/* Radar + Profile */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="bg-card border border-border rounded-sm p-6">
-            <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-4">Mapa de competências</p>
+            <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-4">Mapa de competências</p>
             <ResponsiveContainer width="100%" height={280}>
               <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
                 <PolarGrid stroke="rgba(255,255,255,0.06)" />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: "#64748B", fontSize: 11 }} />
+                <PolarAngleAxis dataKey="subject" tick={{ fill: "#64748B", fontSize: 10 }} />
                 <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
                 <Radar dataKey="score" stroke="#818CF8" fill="#818CF8" fillOpacity={0.18} strokeWidth={2} dot={{ fill: "#818CF8", r: 3, strokeWidth: 0 }} />
               </RadarChart>
             </ResponsiveContainer>
           </div>
           <div className="bg-card border border-border rounded-sm p-6 flex flex-col">
-            <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-4">Perfil predominante</p>
+            <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-4">Perfil predominante</p>
             <h3 className="text-2xl mb-3" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>{profile.name}</h3>
             <p className="text-sm text-muted-foreground leading-relaxed flex-1">{profile.desc}</p>
             <div className="flex flex-wrap gap-2 mt-6 pt-5 border-t border-border">
-              {profile.competencies.map((id) => {
-                const c = COMPETENCIES.find((x) => x.id === id);
-                return c ? <span key={id} className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full">{c.name}</span> : null;
-              })}
+              {profile.competencies.map((id) => { const c = COMPETENCIES.find((x) => x.id === id); return c ? <span key={id} className="text-[11px] bg-primary/10 text-primary px-3 py-1 rounded-full">{c.name}</span> : null; })}
             </div>
           </div>
         </div>
 
-        {/* Score bars */}
         <div className="bg-card border border-border rounded-sm p-6">
-          <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-6">Pontuação por competência</p>
+          <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-6">Pontuação por competência</p>
           <div className="space-y-4">
             {sorted.map((s) => (
               <div key={s.id} className="flex items-center gap-4">
                 <span className="text-sm text-foreground/80 w-44 shrink-0 truncate">{s.name}</span>
-                <div className="flex-1 bg-secondary rounded-full h-1.5">
-                  <div className="h-1.5 rounded-full transition-all duration-700" style={{ width: `${s.score}%`, backgroundColor: LEVEL_COLORS[s.level] }} />
+                <div className="flex-1 bg-secondary rounded-full h-1">
+                  <div className="h-1 rounded-full transition-all duration-700" style={{ width: `${s.score}%`, backgroundColor: LEVEL_COLORS[s.level] }} />
                 </div>
                 <span className="font-mono text-sm w-8 text-right">{s.score}</span>
                 <span className="text-xs text-muted-foreground w-24 text-right">{s.level}</span>
@@ -718,48 +779,31 @@ function Results({ profileData, scores, answers, onReset }) {
           </div>
         </div>
 
-        {/* Strengths + Opportunities */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="bg-card border border-border rounded-sm p-6">
-            <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-5">Forças</p>
-            <div className="space-y-5">
-              {strengths.map((s, i) => (
-                <div key={s.id} className="flex items-start gap-3">
-                  <span className="font-mono text-xs text-muted-foreground mt-0.5 shrink-0">0{i + 1}</span>
-                  <div>
-                    <div className="flex items-baseline gap-2 mb-0.5">
-                      <span className="text-sm font-medium">{s.name}</span>
-                      <span className="font-mono text-xs" style={{ color: LEVEL_COLORS[s.level] }}>{s.score}</span>
+          {[{ label: "Forças", items: strengths }, { label: "Oportunidades", items: opportunities }].map(({ label, items }) => (
+            <div key={label} className="bg-card border border-border rounded-sm p-6">
+              <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-5">{label}</p>
+              <div className="space-y-5">
+                {items.map((s, i) => (
+                  <div key={s.id} className="flex items-start gap-3">
+                    <span className="font-mono text-xs text-muted-foreground mt-0.5 shrink-0">0{i + 1}</span>
+                    <div>
+                      <div className="flex items-baseline gap-2 mb-0.5">
+                        <span className="text-sm font-medium">{s.name}</span>
+                        <span className="font-mono text-xs" style={{ color: LEVEL_COLORS[s.level] }}>{s.score}</span>
+                      </div>
+                      <span className="text-xs" style={{ color: LEVEL_COLORS[s.level] }}>{s.level}</span>
                     </div>
-                    <span className="text-xs" style={{ color: LEVEL_COLORS[s.level] }}>{s.level}</span>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="bg-card border border-border rounded-sm p-6">
-            <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-5">Oportunidades</p>
-            <div className="space-y-5">
-              {opportunities.map((s, i) => (
-                <div key={s.id} className="flex items-start gap-3">
-                  <span className="font-mono text-xs text-muted-foreground mt-0.5 shrink-0">0{i + 1}</span>
-                  <div>
-                    <div className="flex items-baseline gap-2 mb-0.5">
-                      <span className="text-sm font-medium">{s.name}</span>
-                      <span className="font-mono text-xs" style={{ color: LEVEL_COLORS[s.level] }}>{s.score}</span>
-                    </div>
-                    <span className="text-xs" style={{ color: LEVEL_COLORS[s.level] }}>{s.level}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          ))}
         </div>
 
-        {/* Cross analysis */}
         {crossResults.length > 0 && (
           <div>
-            <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-2">Padrões comportamentais identificados</p>
+            <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-2">Padrões comportamentais</p>
             <h2 className="text-2xl mb-6" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Como suas competências se combinam</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {crossResults.map((r) => (
@@ -772,27 +816,23 @@ function Results({ profileData, scores, answers, onReset }) {
           </div>
         )}
 
-        {/* ── PAYWALL ── */}
         <div>
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-8">
             <div className="flex-1 border-t border-border" />
-            <span className="text-xs text-muted-foreground font-mono uppercase tracking-widest px-2">Próximo nível</span>
+            <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest px-3">Próximo nível</span>
             <div className="flex-1 border-t border-border" />
           </div>
-          <UpgradeSection
-            profileData={profileData}
-            generalScore={generalScore}
-            generalLevel={generalLevel}
-            profileName={profile.name}
-          />
+          <UpgradeSection profileData={profileData} generalScore={generalScore} generalLevel={generalLevel} profileName={profile.name} />
         </div>
 
-        {/* Footer */}
         <div className="border-t border-border pt-8 flex items-center justify-between">
           <p className="text-xs text-muted-foreground">Raio-X de Soft Skills · {new Date().getFullYear()}</p>
-          <button onClick={onReset} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <RefreshCw className="w-4 h-4" /> Nova avaliação
-          </button>
+          <div className="flex items-center gap-5">
+            {onAbout && <button onClick={onAbout} className="text-xs text-muted-foreground hover:text-foreground transition-colors">Sobre nós</button>}
+            <button onClick={onReset} className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <RefreshCw className="w-3.5 h-3.5" /> Nova avaliação
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -800,7 +840,6 @@ function Results({ profileData, scores, answers, onReset }) {
 }
 
 // ─── APP ──────────────────────────────────────────────────────────────────────
-
 export default function App() {
   const [view, setView] = useState("landing");
   const [profileData, setProfileData] = useState(null);
@@ -808,31 +847,16 @@ export default function App() {
   const [scores, setScores] = useState([]);
 
   const handleAnswer = (key, value) => setAnswers((a) => ({ ...a, [key]: value }));
-
-  const handleComplete = () => {
-    setScores(calculateScores(answers));
-    setView("results");
-  };
-
-  const handleReset = () => {
-    setView("landing");
-    setProfileData(null);
-    setAnswers({});
-    setScores([]);
-  };
+  const handleComplete = () => { setScores(calculateScores(answers)); setView("results"); };
+  const handleReset = () => { setView("landing"); setProfileData(null); setAnswers({}); setScores([]); };
 
   return (
     <>
-      {view === "landing" && <Landing onStart={() => setView("profile")} />}
-      {view === "profile" && (
-        <ProfileForm onSubmit={(d) => { setProfileData(d); setView("assessment"); }} onBack={() => setView("landing")} />
-      )}
-      {view === "assessment" && (
-        <AssessmentForm answers={answers} onAnswer={handleAnswer} onComplete={handleComplete} onBack={() => setView("profile")} />
-      )}
-      {view === "results" && profileData && (
-        <Results profileData={profileData} scores={scores} answers={answers} onReset={handleReset} />
-      )}
+      {view === "landing" && <Landing onStart={() => setView("profile")} onAbout={() => setView("about")} />}
+      {view === "about" && <AboutPage onBack={() => setView("landing")} onStart={() => setView("profile")} />}
+      {view === "profile" && <ProfileForm onSubmit={(d) => { setProfileData(d); setView("assessment"); }} onBack={() => setView("landing")} />}
+      {view === "assessment" && <AssessmentForm answers={answers} onAnswer={handleAnswer} onComplete={handleComplete} onBack={() => setView("profile")} />}
+      {view === "results" && profileData && <Results profileData={profileData} scores={scores} answers={answers} onReset={handleReset} onAbout={() => setView("about")} />}
     </>
   );
 }
