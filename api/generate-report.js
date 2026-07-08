@@ -1,169 +1,126 @@
-import { buildReportPrompt } from "../src/services/reportPrompt.js";
-import {
-  applySecurityHeaders,
-  checkRateLimit,
-  cleanText,
-  parseBody,
-  requireAllowedOrigin,
-  requireJson,
-  requirePost,
-} from "./_security.js";
+function buildPrompt({ profileData, scores, answers, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities }) {
+  const scoreList = scores.map(s => `- ${s.name}: ${s.score}/100 (${s.level})`).join('\n');
+  const strengthsList = strengths.map(s => `- ${s.name} (${s.score})`).join('\n');
+  const opportunitiesList = opportunities.map(s => `- ${s.name} (${s.score})`).join('\n');
+  const openAnswers = [
+    answers.open_1 ? `Maior desafio comportamental: "${answers.open_1}"` : null,
+    answers.open_2 ? `Competência a desenvolver: "${answers.open_2}"` : null,
+    answers.open_3 ? `Situação recorrente de dificuldade: "${answers.open_3}"` : null,
+  ].filter(Boolean).join('\n');
 
-const profileFields = [
-  "name",
-  "age",
-  "experience",
-  "currentRole",
-  "professionalLevel",
-  "mainArea",
-  "careerGoal",
-  "currentChallenge",
-];
+  return `Você é o Analista Oficial do Raio-X de Soft Skills. Produza um diagnóstico profissional, preciso e humano com base nos dados abaixo.
 
-function cleanProfile(profile = {}) {
-  return Object.fromEntries(
-    profileFields.map((field) => [field, cleanText(profile[field], 500)])
-  );
-}
+## PERFIL DO PROFISSIONAL
+- Nome: ${profileData.name}
+- Idade: ${profileData.age}
+- Cargo: ${profileData.currentRole}
+- Nível: ${profileData.professionalLevel}
+- Área: ${profileData.mainArea}
+- Experiência: ${profileData.experience}
+- Objetivo de carreira (12 meses): ${profileData.careerGoal}
+- Principal desafio atual: ${profileData.currentChallenge}
 
-function cleanCompetency(item = {}) {
-  return {
-    id: cleanText(item.id, 80),
-    name: cleanText(item.name, 120),
-    score: Math.max(0, Math.min(100, Number(item.score) || 0)),
-    level: cleanText(item.level, 80),
-  };
-}
+## ÍNDICE GERAL
+${generalScore}/100 — Nível ${generalLevel}
 
-function cleanScores(scores = {}) {
-  const strengths = Array.isArray(scores.strengths)
-    ? scores.strengths.slice(0, 3).map(cleanCompetency)
-    : [];
-  const opportunities = Array.isArray(scores.opportunities)
-    ? scores.opportunities.slice(0, 3).map(cleanCompetency)
-    : [];
-  const crossAnalysis = Array.isArray(scores.crossAnalysis)
-    ? scores.crossAnalysis.slice(0, 4).map((item) => ({
-        title: cleanText(item?.title, 150),
-        interpretation: cleanText(item?.interpretation, 800),
-      }))
-    : [];
-  const pdi = Array.isArray(scores.pdi)
-    ? scores.pdi.slice(0, 3).map((item) => ({
-        competency: cleanText(item?.competency, 120),
-        score: Math.max(0, Math.min(100, Number(item?.score) || 0)),
-        actions: {
-          days30: cleanActions(item?.actions?.days30),
-          days60: cleanActions(item?.actions?.days60),
-          days90: cleanActions(item?.actions?.days90),
-        },
-      }))
-    : [];
+## PERFIL PREDOMINANTE
+${profileName}: ${profileDesc}
 
-  return {
-    generalScore: Math.max(0, Math.min(100, Number(scores.generalScore) || 0)),
-    generalLevel: cleanText(scores.generalLevel, 80),
-    profile: {
-      name: cleanText(scores.profile?.name, 150),
-      description: cleanText(scores.profile?.description, 800),
-    },
-    strengths,
-    opportunities,
-    crossAnalysis,
-    pdi,
-  };
-}
+## SCORES POR COMPETÊNCIA
+${scoreList}
 
-function cleanActions(actions) {
-  return Array.isArray(actions)
-    ? actions.slice(0, 4).map((action) => cleanText(action, 300)).filter(Boolean)
-    : [];
-}
+## TOP 3 FORÇAS
+${strengthsList}
 
-function cleanOpenAnswers(openAnswers = {}) {
-  return {
-    open_1: cleanText(openAnswers.open_1, 2000),
-    open_2: cleanText(openAnswers.open_2, 2000),
-    open_3: cleanText(openAnswers.open_3, 2000),
-  };
+## TOP 3 OPORTUNIDADES
+${opportunitiesList}
+
+## RESPOSTAS ABERTAS
+${openAnswers || 'Não fornecidas.'}
+
+---
+
+Produza um diagnóstico com até 900 palavras, em português brasileiro, com as seguintes seções (use ## para títulos):
+
+## Resumo Executivo
+## Leitura de Maturidade Profissional
+## Principais Forças
+## Pontos de Atenção
+## Recomendações Prioritárias
+## Conclusão
+
+Regras:
+- Não invente fatos ou diagnósticos clínicos
+- Evite clichês motivacionais
+- Tom: direto, analítico, humano, prático
+- Adapte tudo ao cargo, nível e área do profissional`.trim();
 }
 
 export default async function handler(req, res) {
-  applySecurityHeaders(res);
-
-  if (
-    !requirePost(req, res) ||
-    !requireJson(req, res) ||
-    !requireAllowedOrigin(req, res) ||
-    !checkRateLimit(req, res, "gemini", 5, 10 * 60 * 1000)
-  ) {
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
     return;
   }
 
-  if (!process.env.GEMINI_API_KEY) {
-    return res.status(503).json({ error: "Serviço de análise não configurado." });
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    res.status(500).json({ error: 'OPENROUTER_API_KEY não configurada no Vercel.' });
+    return;
   }
 
+  const body = req.body;
+  if (!body?.profileData || !body?.scores) {
+    res.status(400).json({ error: 'Dados insuficientes para gerar o diagnóstico.' });
+    return;
+  }
+
+  const prompt = buildPrompt(body);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 60000);
+
   try {
-    const body = parseBody(req);
-    const profile = cleanProfile(body.profile);
-    const scores = cleanScores(body.scores);
-    const openAnswers = cleanOpenAnswers(body.openAnswers);
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://raio-x-soft-skills-mvp.vercel.app',
+        'X-Title': 'Raio-X de Soft Skills',
+      },
+      body: JSON.stringify({
+        model: 'anthropic/claude-sonnet-4-5',
+        messages: [
+          {
+            role: 'system',
+            content: 'Você é o Analista Oficial do Raio-X de Soft Skills. Produza diagnósticos precisos, humanos e acionáveis em português brasileiro. Nunca invente dados.',
+          },
+          { role: 'user', content: prompt },
+        ],
+        max_tokens: 1600,
+        temperature: 0.65,
+      }),
+    });
 
-    if (!profile.name || !scores.generalLevel || scores.strengths.length === 0) {
-      return res.status(400).json({ error: "Dados da avaliação incompletos." });
-    }
+    clearTimeout(timeout);
 
-    const prompt = buildReportPrompt({ profile, scores, openAnswers });
-    const model = process.env.GEMINI_MODEL || "gemini-3.5-flash";
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 55_000);
-    let response;
-
-    try {
-      response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          signal: controller.signal,
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-              temperature: 0.5,
-              maxOutputTokens: 4096,
-            },
-          }),
-        }
-      );
-    } finally {
-      clearTimeout(timeout);
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('OpenRouter error:', errText);
+      res.status(502).json({ error: 'Erro ao chamar o OpenRouter. Tente novamente.' });
+      return;
     }
 
     const data = await response.json();
-
-    if (!response.ok) {
-      console.error("Gemini API error", response.status, data?.error?.message);
-      return res.status(502).json({ error: "A análise está indisponível no momento." });
+    const text = data.choices?.[0]?.message?.content ?? '';
+    res.status(200).json({ text });
+  } catch (err) {
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') {
+      res.status(504).json({ error: 'Tempo limite atingido. Tente novamente.' });
+      return;
     }
-
-    const candidate = data?.candidates?.[0];
-    const text = candidate?.content?.parts?.[0]?.text;
-    if (!text) {
-      return res.status(502).json({ error: "A IA não retornou uma análise válida." });
-    }
-
-    const finishReason = candidate?.finishReason || "UNKNOWN";
-    const truncated = finishReason === "MAX_TOKENS";
-
-    return res.status(200).json({ text, truncated, finishReason });
-  } catch (error) {
-    console.error("Generate report error", error);
-
-    if (error?.name === "AbortError") {
-      return res.status(504).json({ error: "A análise demorou mais que o esperado. Tente novamente." });
-    }
-
-    return res.status(400).json({ error: "Não foi possível processar a avaliação." });
+    console.error('Handler error:', err);
+    res.status(500).json({ error: 'Erro interno ao gerar o diagnóstico.' });
   }
 }
