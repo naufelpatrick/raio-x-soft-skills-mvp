@@ -719,8 +719,7 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
       `*Área:* ${profileData?.mainArea || "-"}`,
       `*Índice geral:* ${generalScore}/100 — ${generalLevel}`,
       `*Perfil:* ${profileName}`, "",
-      `_Código de acesso: RAIO${lead.whatsapp.replace(/\D/g, "").slice(-4).toUpperCase()}_`,
-      "_Enviar após confirmação de pagamento._",
+      "_Aguardando confirmação de pagamento._",
     ].join("\n");
     window.open(`https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent(msg)}`, "_blank");
     setPhase("code");
