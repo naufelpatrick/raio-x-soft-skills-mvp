@@ -10,11 +10,9 @@ import {
   Brain, Calendar, MessageCircle, ExternalLink, ChevronDown, ChevronUp, Download,
 } from "lucide-react";
 
-// ─── CONFIG ───────────────────────────────────────────────────────────────────
 const OWNER_WHATSAPP = "554991106400";
 const PRODUCT_PRICE = "R$ 97";
 
-// ─── DATA ─────────────────────────────────────────────────────────────────────
 const COMPETENCIES = [
   { id: "comunicacao", name: "Comunicação", icon: "💬", desc: "Transmitir ideias com clareza, reduzir ruídos e adaptar a linguagem ao contexto." },
   { id: "empatia", name: "Empatia", icon: "❤️", desc: "Compreender contextos e perspectivas diversas antes de tirar conclusões." },
@@ -84,7 +82,6 @@ const PDI_ACTIONS = {
   proposito: { days30: ["Escrever sobre o impacto que seu trabalho gera nas pessoas ao redor.", "Identificar quais atividades te geram mais energia e significado."], days60: ["Ter uma conversa sobre valores com alguém que você admira.", "Conectar seu trabalho atual a um objetivo de médio prazo."], days90: ["Definir um projeto que esteja alinhado aos seus valores.", "Criar rituais de reflexão periódica sobre direção e propósito."] },
 };
 
-// ─── SCORING ─────────────────────────────────────────────────────────────────
 function getLevel(score) {
   if (score <= 20) return "Inicial";
   if (score <= 40) return "Emergente";
@@ -118,7 +115,6 @@ function getCrossResults(scores) {
   return CROSS_ANALYSIS.filter((r) => r.high.every((id) => (map[id] || 0) >= 60) && r.low.every((id) => (map[id] || 0) <= 50)).slice(0, 4);
 }
 
-// ─── EXPORT PDF ───────────────────────────────────────────────────────────────
 function exportPDF({ profileData, scores, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities, aiText = "" }) {
   const sorted = [...scores].sort((a, b) => b.score - a.score);
   const year = new Date().getFullYear();
@@ -194,7 +190,6 @@ function exportPDF({ profileData, scores, generalScore, generalLevel, profileNam
   setTimeout(() => w.print(), 400);
 }
 
-// ─── VALIDATE CODE ────────────────────────────────────────────────────────────
 function validateCode(entered, whatsapp) {
   const digits = whatsapp.replace(/\D/g, "");
   const last4 = digits.slice(-4);
@@ -205,7 +200,6 @@ function validateCode(entered, whatsapp) {
   return "valid";
 }
 
-// ─── SHARED NAV ───────────────────────────────────────────────────────────────
 function TopNav({ onAbout, onStart, rightSlot }) {
   return (
     <nav className="flex items-center justify-between px-6 lg:px-12 py-5 border-b border-border">
@@ -233,7 +227,6 @@ function TopNav({ onAbout, onStart, rightSlot }) {
   );
 }
 
-// ─── SHARED FOOTER ────────────────────────────────────────────────────────────
 function PageFooter({ onAbout }) {
   return (
     <footer className="border-t border-border px-6 lg:px-12 py-8">
@@ -262,31 +255,12 @@ function PageFooter({ onAbout }) {
   );
 }
 
-// ─── LANDING ─────────────────────────────────────────────────────────────────
 const DEMO_SCORES = [85, 72, 68, 91, 77, 63, 88, 74, 80, 59];
 
 const TESTIMONIALS = [
-  {
-    name: "Ana Carolina M.",
-    role: "UX Designer Sênior · Fintech",
-    text: "Fiz o diagnóstico sem expectativas. Saí com um mapa claro do que precisava desenvolver — e palavras para nomear coisas que sentia mas não conseguia articular.",
-    score: 74,
-    profile: "Pensador Analítico",
-  },
-  {
-    name: "Rafael S.",
-    role: "Product Designer · Agência",
-    text: "A análise com IA foi o que mais me surpreendeu. Precisa de um jeito que me deu vontade de começar o plano de ação no mesmo dia. Valeu muito mais do que esperava.",
-    score: 81,
-    profile: "Líder Inspirador",
-  },
-  {
-    name: "Mariana T.",
-    role: "Designer de Produto · SaaS",
-    text: "Nunca tinha pensado em soft skills com esse nível de seriedade. A sessão de mentoria valeu muito mais do que o investimento — saí com clareza de onde focar.",
-    score: 68,
-    profile: "Facilitador Humano",
-  },
+  { name: "Ana Carolina M.", role: "UX Designer Sênior · Fintech", text: "Fiz o diagnóstico sem expectativas. Saí com um mapa claro do que precisava desenvolver — e palavras para nomear coisas que sentia mas não conseguia articular.", score: 74, profile: "Pensador Analítico" },
+  { name: "Rafael S.", role: "Product Designer · Agência", text: "A análise com IA foi o que mais me surpreendeu. Precisa de um jeito que me deu vontade de começar o plano de ação no mesmo dia. Valeu muito mais do que esperava.", score: 81, profile: "Líder Inspirador" },
+  { name: "Mariana T.", role: "Designer de Produto · SaaS", text: "Nunca tinha pensado em soft skills com esse nível de seriedade. A sessão de mentoria valeu muito mais do que o investimento — saí com clareza de onde focar.", score: 68, profile: "Facilitador Humano" },
 ];
 
 const RESEARCH_STATS = [
@@ -299,7 +273,7 @@ const RESEARCH_STATS = [
 function Landing({ onStart, onAbout }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* ── ANNOUNCEMENT BAR ── */}
+      {/* ANNOUNCEMENT BAR */}
       <div className="flex items-center justify-center gap-3 py-2.5 px-4 text-[11px] font-medium" style={{ backgroundColor: "rgba(251,191,36,0.07)", borderBottom: "1px solid rgba(251,191,36,0.18)", color: "#FBBF24" }}>
         <span>✦</span>
         <span>Mais de 500 profissionais diagnosticados</span>
@@ -311,7 +285,7 @@ function Landing({ onStart, onAbout }) {
       </div>
       <TopNav onAbout={onAbout} onStart={onStart} />
 
-      {/* ── HERO ── */}
+      {/* HERO */}
       <section className="grid grid-cols-1 lg:grid-cols-[1fr_400px] min-h-[90vh] border-b border-border">
         <div className="flex flex-col justify-center px-6 lg:px-16 py-24">
           <div className="inline-flex items-center gap-2 border border-primary/30 text-primary px-3 py-1 rounded-full text-xs font-medium mb-12 w-fit">
@@ -365,7 +339,7 @@ function Landing({ onStart, onAbout }) {
         </div>
       </section>
 
-      {/* ── RESEARCH STATS ── */}
+      {/* RESEARCH STATS */}
       <section className="border-b border-border">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {RESEARCH_STATS.map((s, i) => (
@@ -378,7 +352,7 @@ function Landing({ onStart, onAbout }) {
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ── */}
+      {/* TESTIMONIALS */}
       <section className="px-6 lg:px-16 py-16 border-b border-border">
         <div className="max-w-5xl mx-auto">
           <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-10 text-center">O que dizem quem já fez</p>
@@ -402,7 +376,7 @@ function Landing({ onStart, onAbout }) {
         </div>
       </section>
 
-      {/* ── WHY SECTION ── */}
+      {/* WHY */}
       <section className="px-6 lg:px-16 py-24 border-b border-border">
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-16 items-start">
           <div>
@@ -418,12 +392,7 @@ function Landing({ onStart, onAbout }) {
             <p>Para designers, isso é ainda mais crítico. Empatia, comunicação, escuta ativa e pensamento crítico não são soft skills adjacentes ao nosso trabalho — <strong className="text-foreground font-medium">elas são o trabalho.</strong></p>
             <p>O Raio-X de Soft Skills nasceu dessa lacuna. Uma avaliação séria, baseada em pesquisa, construída por designers para designers — com resultado imediato e plano de ação concreto.</p>
             <div className="pt-4 border-t border-border space-y-1.5">
-              {[
-                "LinkedIn Global Talent Trends Report, 2024",
-                "World Economic Forum — Future of Jobs Report, 2025",
-                "Goleman, D. (1998). What Makes a Leader? Harvard Business Review.",
-                "McKinsey Global Institute — The Future of Work in America, 2019",
-              ].map((ref) => (
+              {["LinkedIn Global Talent Trends Report, 2024", "World Economic Forum — Future of Jobs Report, 2025", "Goleman, D. (1998). What Makes a Leader? Harvard Business Review.", "McKinsey Global Institute — The Future of Work in America, 2019"].map((ref) => (
                 <p key={ref} className="text-[10px] font-mono text-muted-foreground/70 flex items-start gap-1.5">
                   <ExternalLink className="w-2.5 h-2.5 shrink-0 mt-0.5 opacity-50" /> {ref}
                 </p>
@@ -433,7 +402,7 @@ function Landing({ onStart, onAbout }) {
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ── */}
+      {/* HOW IT WORKS */}
       <section className="px-6 lg:px-16 py-24 border-b border-border">
         <div className="max-w-5xl mx-auto">
           <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-4">Como funciona</p>
@@ -459,7 +428,91 @@ function Landing({ onStart, onAbout }) {
         </div>
       </section>
 
-      {/* ── CTA ── */}
+      {/* PLANO COMPLETO */}
+      <section className="px-6 lg:px-16 py-24 border-b border-border">
+        <div className="max-w-5xl mx-auto">
+          <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-4">O que você leva</p>
+          <h2 className="text-3xl mb-3" style={{ fontFamily: "var(--font-display)" }}>
+            Plano Completo · <span style={{ color: "#FBBF24" }}>R$ 97</span>
+          </h2>
+          <p className="text-sm text-muted-foreground mb-12 max-w-xl leading-relaxed">
+            Pagamento único. Sem assinatura. Acesso imediato após confirmação — tudo entregue em uma única sessão.
+          </p>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-px bg-border">
+            <div className="bg-background px-8 py-10 flex flex-col">
+              <div className="w-9 h-9 rounded-sm flex items-center justify-center mb-6" style={{ backgroundColor: "rgba(251,191,36,0.1)" }}>
+                <Brain className="w-4 h-4" style={{ color: "#FBBF24" }} />
+              </div>
+              <p className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: "#FBBF24" }}>Entregável 01</p>
+              <h3 className="text-base font-medium mb-3">Análise Narrativa com IA</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                Seu diagnóstico é interpretado pelo Claude — o modelo de IA da Anthropic — que gera um texto aprofundado e personalizado sobre seu perfil: padrões comportamentais, pontos cegos, combinações de competências e orientações específicas para o seu momento de carreira.
+              </p>
+              <ul className="mt-6 space-y-2">
+                {["Análise de padrões comportamentais", "Identificação de pontos cegos", "Orientações personalizadas por perfil"].map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-xs text-muted-foreground">
+                    <Check className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: "#FBBF24" }} /> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="bg-background px-8 py-10 flex flex-col">
+              <div className="w-9 h-9 rounded-sm flex items-center justify-center mb-6" style={{ backgroundColor: "rgba(251,191,36,0.1)" }}>
+                <Target className="w-4 h-4" style={{ color: "#FBBF24" }} />
+              </div>
+              <p className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: "#FBBF24" }}>Entregável 02</p>
+              <h3 className="text-base font-medium mb-3">PDI · Plano de Desenvolvimento</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                Um plano de ação concreto com atividades para 30, 60 e 90 dias — focado nas suas maiores oportunidades de crescimento. Cada ação é calibrada para o seu perfil e nível profissional, não para um genérico.
+              </p>
+              <ul className="mt-6 space-y-2">
+                {["Ações para 30, 60 e 90 dias", "Foco nas suas maiores oportunidades", "Calibrado ao seu nível profissional"].map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-xs text-muted-foreground">
+                    <Check className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: "#FBBF24" }} /> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="bg-background px-8 py-10 flex flex-col">
+              <div className="w-9 h-9 rounded-sm flex items-center justify-center mb-6" style={{ backgroundColor: "rgba(251,191,36,0.1)" }}>
+                <Calendar className="w-4 h-4" style={{ color: "#FBBF24" }} />
+              </div>
+              <p className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: "#FBBF24" }}>Entregável 03</p>
+              <h3 className="text-base font-medium mb-3">1 Sessão de Mentoria ao Vivo</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                60 minutos com Patrick ou Carlos — designers e mentores com mais de 20 anos de experiência combinada. Você traz o diagnóstico, eles ajudam a transformar em decisões reais sobre sua carreira.
+              </p>
+              <ul className="mt-6 space-y-2">
+                {["60 minutos ao vivo via Google Meet", "Com Patrick Naufel ou Carlos Alencar", "Agendamento flexível via WhatsApp"].map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-xs text-muted-foreground">
+                    <Check className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: "#FBBF24" }} /> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <div className="mt-px bg-card grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-6 px-8 py-6 border border-border border-t-0">
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
+              <div>
+                <span className="text-2xl font-mono font-medium">R$ 97</span>
+                <span className="text-xs text-muted-foreground ml-2">pagamento único · sem assinatura</span>
+              </div>
+              {["Diagnóstico gratuito incluído", "Resultado imediato", "Satisfação garantida ou reembolso"].map((g) => (
+                <span key={g} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Check className="w-3 h-3" style={{ color: "#FBBF24" }} /> {g}
+                </span>
+              ))}
+            </div>
+            <button onClick={onStart}
+              className="flex items-center gap-2 px-6 py-3 rounded-sm font-semibold hover:opacity-90 transition-opacity text-sm self-center shrink-0"
+              style={{ backgroundColor: "#FBBF24", color: "#0B1120" }}>
+              Começar grátis <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
       <section className="px-6 lg:px-16 py-24 bg-card border-b border-border">
         <div className="max-w-2xl">
           <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-mono mb-6" style={{ backgroundColor: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.25)", color: "#FBBF24" }}>
@@ -491,7 +544,6 @@ function Landing({ onStart, onAbout }) {
   );
 }
 
-// ─── ABOUT PAGE ───────────────────────────────────────────────────────────────
 const MENTORS = [
   {
     initials: "PN",
@@ -589,7 +641,6 @@ function AboutPage({ onBack, onStart }) {
   );
 }
 
-// ─── PROFILE FORM ─────────────────────────────────────────────────────────────
 function ProfileForm({ onSubmit, onBack }) {
   const [form, setForm] = useState({ name: "", age: "", experience: "", currentRole: "", professionalLevel: "", mainArea: "", careerGoal: "", currentChallenge: "" });
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
@@ -645,7 +696,6 @@ function ProfileForm({ onSubmit, onBack }) {
   );
 }
 
-// ─── ASSESSMENT ───────────────────────────────────────────────────────────────
 function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
   const [step, setStep] = useState(0);
   const TOTAL = 11;
@@ -736,7 +786,6 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
   );
 }
 
-// ─── PDI CARD ─────────────────────────────────────────────────────────────────
 function PdiCard({ competencyId }) {
   const [open, setOpen] = useState(false);
   const comp = COMPETENCIES.find((c) => c.id === competencyId);
@@ -776,7 +825,6 @@ function PdiCard({ competencyId }) {
   );
 }
 
-// ─── UPGRADE SECTION ──────────────────────────────────────────────────────────
 function UpgradeSection({ profileData, scores, answers, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities }) {
   const [phase, setPhase] = useState("preview");
   const [lead, setLead] = useState({ name: profileData?.name || "", email: "", whatsapp: "" });
@@ -955,7 +1003,6 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
             <Sparkles className="w-4 h-4" /> Quero o diagnóstico completo
           </button>
         )}
-
         {phase === "form" && (
           <div className="max-w-md space-y-6">
             <p className="text-sm text-muted-foreground leading-relaxed">
@@ -979,7 +1026,6 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
             </div>
           </div>
         )}
-
         {phase === "code" && (
           <div className="max-w-md space-y-6">
             <div className="flex items-center gap-3">
@@ -1022,7 +1068,6 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
   );
 }
 
-// ─── RESULTS ──────────────────────────────────────────────────────────────────
 function Results({ profileData, scores, answers, onReset, onAbout }) {
   const generalScore = Math.round(scores.reduce((s, c) => s + c.score, 0) / scores.length);
   const generalLevel = getLevel(generalScore);
@@ -1173,7 +1218,6 @@ function Results({ profileData, scores, answers, onReset, onAbout }) {
   );
 }
 
-// ─── APP ──────────────────────────────────────────────────────────────────────
 export default function App() {
   const [view, setView] = useState("landing");
   const [profileData, setProfileData] = useState(null);
