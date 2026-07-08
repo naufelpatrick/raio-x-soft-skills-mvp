@@ -273,7 +273,7 @@ const RESEARCH_STATS = [
 function Landing({ onStart, onAbout }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* ANNOUNCEMENT BAR */}
+      {/* ANNOUNCEMENT BAR — ativar quando atingir 500 diagnósticos
       <div className="flex items-center justify-center gap-3 py-2.5 px-4 text-[11px] font-medium" style={{ backgroundColor: "rgba(251,191,36,0.07)", borderBottom: "1px solid rgba(251,191,36,0.18)", color: "#FBBF24" }}>
         <span>✦</span>
         <span>Mais de 500 profissionais diagnosticados</span>
@@ -283,6 +283,7 @@ function Landing({ onStart, onAbout }) {
           <span style={{ color: "#FBBF24", opacity: 0.7 }}>4.9 de satisfação</span>
         </span>
       </div>
+      */}
       <TopNav onAbout={onAbout} onStart={onStart} />
 
       {/* HERO */}
