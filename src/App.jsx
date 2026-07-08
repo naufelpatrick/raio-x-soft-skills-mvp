@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 import {
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   Radar, ResponsiveContainer,
@@ -6,7 +7,7 @@ import {
 import {
   ChevronLeft, ArrowRight, BarChart2, BookOpen, Target,
   Zap, Check, RefreshCw, Sparkles, Loader2, Lock,
-  Brain, Calendar, MessageCircle, ExternalLink,
+  Brain, Calendar, MessageCircle, ExternalLink, ChevronDown, ChevronUp,
 } from "lucide-react";
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
@@ -193,18 +194,15 @@ function Landing({ onStart, onAbout }) {
           <div className="inline-flex items-center gap-2 border border-primary/30 text-primary px-3 py-1 rounded-full text-xs font-medium mb-12 w-fit">
             <Zap className="w-3 h-3" /> Avaliação gratuita · 15 minutos
           </div>
-
-          <h1 className="leading-[1.05] mb-8 tracking-tight" style={{ fontFamily: "var(--font-display, Georgia, serif)", fontSize: "clamp(3rem, 6vw, 5.5rem)" }}>
+          <h1 className="leading-[1.05] mb-8 tracking-tight" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(3rem, 6vw, 5.5rem)" }}>
             Descubra o que<br />
-            <em className="not-italic" style={{ color: "var(--color-primary, #818CF8)" }}>move</em>
+            <em className="not-italic" style={{ color: "var(--primary)" }}>move</em>
             {" — ou trava —"}<br />
             sua carreira.
           </h1>
-
           <p className="text-muted-foreground text-lg leading-relaxed mb-12 max-w-md">
             50 perguntas calibradas. 10 competências mapeadas. 1 diagnóstico preciso sobre quem você é — e quem pode se tornar.
           </p>
-
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
             <button onClick={onStart} className="flex items-center gap-2.5 bg-primary text-primary-foreground px-8 py-4 rounded-sm font-medium hover:opacity-90 transition-opacity text-sm">
               Fazer o diagnóstico <ArrowRight className="w-4 h-4" />
@@ -257,24 +255,16 @@ function Landing({ onStart, onAbout }) {
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-16 items-start">
           <div>
             <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-6">Por que isso importa</p>
-            <h2 className="leading-[1.1] mb-0" style={{ fontFamily: "var(--font-display, Georgia, serif)", fontSize: "clamp(2rem, 3.5vw, 2.8rem)" }}>
+            <h2 className="leading-[1.1] mb-0" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 3.5vw, 2.8rem)" }}>
               Em um mundo de habilidades técnicas descartáveis, o que sobrevive é{" "}
               <em className="not-italic text-primary">genuinamente humano.</em>
             </h2>
           </div>
           <div className="space-y-5 text-sm text-muted-foreground leading-relaxed">
-            <p>
-              Ferramentas mudam. Frameworks ficam obsoletos. Linguagens de programação vêm e vão. Mas a capacidade de se comunicar com clareza, de ouvir de verdade, de se adaptar sem perder o fio — essas habilidades nunca saem de moda.
-            </p>
-            <p>
-              O problema é que tratamos competências humanas como algo que "se tem ou não se tem". Raramente as mapeamos com a mesma seriedade com que avaliamos portfólios ou certificações. O resultado: profissionais talentosos travados por pontos cegos que nunca foram nomeados.
-            </p>
-            <p>
-              Para designers, isso é ainda mais crítico. Empatia, comunicação, escuta ativa e pensamento crítico não são soft skills adjacentes ao nosso trabalho — <strong className="text-foreground font-medium">elas são o trabalho.</strong> Um diagnóstico honesto dessas dimensões é, talvez, a ferramenta de carreira mais subutilizada da nossa área.
-            </p>
-            <p>
-              O Raio-X de Soft Skills nasceu dessa lacuna. Uma avaliação séria, baseada em pesquisa, construída por designers para designers — com resultado imediato e plano de ação concreto.
-            </p>
+            <p>Ferramentas mudam. Frameworks ficam obsoletos. Linguagens de programação vêm e vão. Mas a capacidade de se comunicar com clareza, de ouvir de verdade, de se adaptar sem perder o fio — essas habilidades nunca saem de moda.</p>
+            <p>O problema é que tratamos competências humanas como algo que "se tem ou não se tem". Raramente as mapeamos com a mesma seriedade com que avaliamos portfólios ou certificações. O resultado: profissionais talentosos travados por pontos cegos que nunca foram nomeados.</p>
+            <p>Para designers, isso é ainda mais crítico. Empatia, comunicação, escuta ativa e pensamento crítico não são soft skills adjacentes ao nosso trabalho — <strong className="text-foreground font-medium">elas são o trabalho.</strong> Um diagnóstico honesto dessas dimensões é, talvez, a ferramenta de carreira mais subutilizada da nossa área.</p>
+            <p>O Raio-X de Soft Skills nasceu dessa lacuna. Uma avaliação séria, baseada em pesquisa, construída por designers para designers — com resultado imediato e plano de ação concreto.</p>
             <div className="pt-4 border-t border-border space-y-1.5">
               {[
                 "LinkedIn Global Talent Trends Report, 2024",
@@ -295,7 +285,7 @@ function Landing({ onStart, onAbout }) {
       <section className="px-6 lg:px-16 py-24 border-b border-border">
         <div className="max-w-5xl mx-auto">
           <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-4">Como funciona</p>
-          <h2 className="text-3xl mb-16" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Três etapas. Quinze minutos.</h2>
+          <h2 className="text-3xl mb-16" style={{ fontFamily: "var(--font-display)" }}>Três etapas. Quinze minutos.</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-border">
             {[
               { step: "01", Icon: BookOpen, title: "Avaliação", desc: "50 afirmações sobre comportamentos reais no trabalho. Escala Likert de 1 a 5. Sem respostas certas ou erradas." },
@@ -320,7 +310,7 @@ function Landing({ onStart, onAbout }) {
       {/* ── CTA ── */}
       <section className="px-6 lg:px-16 py-24 bg-card border-b border-border">
         <div className="max-w-2xl">
-          <h2 className="text-4xl mb-4" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>
+          <h2 className="text-4xl mb-4" style={{ fontFamily: "var(--font-display)" }}>
             Você sabe criar.<br />Agora conheça quem cria.
           </h2>
           <p className="text-muted-foreground mb-10 text-lg leading-relaxed">
@@ -369,11 +359,10 @@ function AboutPage({ onBack, onStart }) {
         }
       />
 
-      {/* Header */}
       <section className="px-6 lg:px-16 py-24 border-b border-border">
         <div className="max-w-3xl">
           <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-6">Sobre nós</p>
-          <h1 className="leading-[1.1] mb-6" style={{ fontFamily: "var(--font-display, Georgia, serif)", fontSize: "clamp(2.5rem, 5vw, 4rem)" }}>
+          <h1 className="leading-[1.1] mb-6" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.5rem, 5vw, 4rem)" }}>
             Dois designers que acreditam no poder do autoconhecimento.
           </h1>
           <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl">
@@ -382,26 +371,20 @@ function AboutPage({ onBack, onStart }) {
         </div>
       </section>
 
-      {/* Mentor cards */}
       <section className="px-6 lg:px-16 py-20 border-b border-border">
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-px bg-border">
           {MENTORS.map((m) => (
             <div key={m.name} className="bg-background p-10">
-              {/* Avatar */}
               <div className="w-14 h-14 rounded-sm bg-primary flex items-center justify-center mb-6">
                 <span className="font-mono font-medium text-primary-foreground text-lg">{m.initials}</span>
               </div>
-
               <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1">{m.role}</p>
-              <h3 className="text-xl font-medium mb-1" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>{m.name}</h3>
-
+              <h3 className="text-xl font-medium mb-1" style={{ fontFamily: "var(--font-display)" }}>{m.name}</h3>
               <a href={m.linkedin} target="_blank" rel="noreferrer"
                 className="inline-flex items-center gap-1.5 text-[11px] text-primary hover:opacity-70 transition-opacity font-mono mb-6">
                 LinkedIn <ExternalLink className="w-2.5 h-2.5" />
               </a>
-
               <p className="text-sm text-muted-foreground leading-relaxed mb-6">{m.bio}</p>
-
               <div className="flex flex-wrap gap-2">
                 {m.highlights.map((h) => (
                   <span key={h} className="text-[11px] bg-secondary text-muted-foreground px-3 py-1 rounded-full">{h}</span>
@@ -412,34 +395,26 @@ function AboutPage({ onBack, onStart }) {
         </div>
       </section>
 
-      {/* Mission */}
       <section className="px-6 lg:px-16 py-20 border-b border-border">
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-16 items-start">
           <div>
             <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-4">Nossa missão</p>
-            <h2 className="text-2xl leading-snug" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>
+            <h2 className="text-2xl leading-snug" style={{ fontFamily: "var(--font-display)" }}>
               Tornar o autoconhecimento profissional acessível, preciso e acionável.
             </h2>
           </div>
           <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-            <p>
-              Existem inúmeras ferramentas para avaliar habilidades técnicas. Poucas — com seriedade e profundidade — avaliam o que realmente diferencia profissionais ao longo do tempo: como pensam, como se relacionam, como reagem sob pressão.
-            </p>
-            <p>
-              O Raio-X de Soft Skills é nossa resposta a essa lacuna. Uma ferramenta construída com rigor metodológico, linguagem humana e resultado acionável. Não um quiz de entretenimento — um diagnóstico profissional que pode ser o ponto de inflexão em uma carreira.
-            </p>
-            <p>
-              Nasceu de anos de experiência em design, mentoria e ensino. E foi feito especialmente para quem vive de criar — porque criar bem começa por se conhecer bem.
-            </p>
+            <p>Existem inúmeras ferramentas para avaliar habilidades técnicas. Poucas — com seriedade e profundidade — avaliam o que realmente diferencia profissionais ao longo do tempo: como pensam, como se relacionam, como reagem sob pressão.</p>
+            <p>O Raio-X de Soft Skills é nossa resposta a essa lacuna. Uma ferramenta construída com rigor metodológico, linguagem humana e resultado acionável. Não um quiz de entretenimento — um diagnóstico profissional que pode ser o ponto de inflexão em uma carreira.</p>
+            <p>Nasceu de anos de experiência em design, mentoria e ensino. E foi feito especialmente para quem vive de criar — porque criar bem começa por se conhecer bem.</p>
           </div>
         </div>
       </section>
 
-      {/* CTA */}
       <section className="px-6 lg:px-16 py-20 bg-card">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8">
           <div>
-            <h3 className="text-2xl mb-2" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Pronto para começar?</h3>
+            <h3 className="text-2xl mb-2" style={{ fontFamily: "var(--font-display)" }}>Pronto para começar?</h3>
             <p className="text-sm text-muted-foreground">O diagnóstico é gratuito e leva 15 minutos.</p>
           </div>
           <button onClick={onStart} className="flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-sm font-medium hover:opacity-90 transition-opacity text-sm shrink-0">
@@ -470,7 +445,7 @@ function ProfileForm({ onSubmit, onBack }) {
         <span className="text-xs text-muted-foreground font-mono">Etapa 1/3 — Perfil</span>
       </nav>
       <div className="max-w-2xl mx-auto px-6 py-16">
-        <h1 className="text-3xl lg:text-4xl mb-2" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Seu perfil profissional</h1>
+        <h1 className="text-3xl lg:text-4xl mb-2" style={{ fontFamily: "var(--font-display)" }}>Seu perfil profissional</h1>
         <p className="text-muted-foreground mb-10">Essas informações personalizam a análise e o plano de desenvolvimento.</p>
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
@@ -499,7 +474,8 @@ function ProfileForm({ onSubmit, onBack }) {
           </div>
           <div><label className={labelCls}>Objetivo de carreira (próximos 12 meses)</label><textarea placeholder="O que você quer alcançar profissionalmente no próximo ano?" value={form.careerGoal} onChange={update("careerGoal")} rows={3} className={inputCls + " resize-none"} /></div>
           <div><label className={labelCls}>Principal desafio atual</label><textarea placeholder="Qual é o maior obstáculo que você enfrenta hoje?" value={form.currentChallenge} onChange={update("currentChallenge")} rows={3} className={inputCls + " resize-none"} /></div>
-          <button onClick={() => canSubmit && onSubmit(form)} disabled={!canSubmit} className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-4 rounded-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+          <button onClick={() => canSubmit && onSubmit(form)} disabled={!canSubmit}
+            className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-4 rounded-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
             Iniciar avaliação <ArrowRight className="w-5 h-5" />
           </button>
         </div>
@@ -573,7 +549,7 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
           <>
             <div className="mb-10">
               <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-2">Etapa 11 de 11</p>
-              <h2 className="text-3xl" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Reflexão final</h2>
+              <h2 className="text-3xl" style={{ fontFamily: "var(--font-display)" }}>Reflexão final</h2>
               <p className="text-sm text-muted-foreground mt-2">Três perguntas abertas para aprofundar o diagnóstico.</p>
             </div>
             <div className="space-y-8">
@@ -599,56 +575,200 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
   );
 }
 
+// ─── PDI CARD ─────────────────────────────────────────────────────────────────
+function PdiCard({ competencyId }) {
+  const [open, setOpen] = useState(false);
+  const comp = COMPETENCIES.find((c) => c.id === competencyId);
+  const pdi = PDI_ACTIONS[competencyId];
+  if (!comp || !pdi) return null;
+
+  return (
+    <div className="border border-border rounded-sm overflow-hidden">
+      <button onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-card transition-colors">
+        <div className="flex items-center gap-3">
+          <span className="text-base">{comp.icon}</span>
+          <div>
+            <span className="text-sm font-medium">{comp.name}</span>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Plano de 90 dias</p>
+          </div>
+        </div>
+        {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="border-t border-border">
+          {[["30 dias", pdi.days30], ["60 dias", pdi.days60], ["90 dias", pdi.days90]].map(([label, items]) => (
+            <div key={label} className="px-5 py-4 border-b border-border last:border-0">
+              <p className="text-[10px] font-mono text-primary uppercase tracking-widest mb-3">{label}</p>
+              <ul className="space-y-2">
+                {items.map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" /> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── UPGRADE SECTION ──────────────────────────────────────────────────────────
-function UpgradeSection({ profileData, generalScore, generalLevel, profileName }) {
-  const [showForm, setShowForm] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+function UpgradeSection({ profileData, scores, answers, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities }) {
+  const [phase, setPhase] = useState("preview"); // preview | form | loading | report
   const [lead, setLead] = useState({ name: profileData?.name || "", email: "", whatsapp: "" });
-  const [sending, setSending] = useState(false);
+  const [aiText, setAiText] = useState("");
+  const [aiError, setAiError] = useState(null);
+
   const inputCls = "w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors";
   const labelCls = "block text-xs text-muted-foreground font-mono uppercase tracking-wider mb-2";
   const canSubmit = lead.name.trim() && lead.email.trim() && lead.whatsapp.trim();
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!canSubmit) return;
-    setSending(true);
-    const msg = [`🎯 *Nova lead — Diagnóstico Completo*`, ``, `*Nome:* ${lead.name}`, `*Email:* ${lead.email}`, `*WhatsApp:* ${lead.whatsapp}`, ``, `*Cargo:* ${profileData?.currentRole || "-"} (${profileData?.professionalLevel || "-"})`, `*Área:* ${profileData?.mainArea || "-"}`, `*Índice geral:* ${generalScore}/100 — ${generalLevel}`, `*Perfil:* ${profileName}`, ``, `_Aguardando confirmação de pagamento._`].join("\n");
+    // Notify owner via WhatsApp
+    const msg = [
+      "🎯 *Nova lead — Diagnóstico Completo*",
+      "",
+      `*Nome:* ${lead.name}`,
+      `*Email:* ${lead.email}`,
+      `*WhatsApp:* ${lead.whatsapp}`,
+      "",
+      `*Cargo:* ${profileData?.currentRole || "-"} (${profileData?.professionalLevel || "-"})`,
+      `*Área:* ${profileData?.mainArea || "-"}`,
+      `*Índice geral:* ${generalScore}/100 — ${generalLevel}`,
+      `*Perfil:* ${profileName}`,
+      "",
+      "_Aguardando confirmação de pagamento._",
+    ].join("\n");
     window.open(`https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent(msg)}`, "_blank");
-    setSending(false);
-    setSubmitted(true);
+
+    // Generate AI report
+    setPhase("loading");
+    setAiError(null);
+    try {
+      const res = await fetch("/api/generate-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profileData, scores, answers, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities }),
+      });
+      const data = await res.json();
+      if (data.text) {
+        setAiText(data.text);
+        setPhase("report");
+      } else {
+        setAiError(data.error || "Erro ao gerar análise. Tente novamente.");
+        setPhase("form");
+      }
+    } catch {
+      setAiError("Erro de conexão. Verifique sua internet e tente novamente.");
+      setPhase("form");
+    }
   }
 
   const benefits = [
     { Icon: Brain, label: "Análise narrativa com IA", desc: "Diagnóstico aprofundado gerado pelo Claude com base no seu perfil completo." },
     { Icon: Target, label: "PDI 30 / 60 / 90 dias", desc: "Plano de Desenvolvimento Individual com ações concretas por competência." },
-    { Icon: Calendar, label: "1 sessão de mentoria", desc: "60 minutos ao vivo para aprofundar seus pontos de atenção e próximos passos." },
+    { Icon: Calendar, label: "1 sessão de mentoria", desc: "60 minutos ao vivo para transformar o diagnóstico em evolução real." },
   ];
 
-  if (submitted) {
+  const opportunityCompetencies = opportunities?.map((s) => s.id) || [];
+
+  if (phase === "loading") {
     return (
-      <div className="bg-card border border-primary/30 rounded-sm p-10 text-center">
-        <div className="w-12 h-12 bg-primary/10 rounded-sm flex items-center justify-center mx-auto mb-5">
-          <MessageCircle className="w-5 h-5 text-primary" />
+      <div className="rounded-sm border border-primary/20 bg-card p-12 flex flex-col items-center justify-center gap-5 text-center">
+        <div className="relative">
+          <Loader2 className="w-8 h-8 text-primary animate-spin" />
+          <div className="absolute inset-0 rounded-full bg-primary/10 blur-xl" />
         </div>
-        <h3 className="text-xl font-medium mb-2" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Mensagem enviada!</h3>
-        <p className="text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">
-          Entraremos em contato em até 2h via WhatsApp para confirmar o pagamento e liberar seu acesso completo.
+        <div>
+          <p className="text-sm font-medium mb-1">Gerando sua análise personalizada</p>
+          <p className="text-xs text-muted-foreground">O Claude está analisando seu perfil. Isso leva alguns segundos...</p>
+        </div>
+        <div className="flex gap-1.5 mt-2">
+          {[0, 0.3, 0.6].map((d) => (
+            <div key={d} className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-pulse" style={{ animationDelay: `${d}s` }} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === "report") {
+    return (
+      <div className="space-y-10">
+        {/* AI Report */}
+        <div className="rounded-sm border border-primary/20 bg-card overflow-hidden">
+          <div className="flex items-center gap-3 px-6 py-4 border-b border-border bg-primary/5">
+            <Brain className="w-4 h-4 text-primary" />
+            <p className="text-xs font-mono text-primary uppercase tracking-widest">Análise com IA · Claude</p>
+          </div>
+          <div className="px-6 py-8">
+            <div className="prose prose-sm prose-invert max-w-none text-muted-foreground leading-relaxed
+              [&>h2]:text-sm [&>h2]:font-medium [&>h2]:text-foreground [&>h2]:mt-7 [&>h2]:mb-3 [&>h2]:tracking-tight
+              [&>p]:text-sm [&>p]:leading-relaxed [&>p]:mb-3
+              [&>ul]:text-sm [&>ul]:space-y-1.5 [&>ul>li]:pl-1">
+              <ReactMarkdown>{aiText}</ReactMarkdown>
+            </div>
+          </div>
+        </div>
+
+        {/* PDI */}
+        {opportunityCompetencies.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-5">
+              <Target className="w-4 h-4 text-primary" />
+              <p className="text-xs font-mono text-primary uppercase tracking-widest">Plano de Desenvolvimento Individual</p>
+            </div>
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+              Ações concretas para as suas maiores oportunidades de crescimento, organizadas em 30, 60 e 90 dias.
+            </p>
+            <div className="space-y-3">
+              {opportunityCompetencies.map((id) => <PdiCard key={id} competencyId={id} />)}
+            </div>
+          </div>
+        )}
+
+        {/* Mentoria CTA */}
+        <div className="rounded-sm border border-border bg-card p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          <div className="flex items-start gap-4">
+            <div className="w-9 h-9 bg-primary/10 rounded-sm flex items-center justify-center shrink-0">
+              <Calendar className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-medium mb-1">1 sessão de mentoria ao vivo</p>
+              <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">60 minutos com Patrick ou Carlos para aprofundar seu diagnóstico e definir os próximos passos com clareza.</p>
+            </div>
+          </div>
+          <a href={`https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent("Olá! Fiz o diagnóstico e gostaria de agendar minha sessão de mentoria.")}`}
+            target="_blank" rel="noreferrer"
+            className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity shrink-0">
+            <MessageCircle className="w-4 h-4" /> Agendar mentoria
+          </a>
+        </div>
+
+        <p className="text-[10px] text-muted-foreground font-mono">
+          Você receberá um contato via WhatsApp em breve para confirmar os detalhes do pagamento ({PRODUCT_PRICE}).
         </p>
       </div>
     );
   }
 
+  // Preview phase
   return (
     <div className="rounded-sm overflow-hidden border border-primary/20">
+      {/* Header */}
       <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-8 lg:p-10 border-b border-border">
         <div className="flex items-start justify-between gap-6 flex-wrap mb-8">
           <div>
             <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-[10px] px-3 py-1 rounded-full font-mono uppercase tracking-widest mb-4">
               <Lock className="w-2.5 h-2.5" /> Conteúdo exclusivo
             </div>
-            <h2 className="text-2xl lg:text-3xl mb-2" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Diagnóstico Completo</h2>
+            <h2 className="text-2xl lg:text-3xl mb-2" style={{ fontFamily: "var(--font-display)" }}>Diagnóstico Completo</h2>
             <p className="text-sm text-muted-foreground max-w-lg leading-relaxed">
-              Vá além dos números. Análise narrativa personalizada, plano de ação concreto e uma sessão de mentoria para transformar o diagnóstico em evolução real.
+              Vá além dos números. Análise narrativa personalizada com IA, plano de ação concreto e uma sessão de mentoria para transformar o diagnóstico em evolução real.
             </p>
           </div>
           <div className="text-right shrink-0">
@@ -670,23 +790,46 @@ function UpgradeSection({ profileData, generalScore, generalLevel, profileName }
           ))}
         </div>
       </div>
+
+      {/* Blurred preview */}
+      <div className="relative px-8 py-6 border-b border-border overflow-hidden select-none">
+        <div className="blur-sm pointer-events-none">
+          <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-3">Prévia · Análise com IA</p>
+          <p className="text-sm leading-relaxed text-muted-foreground mb-2">Seu diagnóstico revela um profissional com sólida capacidade analítica e forte orientação para resultados. A combinação entre pensamento crítico elevado e comunicação assertiva...</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">O padrão mais relevante identificado está na tensão entre sua habilidade de análise e a necessidade de traduzir insights de forma mais acessível para diferentes perfis...</p>
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="flex items-center gap-2 bg-background/90 backdrop-blur-sm border border-border rounded-full px-4 py-2">
+            <Lock className="w-3.5 h-3.5 text-primary" />
+            <span className="text-xs font-medium">Desbloqueado após confirmação</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Form */}
       <div className="p-8 lg:p-10">
-        {!showForm ? (
-          <button onClick={() => setShowForm(true)} className="flex items-center gap-2 bg-primary text-primary-foreground px-7 py-3.5 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity">
+        {phase === "preview" ? (
+          <button onClick={() => setPhase("form")} className="flex items-center gap-2 bg-primary text-primary-foreground px-7 py-3.5 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity">
             <Sparkles className="w-4 h-4" /> Quero o diagnóstico completo
           </button>
         ) : (
           <div className="max-w-md">
-            <p className="text-sm text-muted-foreground mb-6">Preencha seus dados e abriremos uma conversa no WhatsApp para finalizar o pagamento.</p>
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+              Preencha seus dados e abriremos uma conversa no WhatsApp para confirmar os detalhes. Você receberá a análise completa imediatamente após o envio.
+            </p>
+            {aiError && (
+              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-sm text-xs text-red-400">{aiError}</div>
+            )}
             <div className="space-y-4">
               <div><label className={labelCls}>Nome completo</label><input type="text" value={lead.name} onChange={(e) => setLead((l) => ({ ...l, name: e.target.value }))} placeholder="Seu nome" className={inputCls} /></div>
               <div><label className={labelCls}>E-mail</label><input type="email" value={lead.email} onChange={(e) => setLead((l) => ({ ...l, email: e.target.value }))} placeholder="seu@email.com" className={inputCls} /></div>
               <div><label className={labelCls}>WhatsApp (com DDD)</label><input type="tel" value={lead.whatsapp} onChange={(e) => setLead((l) => ({ ...l, whatsapp: e.target.value }))} placeholder="(11) 99999-9999" className={inputCls} /></div>
               <div className="flex gap-3 pt-2">
-                <button onClick={handleSubmit} disabled={!canSubmit || sending} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
-                  {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />} Confirmar interesse
+                <button onClick={handleSubmit} disabled={!canSubmit}
+                  className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                  <Sparkles className="w-4 h-4" /> Gerar análise completa
                 </button>
-                <button onClick={() => setShowForm(false)} className="px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors">Cancelar</button>
+                <button onClick={() => setPhase("preview")} className="px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors">Cancelar</button>
               </div>
               <p className="text-[10px] text-muted-foreground">Suas informações são usadas apenas para entrar em contato. Nenhum dado é armazenado automaticamente.</p>
             </div>
@@ -725,10 +868,11 @@ function Results({ profileData, scores, answers, onReset, onAbout }) {
       </nav>
 
       <div className="max-w-4xl mx-auto px-6 py-16 space-y-14">
+        {/* Hero header */}
         <div className="flex items-start justify-between gap-8 flex-wrap pb-10 border-b border-border">
           <div>
             <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-3">Diagnóstico de</p>
-            <h1 className="text-4xl lg:text-5xl mb-2" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>{profileData.name}</h1>
+            <h1 className="text-4xl lg:text-5xl mb-2" style={{ fontFamily: "var(--font-display)" }}>{profileData.name}</h1>
             <p className="text-sm text-muted-foreground">{profileData.currentRole} · {profileData.professionalLevel} · {profileData.mainArea}</p>
           </div>
           <div className="text-right">
@@ -741,6 +885,7 @@ function Results({ profileData, scores, answers, onReset, onAbout }) {
           <Check className="w-3 h-3 text-primary" /> Diagnóstico gratuito
         </div>
 
+        {/* Radar + Profile */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="bg-card border border-border rounded-sm p-6">
             <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-4">Mapa de competências</p>
@@ -755,7 +900,7 @@ function Results({ profileData, scores, answers, onReset, onAbout }) {
           </div>
           <div className="bg-card border border-border rounded-sm p-6 flex flex-col">
             <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-4">Perfil predominante</p>
-            <h3 className="text-2xl mb-3" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>{profile.name}</h3>
+            <h3 className="text-2xl mb-3" style={{ fontFamily: "var(--font-display)" }}>{profile.name}</h3>
             <p className="text-sm text-muted-foreground leading-relaxed flex-1">{profile.desc}</p>
             <div className="flex flex-wrap gap-2 mt-6 pt-5 border-t border-border">
               {profile.competencies.map((id) => { const c = COMPETENCIES.find((x) => x.id === id); return c ? <span key={id} className="text-[11px] bg-primary/10 text-primary px-3 py-1 rounded-full">{c.name}</span> : null; })}
@@ -763,6 +908,7 @@ function Results({ profileData, scores, answers, onReset, onAbout }) {
           </div>
         </div>
 
+        {/* Scores */}
         <div className="bg-card border border-border rounded-sm p-6">
           <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-6">Pontuação por competência</p>
           <div className="space-y-4">
@@ -779,6 +925,7 @@ function Results({ profileData, scores, answers, onReset, onAbout }) {
           </div>
         </div>
 
+        {/* Strengths & Opportunities */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {[{ label: "Forças", items: strengths }, { label: "Oportunidades", items: opportunities }].map(({ label, items }) => (
             <div key={label} className="bg-card border border-border rounded-sm p-6">
@@ -801,10 +948,11 @@ function Results({ profileData, scores, answers, onReset, onAbout }) {
           ))}
         </div>
 
+        {/* Cross analysis */}
         {crossResults.length > 0 && (
           <div>
             <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-2">Padrões comportamentais</p>
-            <h2 className="text-2xl mb-6" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Como suas competências se combinam</h2>
+            <h2 className="text-2xl mb-6" style={{ fontFamily: "var(--font-display)" }}>Como suas competências se combinam</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {crossResults.map((r) => (
                 <div key={r.id} className="bg-card border border-border rounded-sm p-5">
@@ -816,13 +964,24 @@ function Results({ profileData, scores, answers, onReset, onAbout }) {
           </div>
         )}
 
+        {/* Upgrade / Full report */}
         <div>
           <div className="flex items-center gap-3 mb-8">
             <div className="flex-1 border-t border-border" />
             <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest px-3">Próximo nível</span>
             <div className="flex-1 border-t border-border" />
           </div>
-          <UpgradeSection profileData={profileData} generalScore={generalScore} generalLevel={generalLevel} profileName={profile.name} />
+          <UpgradeSection
+            profileData={profileData}
+            scores={scores}
+            answers={answers}
+            generalScore={generalScore}
+            generalLevel={generalLevel}
+            profileName={profile.name}
+            profileDesc={profile.desc}
+            strengths={strengths}
+            opportunities={opportunities}
+          />
         </div>
 
         <div className="border-t border-border pt-8 flex items-center justify-between">
