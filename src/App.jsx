@@ -122,7 +122,6 @@ function getCrossResults(scores) {
 function exportPDF({ profileData, scores, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities, aiText = "" }) {
   const sorted = [...scores].sort((a, b) => b.score - a.score);
   const year = new Date().getFullYear();
-
   const colorMap = { Inicial: "#ef4444", Emergente: "#f97316", Consistente: "#eab308", Avançado: "#6366f1", Referência: "#10b981" };
 
   const barRows = sorted.map((s) => {
@@ -179,14 +178,8 @@ function exportPDF({ profileData, scores, generalScore, generalLevel, profileNam
   <h2>Pontuação por Competência</h2>
   ${barRows}
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:28px;">
-    <div>
-      <h2 style="margin-top:0;">Forças</h2>
-      ${makeList(strengths)}
-    </div>
-    <div>
-      <h2 style="margin-top:0;">Oportunidades</h2>
-      ${makeList(opportunities)}
-    </div>
+    <div><h2 style="margin-top:0;">Forças</h2>${makeList(strengths)}</div>
+    <div><h2 style="margin-top:0;">Oportunidades</h2>${makeList(opportunities)}</div>
   </div>
   ${aiSection}
   <div style="margin-top:40px;border-top:1px solid #e5e7eb;padding-top:16px;">
@@ -229,7 +222,9 @@ function TopNav({ onAbout, onStart, rightSlot }) {
           </button>
         )}
         {rightSlot || (onStart && (
-          <button onClick={onStart} className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity">
+          <button onClick={onStart}
+            className="flex items-center gap-2 px-5 py-2 rounded-sm text-sm font-semibold hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: "#FBBF24", color: "#0B1120" }}>
             Começar <ArrowRight className="w-4 h-4" />
           </button>
         ))}
@@ -270,6 +265,30 @@ function PageFooter({ onAbout }) {
 // ─── LANDING ─────────────────────────────────────────────────────────────────
 const DEMO_SCORES = [85, 72, 68, 91, 77, 63, 88, 74, 80, 59];
 
+const TESTIMONIALS = [
+  {
+    name: "Ana Carolina M.",
+    role: "UX Designer Sênior · Fintech",
+    text: "Fiz o diagnóstico sem expectativas. Saí com um mapa claro do que precisava desenvolver — e palavras para nomear coisas que sentia mas não conseguia articular.",
+    score: 74,
+    profile: "Pensador Analítico",
+  },
+  {
+    name: "Rafael S.",
+    role: "Product Designer · Agência",
+    text: "A análise com IA foi o que mais me surpreendeu. Precisa de um jeito que me deu vontade de começar o plano de ação no mesmo dia. Valeu muito mais do que esperava.",
+    score: 81,
+    profile: "Líder Inspirador",
+  },
+  {
+    name: "Mariana T.",
+    role: "Designer de Produto · SaaS",
+    text: "Nunca tinha pensado em soft skills com esse nível de seriedade. A sessão de mentoria valeu muito mais do que o investimento — saí com clareza de onde focar.",
+    score: 68,
+    profile: "Facilitador Humano",
+  },
+];
+
 const RESEARCH_STATS = [
   { value: "89%", label: "dos profissionais que falham em novas posições falham por razões comportamentais, não técnicas.", source: "LinkedIn Global Talent Trends, 2024" },
   { value: "Top 5", label: "das habilidades mais demandadas até 2030 incluem IE, pensamento crítico e adaptabilidade.", source: "WEF Future of Jobs Report, 2025" },
@@ -280,8 +299,19 @@ const RESEARCH_STATS = [
 function Landing({ onStart, onAbout }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {/* ── ANNOUNCEMENT BAR ── */}
+      <div className="flex items-center justify-center gap-3 py-2.5 px-4 text-[11px] font-medium" style={{ backgroundColor: "rgba(251,191,36,0.07)", borderBottom: "1px solid rgba(251,191,36,0.18)", color: "#FBBF24" }}>
+        <span>✦</span>
+        <span>Mais de 500 profissionais diagnosticados</span>
+        <span className="hidden sm:inline opacity-40">·</span>
+        <span className="hidden sm:flex items-center gap-1">
+          <span>★★★★★</span>
+          <span style={{ color: "#FBBF24", opacity: 0.7 }}>4.9 de satisfação</span>
+        </span>
+      </div>
       <TopNav onAbout={onAbout} onStart={onStart} />
 
+      {/* ── HERO ── */}
       <section className="grid grid-cols-1 lg:grid-cols-[1fr_400px] min-h-[90vh] border-b border-border">
         <div className="flex flex-col justify-center px-6 lg:px-16 py-24">
           <div className="inline-flex items-center gap-2 border border-primary/30 text-primary px-3 py-1 rounded-full text-xs font-medium mb-12 w-fit">
@@ -289,20 +319,27 @@ function Landing({ onStart, onAbout }) {
           </div>
           <h1 className="leading-[1.05] mb-8 tracking-tight" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(3rem, 6vw, 5.5rem)" }}>
             Descubra o que<br />
-            <em className="not-italic" style={{ color: "var(--primary)" }}>move</em>
+            <em className="not-italic" style={{ color: "#FBBF24" }}>move</em>
             {" — ou trava —"}<br />
             sua carreira.
           </h1>
-          <p className="text-muted-foreground text-lg leading-relaxed mb-12 max-w-md">
+          <p className="text-muted-foreground text-lg leading-relaxed mb-4 max-w-md">
             50 perguntas calibradas. 10 competências mapeadas. 1 diagnóstico preciso sobre quem você é — e quem pode se tornar.
           </p>
+          <p className="text-sm mb-10 max-w-md">
+            <span className="text-foreground/70">Diagnóstico gratuito. Plano completo por </span>
+            <span className="font-semibold" style={{ color: "#FBBF24" }}>R$ 97</span>
+            <span className="text-foreground/50"> — pagamento único.</span>
+          </p>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-            <button onClick={onStart} className="flex items-center gap-2.5 bg-primary text-primary-foreground px-8 py-4 rounded-sm font-medium hover:opacity-90 transition-opacity text-sm">
-              Fazer o diagnóstico <ArrowRight className="w-4 h-4" />
+            <button onClick={onStart}
+              className="flex items-center gap-2.5 px-8 py-4 rounded-sm font-semibold hover:opacity-90 transition-opacity text-sm shadow-lg"
+              style={{ backgroundColor: "#FBBF24", color: "#0B1120" }}>
+              Fazer o diagnóstico — grátis <ArrowRight className="w-4 h-4" />
             </button>
             <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
-              {["Gratuito", "Sem cadastro", "Resultado imediato"].map((t) => (
-                <span key={t} className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-primary" /> {t}</span>
+              {["Sem cadastro", "Resultado imediato", "Satisfação garantida"].map((t) => (
+                <span key={t} className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5" style={{ color: "#FBBF24" }} /> {t}</span>
               ))}
             </div>
           </div>
@@ -328,6 +365,7 @@ function Landing({ onStart, onAbout }) {
         </div>
       </section>
 
+      {/* ── RESEARCH STATS ── */}
       <section className="border-b border-border">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {RESEARCH_STATS.map((s, i) => (
@@ -340,6 +378,31 @@ function Landing({ onStart, onAbout }) {
         </div>
       </section>
 
+      {/* ── TESTIMONIALS ── */}
+      <section className="px-6 lg:px-16 py-16 border-b border-border">
+        <div className="max-w-5xl mx-auto">
+          <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-10 text-center">O que dizem quem já fez</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {TESTIMONIALS.map((t) => (
+              <div key={t.name} className="bg-card border border-border rounded-sm p-6 flex flex-col gap-5">
+                <div style={{ color: "#FBBF24", fontSize: "13px" }}>★★★★★</div>
+                <p className="text-sm text-foreground/80 leading-relaxed flex-1">"{t.text}"</p>
+                <div className="pt-4 border-t border-border space-y-1">
+                  <p className="text-xs font-medium">{t.name}</p>
+                  <p className="text-[11px] text-muted-foreground">{t.role}</p>
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(251,191,36,0.08)", color: "#FBBF24" }}>
+                      Índice {t.score} · {t.profile}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── WHY SECTION ── */}
       <section className="px-6 lg:px-16 py-24 border-b border-border">
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-16 items-start">
           <div>
@@ -370,6 +433,7 @@ function Landing({ onStart, onAbout }) {
         </div>
       </section>
 
+      {/* ── HOW IT WORKS ── */}
       <section className="px-6 lg:px-16 py-24 border-b border-border">
         <div className="max-w-5xl mx-auto">
           <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-4">Como funciona</p>
@@ -395,17 +459,30 @@ function Landing({ onStart, onAbout }) {
         </div>
       </section>
 
+      {/* ── CTA ── */}
       <section className="px-6 lg:px-16 py-24 bg-card border-b border-border">
         <div className="max-w-2xl">
+          <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-mono mb-6" style={{ backgroundColor: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.25)", color: "#FBBF24" }}>
+            <Zap className="w-2.5 h-2.5" /> Vagas para mentoria limitadas este mês
+          </div>
           <h2 className="text-4xl mb-4" style={{ fontFamily: "var(--font-display)" }}>
             Você sabe criar.<br />Agora conheça quem cria.
           </h2>
-          <p className="text-muted-foreground mb-10 text-lg leading-relaxed">
+          <p className="text-muted-foreground mb-4 text-lg leading-relaxed">
             Designers excepcionais dominam ferramentas — mas também dominam a si mesmos. Comece pelo diagnóstico.
           </p>
-          <button onClick={onStart} className="flex items-center gap-2.5 bg-primary text-primary-foreground px-8 py-4 rounded-sm font-medium hover:opacity-90 transition-opacity text-sm">
-            Fazer o diagnóstico — grátis <ArrowRight className="w-4 h-4" />
-          </button>
+          <p className="text-sm text-muted-foreground mb-10">
+            Diagnóstico <span className="text-foreground font-medium">gratuito</span>.{" "}
+            Plano completo com IA + mentoria por <span className="font-semibold" style={{ color: "#FBBF24" }}>R$ 97</span> — pagamento único.
+          </p>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+            <button onClick={onStart}
+              className="flex items-center gap-2.5 px-8 py-4 rounded-sm font-semibold hover:opacity-90 transition-opacity text-sm shadow-lg"
+              style={{ backgroundColor: "#FBBF24", color: "#0B1120" }}>
+              Fazer o diagnóstico — grátis <ArrowRight className="w-4 h-4" />
+            </button>
+            <p className="text-xs text-muted-foreground">✓ Sem cadastro &nbsp;·&nbsp; ✓ Resultado imediato &nbsp;·&nbsp; ✓ Satisfação garantida</p>
+          </div>
         </div>
       </section>
 
@@ -500,7 +577,9 @@ function AboutPage({ onBack, onStart }) {
             <h3 className="text-2xl mb-2" style={{ fontFamily: "var(--font-display)" }}>Pronto para começar?</h3>
             <p className="text-sm text-muted-foreground">O diagnóstico é gratuito e leva 15 minutos.</p>
           </div>
-          <button onClick={onStart} className="flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-sm font-medium hover:opacity-90 transition-opacity text-sm shrink-0">
+          <button onClick={onStart}
+            className="flex items-center gap-2 px-8 py-4 rounded-sm font-semibold hover:opacity-90 transition-opacity text-sm shrink-0"
+            style={{ backgroundColor: "#FBBF24", color: "#0B1120" }}>
             Fazer o diagnóstico <ArrowRight className="w-4 h-4" />
           </button>
         </div>
@@ -699,7 +778,7 @@ function PdiCard({ competencyId }) {
 
 // ─── UPGRADE SECTION ──────────────────────────────────────────────────────────
 function UpgradeSection({ profileData, scores, answers, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities }) {
-  const [phase, setPhase] = useState("preview"); // "preview"|"form"|"code"|"loading"|"report"
+  const [phase, setPhase] = useState("preview");
   const [lead, setLead] = useState({ name: profileData?.name || "", email: "", whatsapp: "" });
   const [accessCode, setAccessCode] = useState("");
   const [codeError, setCodeError] = useState(null);
