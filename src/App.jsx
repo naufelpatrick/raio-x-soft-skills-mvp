@@ -200,18 +200,13 @@ function validateCode(entered, whatsapp) {
 }
 
 // ─── SHARED NAV ───────────────────────────────────────────────────────────────
-function TopNav({ onAbout, onStart, rightSlot }) {
+function TopNav({ onStart, rightSlot }) {
   return (
     <nav className="flex items-center justify-between px-6 lg:px-12 py-5 border-b border-border">
       <div className="flex items-center">
         <img src="/raio-x-logo-branco.svg" alt="Raio-X do Designer" className="h-9 w-auto" />
       </div>
       <div className="flex items-center gap-4">
-        {onAbout && (
-          <button onClick={onAbout} className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
-            Sobre nós
-          </button>
-        )}
         {rightSlot || (onStart && (
           <button onClick={onStart}
             className="flex items-center gap-2 px-5 py-2 rounded-sm text-sm font-semibold hover:opacity-90 transition-opacity"
@@ -225,7 +220,7 @@ function TopNav({ onAbout, onStart, rightSlot }) {
 }
 
 // ─── SHARED FOOTER ────────────────────────────────────────────────────────────
-function PageFooter({ onAbout }) {
+function PageFooter() {
   return (
     <footer className="border-t border-border px-6 lg:px-12 py-8">
       <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -234,11 +229,6 @@ function PageFooter({ onAbout }) {
           <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} · Ferramenta de autoconhecimento profissional</p>
         </div>
         <div className="flex items-center gap-6">
-          {onAbout && (
-            <button onClick={onAbout} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-              Sobre nós
-            </button>
-          )}
           <a href={`https://wa.me/${OWNER_WHATSAPP}`} target="_blank" rel="noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
             Contato
           </a>
@@ -252,9 +242,9 @@ function PageFooter({ onAbout }) {
 const DEMO_SCORES = [85, 72, 68, 91, 77, 63, 88, 74, 80, 59];
 
 const TESTIMONIALS = [
-  { name: "Ana Carolina M.", role: "UX Designer Sênior · Fintech", text: "Fiz o diagnóstico sem expectativas. Saí com um mapa claro do que precisava desenvolver — e palavras para nomear coisas que sentia mas não conseguia articular.", score: 74, profile: "Pensador Analítico" },
-  { name: "Rafael S.", role: "Product Designer · Agência", text: "A análise com IA foi o que mais me surpreendeu. Precisa de um jeito que me deu vontade de começar o plano de ação no mesmo dia. Valeu muito mais do que esperava.", score: 81, profile: "Líder Inspirador" },
-  { name: "Mariana T.", role: "Designer de Produto · SaaS", text: "Nunca tinha pensado em soft skills com esse nível de seriedade. A sessão de mentoria valeu muito mais do que o investimento — saí com clareza de onde focar.", score: 68, profile: "Facilitador Humano" },
+  { name: "A.C.", role: "UX Designer Sênior", text: "Fiz o diagnóstico sem expectativas. Saí com um mapa claro do que precisava desenvolver — e palavras para nomear coisas que sentia mas não conseguia articular.", score: 74, profile: "Pensador Analítico" },
+  { name: "R.S.", role: "Product Designer", text: "A análise com IA foi o que mais me surpreendeu. Precisa de um jeito que me deu vontade de começar o plano de ação no mesmo dia. Valeu muito mais do que esperava.", score: 81, profile: "Líder Inspirador" },
+  { name: "M.T.", role: "Designer de Produto", text: "Nunca tinha pensado em soft skills com esse nível de seriedade. A sessão de mentoria valeu muito mais do que o investimento — saí com clareza de onde focar.", score: 68, profile: "Facilitador Humano" },
 ];
 
 const RESEARCH_STATS = [
@@ -291,7 +281,7 @@ const FAQS = [
   { q: "Preciso pagar antes de ver qualquer resultado?", a: "Não. O diagnóstico inicial é gratuito. Você só decide pelo plano completo depois de ver seu primeiro resultado." },
 ];
 
-function Landing({ onStart, onAbout }) {
+function Landing({ onStart }) {
   const scrollToReportExample = () => document.getElementById("exemplo-relatorio")?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   return (
@@ -301,7 +291,7 @@ function Landing({ onStart, onAbout }) {
         <span>✦</span><span>Mais de 500 profissionais diagnosticados</span>
       </div>
       */}
-      <TopNav onAbout={onAbout} onStart={onStart} />
+      <TopNav onStart={onStart} />
       <section className="relative grid grid-cols-1 lg:grid-cols-[1fr_420px] min-h-[92vh] border-b border-border overflow-hidden">
         <div className="pointer-events-none absolute inset-0 z-0">
           <div style={{ position: "absolute", top: "-10%", left: "-5%", width: "55%", height: "70%", background: "radial-gradient(ellipse at center, rgba(251,191,36,0.08) 0%, transparent 70%)" }} />
@@ -618,19 +608,27 @@ function Landing({ onStart, onAbout }) {
             <h2 className="mb-6" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 4vw, 3.2rem)", lineHeight: 1.08 }}>Criado por designers que vivem ensino, produto e mentoria na prática.</h2>
             <p className="text-foreground/75 leading-relaxed">O Raio-X do Designer nasce da combinação entre experiência em UX, produto digital, design systems, prototipagem, ensino e mentoria de profissionais em evolução.</p>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-border">
-            {MENTORS.map((m) => (
-              <div key={m.name} className="bg-background p-8 lg:p-10">
-                <div className="flex items-end gap-5 mb-7">
-                  <div className="rounded-sm shrink-0 flex items-center justify-center font-mono font-bold text-lg" style={{ width: 88, height: 104, background: "linear-gradient(135deg, rgba(129,140,248,0.2), rgba(251,191,36,0.1))", border: "1px solid rgba(129,140,248,0.25)", color: "#818CF8" }}>{m.initials}</div>
-                  <div>
-                    <p className="text-[10px] font-mono text-primary uppercase tracking-widest mb-1">{m.role}</p>
-                    <h3 className="text-2xl font-medium mb-1" style={{ fontFamily: "var(--font-display)" }}>{m.name}</h3>
-                    <a href={m.linkedin} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[11px] text-primary hover:opacity-70 transition-opacity font-mono">LinkedIn <ExternalLink className="w-2.5 h-2.5" /></a>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {MENTORS.map((m, i) => (
+              <div key={m.name} className="group overflow-hidden rounded-[1.25rem] border border-primary/20 bg-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/35" style={{ boxShadow: "0 26px 80px rgba(0,0,0,0.18)" }}>
+                <div className="relative aspect-[4/5] overflow-hidden bg-background" style={{ background: "linear-gradient(180deg, rgba(129,140,248,0.08), rgba(11,17,32,0.96))" }}>
+                  <img src={m.image} alt={m.name} className="relative z-10 h-full w-full object-contain object-bottom transition-transform duration-500 group-hover:scale-[1.015]" loading="lazy" />
+                  <div className="absolute inset-0 z-20 pointer-events-none" style={{ background: "linear-gradient(180deg, transparent 52%, rgba(11,17,32,0.9) 100%)" }} />
+                  <div className="absolute z-30 left-5 right-5 bottom-5 rounded-xl border border-border bg-background/88 px-4 py-3 backdrop-blur-sm">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="flex items-center gap-2 text-xs font-semibold text-foreground/90"><span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#FBBF24" }} /> {m.highlights[0]}</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-primary">{m.initials}</span>
+                    </div>
+                    <div className="mt-2 h-1.5 rounded-full bg-secondary overflow-hidden"><div className="h-full rounded-full" style={{ width: i === 0 ? "92%" : "84%", backgroundColor: "#FBBF24" }} /></div>
                   </div>
                 </div>
-                <p className="text-sm text-foreground/75 leading-relaxed mb-6">{m.bio}</p>
-                <div className="flex flex-wrap gap-2">{m.highlights.map((h) => (<span key={h} className="text-[11px] bg-secondary text-muted-foreground px-3 py-1 rounded-full">{h}</span>))}</div>
+                <div className="p-7 lg:p-8">
+                  <p className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: "#FBBF24" }}>{m.role}</p>
+                  <h3 className="mb-4 text-2xl lg:text-3xl font-bold leading-tight tracking-tight">{m.name}</h3>
+                  <p className="text-sm text-foreground/72 leading-relaxed mb-6">{m.bio}</p>
+                  <div className="flex flex-wrap gap-2 mb-6">{m.highlights.map((h) => (<span key={h} className="text-[11px] font-semibold bg-secondary text-muted-foreground px-3 py-1.5 rounded-md">{h}</span>))}</div>
+                  <a href={m.linkedin} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-md border border-foreground/30 px-4 py-2.5 text-xs font-semibold text-foreground hover:border-primary hover:text-primary transition-colors">Conectar no LinkedIn <ExternalLink className="w-3.5 h-3.5" /></a>
+                </div>
               </div>
             ))}
           </div>
@@ -704,21 +702,21 @@ function Landing({ onStart, onAbout }) {
           </div>
         </div>
       </section>
-      <PageFooter onAbout={onAbout} />
+      <PageFooter />
     </div>
   );
 }
 
 // ─── ABOUT PAGE ───────────────────────────────────────────────────────────────
 const MENTORS = [
-  { initials: "PN", name: "Patrick A. G. Naufel", role: "Designer · Professor · Mentor", linkedin: "https://www.linkedin.com/in/naufelpatrick", bio: "Designer há 20 anos e especialista em UX e Produtos Digitais, Patrick une duas décadas de prática com o rigor de quem também ensina — é professor universitário há mais de 5 anos e mentor ativo na Fóton/Caixa. Sua convicção: o autoconhecimento é o primeiro movimento de qualquer evolução profissional real.", highlights: ["20 anos em design", "UX & Produtos Digitais", "Professor universitário", "Mentor na Fóton/Caixa"] },
-  { initials: "CA", name: "Carlos Guilherme Alencar", role: "Designer · Líder de Mentores", linkedin: "https://www.linkedin.com/in/ocarlosguilherme/", bio: "Designer de UI/UX há 8 anos com domínio profundo em interfaces, prototipagem e design systems, Carlos é Líder de Mentores na Fóton/Caixa. Para ele, design centrado no usuário começa pelo autoconhecimento de quem cria — e equipes excelentes são feitas de pessoas que sabem onde precisam crescer.", highlights: ["8 anos em UI/UX", "Design systems", "Prototipagem", "Líder de mentores na Fóton/Caixa"] },
+  { initials: "PN", image: "/raio-x-patrick.jpg", name: "Patrick A. G. Naufel", role: "Designer · Professor · Mentor", linkedin: "https://www.linkedin.com/in/naufelpatrick", bio: "Designer há 20 anos e especialista em UX e Produtos Digitais, Patrick une duas décadas de prática com o rigor de quem também ensina — é professor universitário há mais de 5 anos e mentor ativo na Fóton/Caixa. Sua convicção: o autoconhecimento é o primeiro movimento de qualquer evolução profissional real.", highlights: ["20 anos em design", "UX & Produtos Digitais", "Professor universitário", "Mentor na Fóton/Caixa"] },
+  { initials: "CA", image: "/raio-x-carlos.jpg", name: "Carlos Guilherme Alencar", role: "Designer · Líder de Mentores", linkedin: "https://www.linkedin.com/in/ocarlosguilherme/", bio: "Designer de UI/UX há 8 anos com domínio profundo em interfaces, prototipagem e design systems, Carlos é Líder de Mentores na Fóton/Caixa. Para ele, design centrado no usuário começa pelo autoconhecimento de quem cria — e equipes excelentes são feitas de pessoas que sabem onde precisam crescer.", highlights: ["8 anos em UI/UX", "Design systems", "Prototipagem", "Líder de mentores na Fóton/Caixa"] },
 ];
 
 function AboutPage({ onBack, onStart }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <TopNav onAbout={undefined} rightSlot={<button onClick={onBack} className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm transition-colors"><ChevronLeft className="w-4 h-4" /> Voltar</button>} />
+      <TopNav rightSlot={<button onClick={onBack} className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm transition-colors"><ChevronLeft className="w-4 h-4" /> Voltar</button>} />
       <section className="px-6 lg:px-16 py-24 border-b border-border">
         <div className="max-w-3xl">
           <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-6">Sobre nós</p>
@@ -731,7 +729,7 @@ function AboutPage({ onBack, onStart }) {
           {MENTORS.map((m) => (
             <div key={m.name} className="bg-background p-10">
               <div className="flex items-end gap-5 mb-7">
-                <div className="rounded-sm shrink-0 flex items-center justify-center font-mono font-bold text-lg" style={{ width: 80, height: 96, background: "linear-gradient(135deg, rgba(129,140,248,0.2), rgba(251,191,36,0.1))", border: "1px solid rgba(129,140,248,0.25)", color: "#818CF8" }}>{m.initials}</div>
+                <img src={m.image} alt={m.name} className="rounded-sm shrink-0 object-cover object-top" style={{ width: 80, height: 96, border: "1px solid rgba(129,140,248,0.25)" }} loading="lazy" />
                 <div>
                   <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1">{m.role}</p>
                   <h3 className="text-xl font-medium mb-1" style={{ fontFamily: "var(--font-display)" }}>{m.name}</h3>
@@ -1063,7 +1061,7 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
 }
 
 // ─── RESULTS ──────────────────────────────────────────────────────────────────
-function Results({ profileData, scores, answers, onReset, onAbout }) {
+function Results({ profileData, scores, answers, onReset }) {
   const generalScore = Math.round(scores.reduce((s, c) => s + c.score, 0) / scores.length);
   const generalLevel = getLevel(generalScore);
   const profile = getProfileResult(scores);
@@ -1148,7 +1146,6 @@ function Results({ profileData, scores, answers, onReset, onAbout }) {
         <div className="border-t border-border pt-8 flex items-center justify-between">
           <p className="text-xs text-muted-foreground">Raio-X do Designer · {new Date().getFullYear()}</p>
           <div className="flex items-center gap-5">
-            <button onClick={onAbout} className="text-xs text-muted-foreground hover:text-foreground transition-colors">Sobre nós</button>
             <button onClick={onReset} className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"><RefreshCw className="w-3.5 h-3.5" /> Nova avaliação</button>
           </div>
         </div>
@@ -1172,11 +1169,11 @@ export default function App() {
   const handleReset = () => { navigateTo("landing"); setProfileData(null); setAnswers({}); setScores([]); };
   return (
     <>
-      {view === "landing" && <Landing onStart={() => navigateTo("profile")} onAbout={() => navigateTo("about")} />}
+      {view === "landing" && <Landing onStart={() => navigateTo("profile")} />}
       {view === "about" && <AboutPage onBack={() => navigateTo("landing")} onStart={() => navigateTo("profile")} />}
       {view === "profile" && <ProfileForm onSubmit={(d) => { setProfileData(d); navigateTo("assessment"); }} onBack={() => navigateTo("landing")} />}
       {view === "assessment" && <AssessmentForm answers={answers} onAnswer={handleAnswer} onComplete={handleComplete} onBack={() => navigateTo("profile")} />}
-      {view === "results" && profileData && <Results profileData={profileData} scores={scores} answers={answers} onReset={handleReset} onAbout={() => navigateTo("about")} />}
+      {view === "results" && profileData && <Results profileData={profileData} scores={scores} answers={answers} onReset={handleReset} />}
     </>
   );
 }
