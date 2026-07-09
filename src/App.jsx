@@ -185,11 +185,15 @@ function exportPDF({ profileData, scores, generalScore, generalLevel, profileNam
 }
 
 // ─── VALIDATE CODE ────────────────────────────────────────────────────────────
+function normalizeAccessCode(value) {
+  return value.replace(/[^a-z0-9]/gi, "").toUpperCase();
+}
+
 function validateCode(entered, whatsapp) {
   const digits = whatsapp.replace(/\D/g, "");
   const last4 = digits.slice(-4);
   const expected = `RAIO${last4}`.toUpperCase();
-  const clean = entered.trim().toUpperCase();
+  const clean = normalizeAccessCode(entered);
   if (clean !== expected) return "invalid";
   if (localStorage.getItem(`rxused_${clean}`)) return "used";
   return "valid";
@@ -713,19 +717,21 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
   const [aiError, setAiError] = useState(null);
   const inputCls = "w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors";
   const labelCls = "block text-xs text-muted-foreground font-mono uppercase tracking-wider mb-2";
-  const canSubmit = lead.name.trim() && lead.email.trim() && lead.whatsapp.trim();
+  const whatsappDigits = lead.whatsapp.replace(/\D/g, "");
+  const canSubmit = lead.name.trim() && lead.email.includes("@") && whatsappDigits.length >= 10;
+  const whatsappMessage = ["🎯 *Nova lead — Diagnóstico Completo*", "", `*Nome:* ${lead.name}`, `*Email:* ${lead.email}`, `*WhatsApp:* ${lead.whatsapp}`, "", `*Cargo:* ${profileData?.currentRole || "-"} (${profileData?.professionalLevel || "-"})`, `*Área:* ${profileData?.mainArea || "-"}`, `*Índice geral:* ${generalScore}/100 — ${generalLevel}`, `*Perfil:* ${profileName}`, "", "_Aguardando confirmação de pagamento._"].join("\n");
+  const whatsappUrl = `https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent(whatsappMessage)}`;
   async function handleSubmit() {
     if (!canSubmit) return;
-    const msg = ["🎯 *Nova lead — Diagnóstico Completo*", "", `*Nome:* ${lead.name}`, `*Email:* ${lead.email}`, `*WhatsApp:* ${lead.whatsapp}`, "", `*Cargo:* ${profileData?.currentRole || "-"} (${profileData?.professionalLevel || "-"})`, `*Área:* ${profileData?.mainArea || "-"}`, `*Índice geral:* ${generalScore}/100 — ${generalLevel}`, `*Perfil:* ${profileName}`, "", "_Aguardando confirmação de pagamento._"].join("\n");
-    window.open(`https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent(msg)}`, "_blank");
+    window.open(whatsappUrl, "_blank");
     setPhase("code");
   }
   async function handleCodeSubmit() {
     setCodeError(null);
     const result = validateCode(accessCode, lead.whatsapp);
-    if (result === "invalid") { setCodeError("Código inválido. Verifique o código enviado pelo WhatsApp."); return; }
-    if (result === "used") { setCodeError("Este código já foi utilizado."); return; }
-    localStorage.setItem(`rxused_${accessCode.trim().toUpperCase()}`, "1");
+    if (result === "invalid") { setCodeError("Chave inválida. Confira a chave recebida no WhatsApp e tente novamente."); return; }
+    if (result === "used") { setCodeError("Esta chave já foi utilizada neste navegador."); return; }
+    localStorage.setItem(`rxused_${normalizeAccessCode(accessCode)}`, "1");
     setPhase("loading");
     setAiError(null);
     try {
@@ -808,36 +814,37 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
         {phase === "preview" && (<button onClick={() => setPhase("form")} className="flex items-center gap-2 bg-primary text-primary-foreground px-7 py-3.5 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity"><Sparkles className="w-4 h-4" /> Quero o diagnóstico completo</button>)}
         {phase === "form" && (
           <div className="max-w-md space-y-6">
-            <p className="text-sm text-muted-foreground leading-relaxed">Preencha seus dados. Abriremos uma conversa no WhatsApp para confirmar o pagamento de {PRODUCT_PRICE} e enviaremos seu código de acesso pessoal.</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">Preencha seus dados para reservar seu acesso. Em seguida, abriremos o WhatsApp com uma mensagem pronta para confirmar o pagamento de {PRODUCT_PRICE} e liberar sua chave pessoal.</p>
             {aiError && (<div className="p-3 bg-red-500/10 border border-red-500/20 rounded-sm text-xs text-red-400">{aiError}</div>)}
             <div className="space-y-4">
               <div><label className={labelCls}>Nome completo</label><input type="text" value={lead.name} onChange={(e) => setLead((l) => ({ ...l, name: e.target.value }))} placeholder="Seu nome" className={inputCls} /></div>
               <div><label className={labelCls}>E-mail</label><input type="email" value={lead.email} onChange={(e) => setLead((l) => ({ ...l, email: e.target.value }))} placeholder="seu@email.com" className={inputCls} /></div>
               <div><label className={labelCls}>WhatsApp (com DDD)</label><input type="tel" value={lead.whatsapp} onChange={(e) => setLead((l) => ({ ...l, whatsapp: e.target.value }))} placeholder="(49) 99999-9999" className={inputCls} /></div>
               <div className="flex gap-3 pt-2">
-                <button onClick={handleSubmit} disabled={!canSubmit} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"><MessageCircle className="w-4 h-4" /> Enviar via WhatsApp</button>
+                <button onClick={handleSubmit} disabled={!canSubmit} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"><MessageCircle className="w-4 h-4" /> Confirmar pelo WhatsApp</button>
                 <button onClick={() => setPhase("preview")} className="px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors">Cancelar</button>
               </div>
-              <p className="text-[10px] text-muted-foreground">Suas informações são usadas apenas para entrar em contato. Nenhum dado é armazenado automaticamente.</p>
+              <p className="text-[10px] text-muted-foreground">Use um e-mail válido e um WhatsApp com DDD. Suas informações são usadas apenas para contato e liberação do acesso.</p>
             </div>
           </div>
         )}
         {phase === "code" && (
           <div className="max-w-md space-y-6">
-            <div className="flex items-center gap-3"><MessageCircle className="w-5 h-5 text-green-400" /><div><p className="text-sm font-medium">Mensagem enviada!</p><p className="text-xs text-muted-foreground">Confirme o pagamento via WhatsApp e aguarde seu código de acesso pessoal.</p></div></div>
+            <div className="flex items-center gap-3"><MessageCircle className="w-5 h-5 text-green-400" /><div><p className="text-sm font-medium">Solicitação iniciada</p><p className="text-xs text-muted-foreground">Finalize a confirmação no WhatsApp. Depois volte para esta tela e insira sua chave de acesso.</p></div></div>
             <div className="bg-card border border-border rounded-sm p-5 text-xs text-muted-foreground leading-relaxed space-y-1">
-              <p className="font-mono text-primary uppercase tracking-widest text-[10px] mb-2">Como funciona</p>
-              <p>1. Patrick confirma o recebimento via WhatsApp</p>
-              <p>2. Após o pagamento de {PRODUCT_PRICE}, você recebe seu código pessoal</p>
-              <p>3. Digite o código abaixo para liberar sua análise completa</p>
+              <p className="font-mono text-primary uppercase tracking-widest text-[10px] mb-2">Liberação do acesso</p>
+              <p>1. Confirme o pagamento de {PRODUCT_PRICE} na conversa já aberta</p>
+              <p>2. Você receberá uma chave pessoal de liberação</p>
+              <p>3. Cole a chave abaixo para gerar sua análise completa</p>
             </div>
             {(codeError || aiError) && (<div className="p-3 bg-red-500/10 border border-red-500/20 rounded-sm text-xs text-red-400">{codeError || aiError}</div>)}
             <div>
-              <label className={labelCls}>Código de acesso</label>
-              <input type="text" value={accessCode} onChange={(e) => setAccessCode(e.target.value.toUpperCase())} placeholder="Ex: RAIO1234" className={inputCls + " font-mono tracking-widest"} />
+              <label className={labelCls}>Chave de acesso</label>
+              <input type="text" value={accessCode} onChange={(e) => setAccessCode(e.target.value.toUpperCase())} placeholder="Cole aqui a chave recebida" className={inputCls + " font-mono tracking-widest"} />
             </div>
             <div className="flex gap-3">
               <button onClick={handleCodeSubmit} disabled={!accessCode.trim()} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"><Sparkles className="w-4 h-4" /> Gerar análise completa</button>
+              <a href={whatsappUrl} target="_blank" rel="noreferrer" className="px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors">Abrir WhatsApp</a>
               <button onClick={() => setPhase("form")} className="px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors">Voltar</button>
             </div>
           </div>
