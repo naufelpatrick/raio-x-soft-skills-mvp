@@ -5,14 +5,17 @@ import {
   Brain, Calendar, MessageCircle, ExternalLink, ChevronDown, ChevronUp, Download,
 } from "lucide-react";
 
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
 const OWNER_WHATSAPP = "554991106400";
 const PRODUCT_PRICE = "R$ 97";
 
+// ─── SIMPLE MARKDOWN RENDERER ────────────────────────────────────────────────
 function MarkdownText({ children }) {
   if (!children) return null;
   const lines = children.split("\n");
   const elements = [];
   let listItems = [];
+
   const flushList = (key) => {
     if (listItems.length > 0) {
       elements.push(
@@ -28,23 +31,34 @@ function MarkdownText({ children }) {
       listItems = [];
     }
   };
+
   lines.forEach((line, i) => {
     if (line.startsWith("## ")) {
       flushList(`list-${i}`);
-      elements.push(<h2 key={i} className="text-sm font-medium text-foreground mt-7 mb-2 tracking-tight">{line.slice(3)}</h2>);
+      elements.push(
+        <h2 key={i} className="text-sm font-medium text-foreground mt-7 mb-2 tracking-tight">
+          {line.slice(3)}
+        </h2>
+      );
     } else if (line.startsWith("- ") || line.startsWith("* ")) {
       listItems.push(line.slice(2));
     } else if (line.trim() === "") {
       flushList(`list-${i}`);
     } else {
       flushList(`list-${i}`);
-      elements.push(<p key={i} className="text-sm text-muted-foreground leading-relaxed">{line}</p>);
+      elements.push(
+        <p key={i} className="text-sm text-muted-foreground leading-relaxed">
+          {line}
+        </p>
+      );
     }
   });
   flushList("list-end");
+
   return <div className="space-y-1">{elements}</div>;
 }
 
+// ─── DATA ─────────────────────────────────────────────────────────────────────
 const COMPETENCIES = [
   { id: "comunicacao", name: "Comunicação", icon: "💬", desc: "Transmitir ideias com clareza, reduzir ruídos e adaptar a linguagem ao contexto." },
   { id: "empatia", name: "Empatia", icon: "❤️", desc: "Compreender contextos e perspectivas diversas antes de tirar conclusões." },
@@ -114,6 +128,7 @@ const PDI_ACTIONS = {
   proposito: { days30: ["Escrever sobre o impacto que seu trabalho gera nas pessoas ao redor.", "Identificar quais atividades te geram mais energia e significado."], days60: ["Ter uma conversa sobre valores com alguém que você admira.", "Conectar seu trabalho atual a um objetivo de médio prazo."], days90: ["Definir um projeto que esteja alinhado aos seus valores.", "Criar rituais de reflexão periódica sobre direção e propósito."] },
 };
 
+// ─── SCORING ─────────────────────────────────────────────────────────────────
 function getLevel(score) {
   if (score <= 20) return "Inicial";
   if (score <= 40) return "Emergente";
@@ -147,6 +162,7 @@ function getCrossResults(scores) {
   return CROSS_ANALYSIS.filter((r) => r.high.every((id) => (map[id] || 0) >= 60) && r.low.every((id) => (map[id] || 0) <= 50)).slice(0, 4);
 }
 
+// ─── EXPORT PDF ───────────────────────────────────────────────────────────────
 function exportPDF({ profileData, scores, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities, aiText = "" }) {
   const sorted = [...scores].sort((a, b) => b.score - a.score);
   const year = new Date().getFullYear();
@@ -168,6 +184,7 @@ function exportPDF({ profileData, scores, generalScore, generalLevel, profileNam
   setTimeout(() => w.print(), 400);
 }
 
+// ─── VALIDATE CODE ────────────────────────────────────────────────────────────
 function validateCode(entered, whatsapp) {
   const digits = whatsapp.replace(/\D/g, "");
   const last4 = digits.slice(-4);
@@ -178,6 +195,7 @@ function validateCode(entered, whatsapp) {
   return "valid";
 }
 
+// ─── SHARED NAV ───────────────────────────────────────────────────────────────
 function TopNav({ onAbout, onStart, rightSlot }) {
   return (
     <nav className="flex items-center justify-between px-6 lg:px-12 py-5 border-b border-border">
@@ -205,6 +223,7 @@ function TopNav({ onAbout, onStart, rightSlot }) {
   );
 }
 
+// ─── SHARED FOOTER ────────────────────────────────────────────────────────────
 function PageFooter({ onAbout }) {
   return (
     <footer className="border-t border-border px-6 lg:px-12 py-8">
@@ -233,6 +252,7 @@ function PageFooter({ onAbout }) {
   );
 }
 
+// ─── LANDING ─────────────────────────────────────────────────────────────────
 const DEMO_SCORES = [85, 72, 68, 91, 77, 63, 88, 74, 80, 59];
 
 const TESTIMONIALS = [
@@ -251,6 +271,11 @@ const RESEARCH_STATS = [
 function Landing({ onStart, onAbout }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {/* ANNOUNCEMENT BAR — ativar quando atingir 500 diagnósticos
+      <div className="flex items-center justify-center gap-3 py-2.5 px-4 text-[11px] font-medium" style={{ backgroundColor: "rgba(251,191,36,0.07)", borderBottom: "1px solid rgba(251,191,36,0.18)", color: "#FBBF24" }}>
+        <span>✦</span><span>Mais de 500 profissionais diagnosticados</span>
+      </div>
+      */}
       <TopNav onAbout={onAbout} onStart={onStart} />
       <section className="relative grid grid-cols-1 lg:grid-cols-[1fr_420px] min-h-[92vh] border-b border-border overflow-hidden">
         <div className="pointer-events-none absolute inset-0 z-0">
@@ -472,6 +497,7 @@ function Landing({ onStart, onAbout }) {
   );
 }
 
+// ─── ABOUT PAGE ───────────────────────────────────────────────────────────────
 const MENTORS = [
   { initials: "PN", name: "Patrick A. G. Naufel", role: "Designer · Professor · Mentor", linkedin: "https://www.linkedin.com/in/naufelpatrick", bio: "Designer há 20 anos e especialista em UX e Produtos Digitais, Patrick une duas décadas de prática com o rigor de quem também ensina — é professor universitário há mais de 5 anos e mentor ativo na Fóton/Caixa. Sua convicção: o autoconhecimento é o primeiro movimento de qualquer evolução profissional real.", highlights: ["20 anos em design", "UX & Produtos Digitais", "Professor universitário", "Mentor na Fóton/Caixa"] },
   { initials: "CA", name: "Carlos Guilherme Alencar", role: "Designer · Líder de Mentores", linkedin: "https://www.linkedin.com/in/ocarlosguilherme/", bio: "Designer de UI/UX há 8 anos com domínio profundo em interfaces, prototipagem e design systems, Carlos é Líder de Mentores na Fóton/Caixa. Para ele, design centrado no usuário começa pelo autoconhecimento de quem cria — e equipes excelentes são feitas de pessoas que sabem onde precisam crescer.", highlights: ["8 anos em UI/UX", "Design systems", "Prototipagem", "Líder de mentores na Fóton/Caixa"] },
@@ -530,6 +556,7 @@ function AboutPage({ onBack, onStart }) {
   );
 }
 
+// ─── PROFILE FORM ─────────────────────────────────────────────────────────────
 function ProfileForm({ onSubmit, onBack }) {
   const [form, setForm] = useState({ name: "", age: "", experience: "", currentRole: "", professionalLevel: "", mainArea: "", careerGoal: "", currentChallenge: "" });
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
@@ -567,6 +594,7 @@ function ProfileForm({ onSubmit, onBack }) {
   );
 }
 
+// ─── ASSESSMENT ───────────────────────────────────────────────────────────────
 function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
   const [step, setStep] = useState(0);
   const TOTAL = 11;
@@ -646,6 +674,7 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
   );
 }
 
+// ─── PDI CARD ─────────────────────────────────────────────────────────────────
 function PdiCard({ competencyId }) {
   const [open, setOpen] = useState(false);
   const comp = COMPETENCIES.find((c) => c.id === competencyId);
@@ -674,6 +703,7 @@ function PdiCard({ competencyId }) {
   );
 }
 
+// ─── UPGRADE SECTION ──────────────────────────────────────────────────────────
 function UpgradeSection({ profileData, scores, answers, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities }) {
   const [phase, setPhase] = useState("preview");
   const [lead, setLead] = useState({ name: profileData?.name || "", email: "", whatsapp: "" });
@@ -817,6 +847,7 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
   );
 }
 
+// ─── RESULTS ──────────────────────────────────────────────────────────────────
 function Results({ profileData, scores, answers, onReset, onAbout }) {
   const generalScore = Math.round(scores.reduce((s, c) => s + c.score, 0) / scores.length);
   const generalLevel = getLevel(generalScore);
@@ -911,6 +942,7 @@ function Results({ profileData, scores, answers, onReset, onAbout }) {
   );
 }
 
+// ─── APP ──────────────────────────────────────────────────────────────────────
 export default function App() {
   const [view, setView] = useState("landing");
   const [profileData, setProfileData] = useState(null);
