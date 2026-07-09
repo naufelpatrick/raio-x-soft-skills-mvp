@@ -620,22 +620,32 @@ function Landing({ onStart, onAbout }) {
       </section>
 
       <section className="px-6 lg:px-16 py-24 border-b border-border">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-12 items-center">
-          <div className="rounded-sm border border-primary/25 bg-card p-8 min-h-[420px] flex flex-col justify-end relative overflow-hidden">
-            <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(129,140,248,0.18), rgba(251,191,36,0.08))" }} />
-            <div className="relative w-28 h-32 rounded-sm border border-primary/30 bg-background/70 flex items-center justify-center font-mono text-3xl font-bold text-primary mb-8">PN</div>
-            <div className="relative">
-              <p className="text-[10px] text-primary font-mono uppercase tracking-widest mb-2">Foto / Perfil do criador</p>
-              <h3 className="text-2xl" style={{ fontFamily: "var(--font-display)" }}>Patrick Naufel</h3>
-            </div>
-          </div>
-          <div>
+        <div className="max-w-6xl mx-auto">
+          <div className="max-w-3xl mb-12">
             <p className="text-[10px] text-primary font-mono uppercase tracking-widest mb-5">Quem criou o Raio-X do Designer?</p>
-            <h2 className="mb-6" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 4vw, 3.2rem)", lineHeight: 1.08 }}>Criado por quem vive design, ensino e mentoria na prática.</h2>
-            <p className="text-foreground/75 leading-relaxed mb-8 max-w-2xl">O Raio-X do Designer nasce da experiência de Patrick Naufel — professor, especialista em UX, mentor e pesquisador, com mais de 20 anos de atuação em Design e Produtos Digitais.</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {["Professor universitário", "Especialista em UX", "Mentor de designers", "Pesquisador", "20+ anos em Design", "Produtos Digitais"].map((item) => (
-                <span key={item} className="flex items-center gap-2 rounded-sm border border-border bg-card px-4 py-3 text-sm text-foreground/78"><Check className="w-4 h-4 text-primary" /> {item}</span>
+            <h2 className="mb-6" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 4vw, 3.2rem)", lineHeight: 1.08 }}>Criado por designers que vivem ensino, produto e mentoria na prática.</h2>
+            <p className="text-foreground/75 leading-relaxed">O Raio-X do Designer nasce da combinação entre experiência em UX, produto digital, design systems, prototipagem, ensino e mentoria de profissionais em evolução.</p>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-border">
+            {MENTORS.map((m) => (
+              <div key={m.name} className="bg-background p-8 lg:p-10">
+                <div className="flex items-end gap-5 mb-7">
+                  <div className="rounded-sm shrink-0 flex items-center justify-center font-mono font-bold text-lg" style={{ width: 88, height: 104, background: "linear-gradient(135deg, rgba(129,140,248,0.2), rgba(251,191,36,0.1))", border: "1px solid rgba(129,140,248,0.25)", color: "#818CF8" }}>{m.initials}</div>
+                  <div>
+                    <p className="text-[10px] font-mono text-primary uppercase tracking-widest mb-1">{m.role}</p>
+                    <h3 className="text-2xl font-medium mb-1" style={{ fontFamily: "var(--font-display)" }}>{m.name}</h3>
+                    <a href={m.linkedin} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[11px] text-primary hover:opacity-70 transition-opacity font-mono">LinkedIn <ExternalLink className="w-2.5 h-2.5" /></a>
+                  </div>
+                </div>
+                <p className="text-sm text-foreground/75 leading-relaxed mb-6">{m.bio}</p>
+                <div className="flex flex-wrap gap-2">{m.highlights.map((h) => (<span key={h} className="text-[11px] bg-secondary text-muted-foreground px-3 py-1 rounded-full">{h}</span>))}</div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 rounded-sm border border-primary/20 bg-card p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {["20+ anos combinados em Design", "Experiência com UX, UI e Produto", "Atuação em mentoria e desenvolvimento profissional"].map((item) => (
+                <span key={item} className="flex items-center gap-2 text-sm text-foreground/78"><Check className="w-4 h-4 text-primary shrink-0" /> {item}</span>
               ))}
             </div>
           </div>
