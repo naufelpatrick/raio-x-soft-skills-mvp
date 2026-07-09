@@ -7,7 +7,15 @@ import {
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const OWNER_WHATSAPP = "554991106400";
-const PRODUCT_PRICE = "R$ 97";
+const PRODUCT_PRICE = "R$ 49,90";
+
+function BoldFreeText({ children }) {
+  if (typeof children !== "string") return children;
+  const parts = children.split(/(gratuito)/gi);
+  return parts.map((part, index) => (
+    part.toLowerCase() === "gratuito" ? <strong key={index} className="font-bold text-foreground/95">{part}</strong> : part
+  ));
+}
 
 // ─── SIMPLE MARKDOWN RENDERER ────────────────────────────────────────────────
 function MarkdownText({ children }) {
@@ -299,18 +307,18 @@ function Landing({ onStart }) {
         </div>
         <div className="relative z-10 flex flex-col justify-center px-6 lg:px-16 py-24">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-12 w-fit" style={{ backgroundColor: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.3)", color: "#FBBF24" }}>
-            <Zap className="w-3 h-3" /> Avaliação gratuita · 15 minutos
+            <Zap className="w-3 h-3" /> Avaliação <strong>gratuita</strong> · 15 minutos
           </div>
           <h1 className="leading-[1.02] mb-8 tracking-tight" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(3.2rem, 6.5vw, 6rem)" }}>
             Descubra o que<br />
             <span style={{ color: "#FBBF24", textShadow: "0 0 60px rgba(251,191,36,0.35)" }}>move</span>
-            {" — ou trava —"}<br />
+            {" ou trava"}<br />
             sua carreira.
           </h1>
           <p className="text-foreground/75 text-lg leading-relaxed mb-4 max-w-lg">50 perguntas calibradas. 10 competências mapeadas. Um diagnóstico preciso sobre quem você é — e quem pode se tornar.</p>
           <p className="text-sm mb-10 max-w-md">
-            <span className="text-foreground/70">Diagnóstico gratuito. Plano completo por </span>
-            <span className="font-bold" style={{ color: "#FBBF24" }}>R$ 97</span>
+            <span className="text-foreground/70">Diagnóstico <strong className="font-bold text-foreground/95">gratuito</strong>. Plano completo por </span>
+            <span className="font-bold" style={{ color: "#FBBF24" }}>{PRODUCT_PRICE}</span>
             <span className="text-foreground/60"> — pagamento único.</span>
           </p>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
@@ -408,7 +416,7 @@ function Landing({ onStart }) {
             </div>
             <div className="space-y-3 mb-7">
               {["Diagnóstico gratuito incluído", "Relatório completo com IA", "PDI 30 / 60 / 90 dias", "1 sessão de mentoria ao vivo"].map((item) => (
-                <p key={item} className="flex items-center gap-2 text-sm text-foreground/78"><Check className="w-4 h-4" style={{ color: "#FBBF24" }} /> {item}</p>
+                <p key={item} className="flex items-center gap-2 text-sm text-foreground/78"><Check className="w-4 h-4" style={{ color: "#FBBF24" }} /> <BoldFreeText>{item}</BoldFreeText></p>
               ))}
             </div>
             <button onClick={onStart} className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-sm font-bold hover:opacity-90 hover:-translate-y-0.5 active:scale-[0.98] transition-all text-sm" style={{ backgroundColor: "#FBBF24", color: "#0B1120" }}>
@@ -484,8 +492,8 @@ function Landing({ onStart }) {
           </div>
           <div className="mt-px bg-card grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-6 px-8 py-6 border border-t-0" style={{ borderColor: "var(--border)" }}>
             <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
-              <div><span className="text-2xl font-mono font-medium">R$ 97</span><span className="text-xs text-muted-foreground ml-2">pagamento único · sem assinatura</span></div>
-              {["Diagnóstico gratuito incluído", "Resultado imediato", "Satisfação garantida ou reembolso"].map((g) => (<span key={g} className="flex items-center gap-1.5 text-xs text-muted-foreground"><Check className="w-3 h-3" style={{ color: "#FBBF24" }} /> {g}</span>))}
+              <div><span className="text-2xl font-mono font-medium">{PRODUCT_PRICE}</span><span className="text-xs text-muted-foreground ml-2">pagamento único · sem assinatura</span></div>
+              {["Diagnóstico gratuito incluído", "Resultado imediato", "Satisfação garantida ou reembolso"].map((g) => (<span key={g} className="flex items-center gap-1.5 text-xs text-muted-foreground"><Check className="w-3 h-3" style={{ color: "#FBBF24" }} /> <BoldFreeText>{g}</BoldFreeText></span>))}
             </div>
             <button onClick={onStart} className="flex items-center gap-2 px-6 py-3 rounded-sm font-semibold hover:opacity-90 hover:-translate-y-0.5 transition-all text-sm self-center shrink-0" style={{ backgroundColor: "#FBBF24", color: "#0B1120" }}>Descobrir meu perfil profissional <ArrowRight className="w-4 h-4" /></button>
           </div>
@@ -649,8 +657,8 @@ function Landing({ onStart }) {
           <div className="space-y-3">
             {FAQS.map((item) => (
               <div key={item.q} className="rounded-sm border border-border bg-background p-6">
-                <h3 className="text-sm font-semibold mb-2">{item.q}</h3>
-                <p className="text-sm text-foreground/72 leading-relaxed">{item.a}</p>
+                <h3 className="text-sm font-semibold mb-2"><BoldFreeText>{item.q}</BoldFreeText></h3>
+                <p className="text-sm text-foreground/72 leading-relaxed"><BoldFreeText>{item.a}</BoldFreeText></p>
               </div>
             ))}
           </div>
@@ -668,7 +676,7 @@ function Landing({ onStart }) {
               Você sabe criar.<br /><span style={{ color: "#FBBF24" }}>Agora conheça quem cria.</span>
             </h2>
             <p className="text-foreground/75 mb-4 text-lg leading-relaxed max-w-lg">Designers excepcionais dominam ferramentas — mas também dominam a si mesmos. Comece pelo diagnóstico.</p>
-            <p className="text-sm text-foreground/70 mb-10">Diagnóstico <span className="text-foreground/90 font-semibold">gratuito</span>.{" "}Plano completo com IA + mentoria por <span className="font-bold" style={{ color: "#FBBF24" }}>R$ 97</span> — pagamento único.</p>
+            <p className="text-sm text-foreground/70 mb-10">Diagnóstico <span className="text-foreground/95 font-bold">gratuito</span>.{" "}Plano completo com IA + mentoria por <span className="font-bold" style={{ color: "#FBBF24" }}>{PRODUCT_PRICE}</span> — pagamento único.</p>
             <div className="flex flex-col gap-4">
               <button onClick={onStart} className="inline-flex items-center gap-2.5 rounded-sm font-bold hover:opacity-90 hover:-translate-y-0.5 active:scale-[0.98] transition-all whitespace-nowrap w-fit" style={{ backgroundColor: "#FBBF24", color: "#0B1120", boxShadow: "0 0 40px rgba(251,191,36,0.3)", padding: "16px 36px", fontSize: "15px" }}>
                 Quero meu Raio-X <ArrowRight className="w-4 h-4 shrink-0" />
@@ -757,7 +765,7 @@ function AboutPage({ onBack, onStart }) {
       </section>
       <section className="px-6 lg:px-16 py-20 bg-card">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8">
-          <div><h3 className="text-2xl mb-2" style={{ fontFamily: "var(--font-display)" }}>Pronto para começar?</h3><p className="text-sm text-muted-foreground">O diagnóstico é gratuito e leva 15 minutos.</p></div>
+          <div><h3 className="text-2xl mb-2" style={{ fontFamily: "var(--font-display)" }}>Pronto para começar?</h3><p className="text-sm text-muted-foreground">O diagnóstico é <strong className="font-bold text-foreground/95">gratuito</strong> e leva 15 minutos.</p></div>
           <button onClick={onStart} className="flex items-center gap-2 px-8 py-4 rounded-sm font-semibold hover:opacity-90 transition-opacity text-sm shrink-0" style={{ backgroundColor: "#FBBF24", color: "#0B1120" }}>Quero meu Raio-X <ArrowRight className="w-4 h-4" /></button>
         </div>
       </section>
@@ -1091,7 +1099,7 @@ function Results({ profileData, scores, answers, onReset }) {
             <div className="text-sm text-muted-foreground mt-2">Índice Geral · <span style={{ color: LEVEL_COLORS[generalLevel] }}>{generalLevel}</span></div>
           </div>
         </div>
-        <div className="inline-flex items-center gap-2 border border-border rounded-full px-3 py-1 text-[11px] text-muted-foreground font-mono"><Check className="w-3 h-3 text-primary" /> Diagnóstico gratuito</div>
+        <div className="inline-flex items-center gap-2 border border-border rounded-full px-3 py-1 text-[11px] text-muted-foreground font-mono"><Check className="w-3 h-3 text-primary" /> Diagnóstico <strong className="font-bold text-foreground/95">gratuito</strong></div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="bg-card border border-border rounded-sm p-6">
             <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-4">Mapa de competências</p>
