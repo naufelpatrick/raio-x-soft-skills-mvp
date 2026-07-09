@@ -203,11 +203,8 @@ function validateCode(entered, whatsapp) {
 function TopNav({ onAbout, onStart, rightSlot }) {
   return (
     <nav className="flex items-center justify-between px-6 lg:px-12 py-5 border-b border-border">
-      <div className="flex items-center gap-2.5">
-        <div className="w-7 h-7 bg-primary rounded-sm flex items-center justify-center">
-          <BarChart2 className="w-3.5 h-3.5 text-primary-foreground" />
-        </div>
-        <span className="text-sm font-medium tracking-tight">Raio-X do Designer</span>
+      <div className="flex items-center">
+        <img src="/raio-x-logo-branco-small.png" alt="Raio-X do Designer" className="h-9 w-auto" />
       </div>
       <div className="flex items-center gap-4">
         {onAbout && (
@@ -233,12 +230,7 @@ function PageFooter({ onAbout }) {
     <footer className="border-t border-border px-6 lg:px-12 py-8">
       <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-5 h-5 bg-primary rounded-sm flex items-center justify-center">
-              <BarChart2 className="w-2.5 h-2.5 text-primary-foreground" />
-            </div>
-            <span className="text-xs font-medium">Raio-X do Designer</span>
-          </div>
+          <img src="/raio-x-logo-branco-small.png" alt="Raio-X do Designer" className="h-7 w-auto mb-1" />
           <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} · Ferramenta de autoconhecimento profissional</p>
         </div>
         <div className="flex items-center gap-6">
@@ -1083,7 +1075,7 @@ function Results({ profileData, scores, answers, onReset, onAbout }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <nav className="flex items-center justify-between px-6 lg:px-12 py-5 border-b border-border">
-        <div className="flex items-center gap-2.5"><div className="w-7 h-7 bg-primary rounded-sm flex items-center justify-center"><BarChart2 className="w-3.5 h-3.5 text-primary-foreground" /></div><span className="text-sm font-medium">Raio-X do Designer</span></div>
+        <img src="/raio-x-logo-branco-small.png" alt="Raio-X do Designer" className="h-8 w-auto" />
         <div className="flex items-center gap-3">
           <button onClick={() => exportPDF({ profileData, scores, generalScore, generalLevel, profileName: profile.name, profileDesc: profile.desc, strengths, opportunities })} className="flex items-center gap-2 border border-border text-muted-foreground px-4 py-2 rounded-sm text-sm hover:border-primary hover:text-foreground transition-colors"><Download className="w-3.5 h-3.5" /> Exportar PDF</button>
           <button onClick={onReset} className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm transition-colors"><RefreshCw className="w-4 h-4" /> Nova avaliação</button>
