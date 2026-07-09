@@ -207,7 +207,7 @@ function TopNav({ onAbout, onStart, rightSlot }) {
         <div className="w-7 h-7 bg-primary rounded-sm flex items-center justify-center">
           <BarChart2 className="w-3.5 h-3.5 text-primary-foreground" />
         </div>
-        <span className="text-sm font-medium tracking-tight">Raio-X de Soft Skills</span>
+        <span className="text-sm font-medium tracking-tight">Raio-X do Designer</span>
       </div>
       <div className="flex items-center gap-4">
         {onAbout && (
@@ -219,7 +219,7 @@ function TopNav({ onAbout, onStart, rightSlot }) {
           <button onClick={onStart}
             className="flex items-center gap-2 px-5 py-2 rounded-sm text-sm font-semibold hover:opacity-90 transition-opacity"
             style={{ backgroundColor: "#FBBF24", color: "#0B1120" }}>
-            Começar <ArrowRight className="w-4 h-4" />
+            Quero meu Raio-X <ArrowRight className="w-4 h-4" />
           </button>
         ))}
       </div>
@@ -237,7 +237,7 @@ function PageFooter({ onAbout }) {
             <div className="w-5 h-5 bg-primary rounded-sm flex items-center justify-center">
               <BarChart2 className="w-2.5 h-2.5 text-primary-foreground" />
             </div>
-            <span className="text-xs font-medium">Raio-X de Soft Skills</span>
+            <span className="text-xs font-medium">Raio-X do Designer</span>
           </div>
           <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} · Ferramenta de autoconhecimento profissional</p>
         </div>
@@ -272,7 +272,36 @@ const RESEARCH_STATS = [
   { value: "26×", label: "mais rápido: o crescimento da demanda por habilidades emocionais vs. técnicas até 2030.", source: "McKinsey Global Institute, 2019" },
 ];
 
+const PAIN_SITUATIONS = [
+  "Recebo feedbacks vagos e não sei exatamente o que melhorar.",
+  "Tenho dificuldade para demonstrar meu valor além das telas que entrego.",
+  "Não sei quais competências devo desenvolver para crescer.",
+  "Minha carreira parece estagnada, mesmo com experiência acumulada.",
+  "Quero evoluir, mas não sei por onde começar.",
+  "Tenho dificuldade para me posicionar profissionalmente com confiança.",
+];
+
+const VALUE_BENEFITS = [
+  "Perfil predominante",
+  "Radar de competências",
+  "Análise estratégica",
+  "Interpretação personalizada",
+  "Cruzamentos comportamentais",
+  "Recomendações práticas",
+  "Plano de Desenvolvimento Individual",
+  "Relatório completo",
+];
+
+const FAQS = [
+  { q: "O diagnóstico gratuito já entrega algum valor?", a: "Sim. Você recebe seu índice geral, mapa de competências, perfil predominante, forças, oportunidades e padrões comportamentais logo após responder." },
+  { q: "O que muda no plano completo?", a: "O plano completo transforma os dados em interpretação estratégica: análise narrativa com IA, PDI 30/60/90 dias, relatório completo e uma sessão de mentoria ao vivo." },
+  { q: "Isso é um teste psicológico?", a: "Não. É uma ferramenta de autoconhecimento profissional para apoiar clareza, desenvolvimento e tomada de decisão na carreira." },
+  { q: "Preciso pagar antes de ver qualquer resultado?", a: "Não. O diagnóstico inicial é gratuito. Você só decide pelo plano completo depois de ver seu primeiro resultado." },
+];
+
 function Landing({ onStart, onAbout }) {
+  const scrollToReportExample = () => document.getElementById("exemplo-relatorio")?.scrollIntoView({ behavior: "smooth", block: "start" });
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* ANNOUNCEMENT BAR — ativar quando atingir 500 diagnósticos
@@ -303,8 +332,8 @@ function Landing({ onStart, onAbout }) {
             <span className="text-foreground/60"> — pagamento único.</span>
           </p>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-            <button onClick={onStart} className="flex items-center gap-2.5 px-8 py-4 rounded-sm font-bold hover:opacity-90 active:scale-[0.98] transition-all text-sm" style={{ backgroundColor: "#FBBF24", color: "#0B1120", boxShadow: "0 0 32px rgba(251,191,36,0.35)" }}>
-              Fazer o diagnóstico — grátis <ArrowRight className="w-4 h-4" />
+            <button onClick={onStart} className="flex items-center gap-2.5 px-8 py-4 rounded-sm font-bold hover:opacity-90 hover:-translate-y-0.5 active:scale-[0.98] transition-all text-sm" style={{ backgroundColor: "#FBBF24", color: "#0B1120", boxShadow: "0 0 32px rgba(251,191,36,0.35)" }}>
+              Quero meu Raio-X <ArrowRight className="w-4 h-4" />
             </button>
             <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-foreground/70">
               {["Sem cadastro", "Resultado imediato", "Satisfação garantida"].map((t) => (
@@ -334,6 +363,79 @@ function Landing({ onStart, onAbout }) {
           </div>
         </div>
       </section>
+
+      <section className="px-6 lg:px-16 py-24 border-b border-border bg-card">
+        <div className="max-w-6xl mx-auto">
+          <div className="max-w-2xl mb-12">
+            <p className="text-[10px] text-primary font-mono uppercase tracking-widest mb-5">Dor real de carreira</p>
+            <h2 className="mb-4" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 4vw, 3.2rem)", lineHeight: 1.08 }}>Você se identifica com alguma destas situações?</h2>
+            <p className="text-foreground/75 text-base leading-relaxed">A maioria dos designers sabe quando está pronta para crescer. O difícil é enxergar com precisão o que precisa mudar para esse crescimento acontecer.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {PAIN_SITUATIONS.map((pain, i) => (
+              <div key={pain} className="group rounded-sm border border-border bg-background/70 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/35 hover:bg-background" style={{ boxShadow: i === 0 ? "0 0 40px rgba(129,140,248,0.05)" : undefined }}>
+                <span className="font-mono text-xs text-primary/80">0{i + 1}</span>
+                <p className="mt-5 text-sm text-foreground/82 leading-relaxed">{pain}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 rounded-sm border border-primary/20 p-6 lg:p-8" style={{ background: "linear-gradient(135deg, rgba(129,140,248,0.10), rgba(251,191,36,0.04))" }}>
+            <p className="text-lg leading-relaxed max-w-3xl" style={{ fontFamily: "var(--font-display)" }}>O Raio-X do Designer foi criado para transformar essas dúvidas em clareza: onde você está, quais competências sustentam sua evolução e quais próximos passos fazem mais sentido agora.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 lg:px-16 py-24 border-b border-border">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-14 items-start">
+          <div>
+            <p className="text-[10px] text-primary font-mono uppercase tracking-widest mb-5">Proposta de valor</p>
+            <h2 className="mb-5" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 4vw, 3.2rem)", lineHeight: 1.08 }}>Você recebe muito mais do que um gráfico.</h2>
+            <p className="text-foreground/75 leading-relaxed mb-8">O diagnóstico organiza suas respostas em uma leitura estratégica sobre comportamento, crescimento e carreira — para você tomar decisões com mais segurança.</p>
+            <button onClick={scrollToReportExample} className="inline-flex items-center gap-2 border border-primary/40 text-primary px-5 py-3 rounded-sm text-sm font-medium hover:bg-primary/10 hover:-translate-y-0.5 transition-all">
+              Visualizar exemplo do relatório <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-border">
+            {VALUE_BENEFITS.map((item, i) => (
+              <div key={item} className="bg-card p-6 min-h-28 transition-colors hover:bg-secondary/60">
+                <div className="flex items-center gap-3 mb-3">
+                  <Check className="w-4 h-4 shrink-0" style={{ color: "#FBBF24" }} />
+                  <span className="font-mono text-[10px] text-foreground/50">0{i + 1}</span>
+                </div>
+                <p className="text-sm font-medium text-foreground/90">{item}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 lg:px-16 py-20 border-b border-border" style={{ background: "linear-gradient(135deg, rgba(251,191,36,0.08) 0%, rgba(129,140,248,0.05) 48%, transparent 100%)" }}>
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-10 items-center">
+          <div>
+            <p className="text-[10px] text-primary font-mono uppercase tracking-widest mb-5">Oferta de validação</p>
+            <h2 className="mb-4" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.1rem, 4vw, 3.4rem)", lineHeight: 1.08 }}>Comece grátis. Evolua com um plano completo.</h2>
+            <p className="text-foreground/75 leading-relaxed max-w-2xl">Você faz o diagnóstico inicial sem pagar. Se fizer sentido, desbloqueia uma leitura completa para transformar o resultado em plano de evolução profissional.</p>
+          </div>
+          <div className="rounded-sm border border-primary/25 bg-card p-7 lg:p-8 transition-transform duration-300 hover:-translate-y-1" style={{ boxShadow: "0 0 60px rgba(251,191,36,0.08)" }}>
+            <div className="flex items-start justify-between gap-4 mb-6">
+              <div>
+                <p className="text-[10px] text-primary font-mono uppercase tracking-widest mb-2">Plano completo</p>
+                <h3 className="text-xl font-medium">Raio-X + PDI + Mentoria</h3>
+              </div>
+              <div className="text-right"><div className="text-3xl font-mono font-medium">{PRODUCT_PRICE}</div><div className="text-xs text-muted-foreground">pagamento único</div></div>
+            </div>
+            <div className="space-y-3 mb-7">
+              {["Diagnóstico gratuito incluído", "Relatório completo com IA", "PDI 30 / 60 / 90 dias", "1 sessão de mentoria ao vivo"].map((item) => (
+                <p key={item} className="flex items-center gap-2 text-sm text-foreground/78"><Check className="w-4 h-4" style={{ color: "#FBBF24" }} /> {item}</p>
+              ))}
+            </div>
+            <button onClick={onStart} className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-sm font-bold hover:opacity-90 hover:-translate-y-0.5 active:scale-[0.98] transition-all text-sm" style={{ backgroundColor: "#FBBF24", color: "#0B1120" }}>
+              Receber meu diagnóstico <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </section>
+
       <section className="border-b border-border" style={{ background: "linear-gradient(180deg, rgba(251,191,36,0.04) 0%, transparent 100%)" }}>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {RESEARCH_STATS.map((s, i) => (
@@ -345,28 +447,7 @@ function Landing({ onStart, onAbout }) {
           ))}
         </div>
       </section>
-      <section className="px-6 lg:px-16 py-20 border-b border-border bg-card">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-center justify-center gap-3 mb-12">
-            <div className="flex-1 h-px" style={{ background: "linear-gradient(to right, transparent, rgba(251,191,36,0.2))" }} />
-            <p className="text-[10px] text-foreground/60 font-mono uppercase tracking-widest whitespace-nowrap">O que dizem quem já fez</p>
-            <div className="flex-1 h-px" style={{ background: "linear-gradient(to left, transparent, rgba(251,191,36,0.2))" }} />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {TESTIMONIALS.map((t) => (
-              <div key={t.name} className="relative flex flex-col gap-5 p-6 rounded-sm overflow-hidden" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderTop: "2px solid rgba(251,191,36,0.4)" }}>
-                <div style={{ color: "#FBBF24", fontSize: "14px", letterSpacing: "2px" }}>★★★★★</div>
-                <p className="text-sm text-foreground/80 leading-relaxed flex-1 italic">"{t.text}"</p>
-                <div className="pt-4 border-t space-y-1" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                  <p className="text-xs font-semibold text-foreground/90">{t.name}</p>
-                  <p className="text-[11px] text-foreground/60">{t.role}</p>
-                  <span className="text-[10px] font-mono px-2.5 py-1 rounded-full font-medium inline-block mt-2" style={{ backgroundColor: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.25)", color: "#FBBF24" }}>Índice {t.score} · {t.profile}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+
       <section className="px-6 lg:px-16 py-24 border-b border-border bg-card">
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-16 items-start">
           <div>
@@ -380,7 +461,7 @@ function Landing({ onStart, onAbout }) {
             <p>Ferramentas mudam. Frameworks ficam obsoletos. Linguagens de programação vêm e vão. Mas a capacidade de se comunicar com clareza, de ouvir de verdade, de se adaptar sem perder o fio — essas habilidades nunca saem de moda.</p>
             <p>O problema é que tratamos competências humanas como algo que "se tem ou não se tem". Raramente as mapeamos com a mesma seriedade com que avaliamos portfólios ou certificações. O resultado: profissionais talentosos travados por pontos cegos que nunca foram nomeados.</p>
             <p>Para designers, isso é ainda mais crítico. Empatia, comunicação, escuta ativa e pensamento crítico não são soft skills adjacentes ao nosso trabalho — <strong className="text-foreground font-medium">elas são o trabalho.</strong></p>
-            <p>O Raio-X de Soft Skills nasceu dessa lacuna. Uma avaliação séria, baseada em pesquisa, construída por designers para designers — com resultado imediato e plano de ação concreto.</p>
+            <p>O Raio-X do Designer nasceu dessa lacuna. Uma avaliação séria, baseada em pesquisa, construída por designers para designers — com resultado imediato e plano de ação concreto.</p>
             <div className="pt-5 border-t border-border space-y-2">
               <p className="text-[10px] font-mono uppercase tracking-widest text-foreground/60 mb-3">Fontes consultadas</p>
               {["LinkedIn Global Talent Trends Report, 2024", "World Economic Forum — Future of Jobs Report, 2025", "Goleman, D. (1998). What Makes a Leader? Harvard Business Review.", "McKinsey Global Institute — The Future of Work in America, 2019"].map((ref) => (
@@ -390,36 +471,12 @@ function Landing({ onStart, onAbout }) {
           </div>
         </div>
       </section>
-      <section className="px-6 lg:px-16 py-24 border-b border-border" style={{ background: "linear-gradient(180deg, rgba(129,140,248,0.04) 0%, transparent 100%)" }}>
-        <div className="max-w-5xl mx-auto">
-          <p className="text-[10px] text-foreground/60 font-mono uppercase tracking-widest mb-4">Como funciona</p>
-          <h2 className="mb-16" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.8rem, 3vw, 2.6rem)" }}>Três etapas. Quinze minutos.</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {[
-              { step: "01", Icon: BookOpen, title: "Avaliação", badge: "Grátis", badgeColor: "#818CF8", desc: "50 afirmações sobre comportamentos reais no trabalho. Escala Likert de 1 a 5. Sem respostas certas ou erradas." },
-              { step: "02", Icon: BarChart2, title: "Diagnóstico imediato", badge: "Grátis", badgeColor: "#818CF8", desc: "Score em 10 competências, perfil predominante, forças, oportunidades e padrões comportamentais." },
-              { step: "03", Icon: Target, title: "Plano completo", badge: "R$ 97", badgeColor: "#FBBF24", desc: "PDI com ações para 30, 60 e 90 dias + análise narrativa com IA + 1 sessão de mentoria ao vivo." },
-            ].map(({ step, Icon, title, badge, badgeColor, desc }, idx) => (
-              <div key={step} className="relative p-8 rounded-sm flex flex-col gap-4 overflow-hidden" style={{ background: idx === 2 ? "linear-gradient(135deg, rgba(251,191,36,0.07) 0%, rgba(251,191,36,0.02) 100%)" : "rgba(255,255,255,0.02)", border: idx === 2 ? "1px solid rgba(251,191,36,0.25)" : "1px solid rgba(255,255,255,0.06)" }}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-mono text-4xl font-black" style={{ color: idx === 2 ? "rgba(251,191,36,0.25)" : "rgba(129,140,248,0.2)", lineHeight: 1 }}>{step}</span>
-                  <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: `${badgeColor}18`, border: `1px solid ${badgeColor}40`, color: badgeColor }}>{badge}</span>
-                </div>
-                <div className="w-9 h-9 rounded-sm flex items-center justify-center" style={{ backgroundColor: idx === 2 ? "rgba(251,191,36,0.12)" : "rgba(129,140,248,0.12)" }}>
-                  <Icon className="w-4 h-4" style={{ color: idx === 2 ? "#FBBF24" : "#818CF8" }} />
-                </div>
-                <h3 className="font-semibold text-base text-foreground/90">{title}</h3>
-                <p className="text-sm text-foreground/70 leading-relaxed">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+
       <section className="px-6 lg:px-16 py-24 border-b border-border">
         <div className="max-w-5xl mx-auto">
-          <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-4">O que você leva</p>
-          <h2 className="text-3xl mb-3" style={{ fontFamily: "var(--font-display)" }}>Plano Completo · <span style={{ color: "#FBBF24" }}>R$ 97</span></h2>
-          <p className="text-sm text-muted-foreground mb-12 max-w-xl leading-relaxed">Pagamento único. Sem assinatura. Acesso imediato após confirmação — tudo entregue em uma única sessão.</p>
+          <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-4">O que o usuário recebe</p>
+          <h2 className="text-3xl mb-3" style={{ fontFamily: "var(--font-display)" }}>Um plano de evolução profissional, não só um resultado.</h2>
+          <p className="text-sm text-muted-foreground mb-12 max-w-xl leading-relaxed">O plano completo combina diagnóstico, interpretação e acompanhamento para você sair da dúvida e avançar com clareza.</p>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-px bg-border">
             <div className="bg-background px-8 py-10 flex flex-col">
               <div className="w-9 h-9 rounded-sm flex items-center justify-center mb-6" style={{ backgroundColor: "rgba(251,191,36,0.1)" }}><Brain className="w-4 h-4" style={{ color: "#FBBF24" }} /></div>
@@ -448,10 +505,158 @@ function Landing({ onStart, onAbout }) {
               <div><span className="text-2xl font-mono font-medium">R$ 97</span><span className="text-xs text-muted-foreground ml-2">pagamento único · sem assinatura</span></div>
               {["Diagnóstico gratuito incluído", "Resultado imediato", "Satisfação garantida ou reembolso"].map((g) => (<span key={g} className="flex items-center gap-1.5 text-xs text-muted-foreground"><Check className="w-3 h-3" style={{ color: "#FBBF24" }} /> {g}</span>))}
             </div>
-            <button onClick={onStart} className="flex items-center gap-2 px-6 py-3 rounded-sm font-semibold hover:opacity-90 transition-opacity text-sm self-center shrink-0" style={{ backgroundColor: "#FBBF24", color: "#0B1120" }}>Começar grátis <ArrowRight className="w-4 h-4" /></button>
+            <button onClick={onStart} className="flex items-center gap-2 px-6 py-3 rounded-sm font-semibold hover:opacity-90 hover:-translate-y-0.5 transition-all text-sm self-center shrink-0" style={{ backgroundColor: "#FBBF24", color: "#0B1120" }}>Descobrir meu perfil profissional <ArrowRight className="w-4 h-4" /></button>
           </div>
         </div>
       </section>
+
+      <section id="exemplo-relatorio" className="px-6 lg:px-16 py-24 border-b border-border bg-card scroll-mt-8">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-14 items-center">
+          <div>
+            <p className="text-[10px] text-primary font-mono uppercase tracking-widest mb-5">Exemplo do relatório</p>
+            <h2 className="mb-5" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 4vw, 3.2rem)", lineHeight: 1.08 }}>Uma devolutiva com aparência de consultoria.</h2>
+            <p className="text-foreground/75 leading-relaxed mb-8">O relatório organiza seu perfil em uma narrativa executiva: clara, acionável e fácil de compartilhar com mentores, líderes ou com você mesmo em momentos de decisão.</p>
+            <button onClick={onStart} className="inline-flex items-center gap-2 px-6 py-3 rounded-sm font-bold hover:opacity-90 hover:-translate-y-0.5 transition-all text-sm" style={{ backgroundColor: "#FBBF24", color: "#0B1120" }}>
+              Receber meu diagnóstico <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="relative rounded-sm border border-primary/20 bg-background p-4 lg:p-6 overflow-hidden" style={{ boxShadow: "0 30px 90px rgba(0,0,0,0.22)" }}>
+            <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at top right, rgba(129,140,248,0.18), transparent 55%)" }} />
+            <div className="relative bg-card border border-border rounded-sm p-6 lg:p-8">
+              <div className="flex items-start justify-between gap-5 border-b border-border pb-6 mb-6">
+                <div>
+                  <p className="text-[10px] text-primary font-mono uppercase tracking-widest mb-2">Raio-X do Designer · Relatório</p>
+                  <h3 className="text-2xl" style={{ fontFamily: "var(--font-display)" }}>Perfil Profissional</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Designer de Produto · Nível Pleno</p>
+                </div>
+                <div className="text-right"><div className="text-4xl font-mono font-bold text-primary">77</div><p className="text-[10px] text-muted-foreground font-mono uppercase">Índice geral</p></div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                {["Comunicação 85", "Pensamento Crítico 91", "Escuta Ativa 88", "Adaptabilidade 63"].map((item) => (
+                  <div key={item} className="bg-background/80 border border-border rounded-sm p-4">
+                    <p className="text-xs text-foreground/75 mb-3">{item}</p>
+                    <div className="h-1.5 rounded-full bg-secondary"><div className="h-1.5 rounded-full bg-primary" style={{ width: `${item.includes("63") ? 63 : item.includes("91") ? 91 : item.includes("88") ? 88 : 85}%` }} /></div>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-3">
+                <p className="text-[10px] text-primary font-mono uppercase tracking-widest">Interpretação estratégica</p>
+                <p className="text-sm text-foreground/78 leading-relaxed">Seu perfil combina leitura crítica forte com alta capacidade de comunicação. O próximo salto está em transformar essa clareza em influência, posicionamento e decisões de carreira mais consistentes.</p>
+                <div className="grid grid-cols-3 gap-2 pt-3">
+                  {["Forças", "Oportunidades", "PDI"].map((tag) => <span key={tag} className="text-[10px] font-mono text-center px-2 py-2 rounded-sm bg-primary/10 text-primary border border-primary/20">{tag}</span>)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 lg:px-16 py-24 border-b border-border">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-14 items-center">
+          <div className="rounded-sm border border-primary/20 bg-card p-8 lg:p-10">
+            <Brain className="w-7 h-7 text-primary mb-8" />
+            <p className="text-[10px] text-primary font-mono uppercase tracking-widest mb-4">Inteligência aplicada</p>
+            <h2 className="mb-5" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 4vw, 3rem)", lineHeight: 1.08 }}>Uma análise que vai além dos números.</h2>
+            <p className="text-foreground/75 leading-relaxed">A IA interpreta seus resultados, cruza padrões comportamentais e produz uma devolutiva personalizada baseada nas suas respostas. O objetivo não é vender tecnologia — é entregar clareza profissional para você decidir melhor.</p>
+          </div>
+          <div className="space-y-4">
+            {["Transforma pontuações em leitura de carreira.", "Explica o que seus padrões indicam na prática.", "Conecta oportunidades a ações concretas.", "Ajuda você a enxergar próximos passos com confiança."].map((item) => (
+              <div key={item} className="flex items-start gap-4 rounded-sm border border-border bg-card p-5">
+                <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                <p className="text-sm text-foreground/78 leading-relaxed">{item}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 lg:px-16 py-24 border-b border-border" style={{ background: "linear-gradient(180deg, rgba(129,140,248,0.04) 0%, transparent 100%)" }}>
+        <div className="max-w-5xl mx-auto">
+          <p className="text-[10px] text-foreground/60 font-mono uppercase tracking-widest mb-4">Como funciona</p>
+          <h2 className="mb-16" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.8rem, 3vw, 2.6rem)" }}>Três etapas. Quinze minutos.</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {[
+              { step: "01", Icon: BookOpen, title: "Responda com honestidade", badge: "Grátis", badgeColor: "#818CF8", desc: "50 afirmações sobre situações reais de trabalho. Sem julgamento, sem resposta certa — apenas um retrato mais claro do seu momento." },
+              { step: "02", Icon: BarChart2, title: "Entenda seu perfil", badge: "Grátis", badgeColor: "#818CF8", desc: "Veja seu radar de competências, forças, oportunidades e padrões que influenciam sua evolução como designer." },
+              { step: "03", Icon: Target, title: "Transforme em plano", badge: "R$ 97", badgeColor: "#FBBF24", desc: "Desbloqueie análise com IA, PDI 30/60/90 dias e mentoria para transformar clareza em movimento." },
+            ].map(({ step, Icon, title, badge, badgeColor, desc }, idx) => (
+              <div key={step} className="relative p-8 rounded-sm flex flex-col gap-4 overflow-hidden transition-all duration-300 hover:-translate-y-1" style={{ background: idx === 2 ? "linear-gradient(135deg, rgba(251,191,36,0.07) 0%, rgba(251,191,36,0.02) 100%)" : "rgba(255,255,255,0.02)", border: idx === 2 ? "1px solid rgba(251,191,36,0.25)" : "1px solid rgba(255,255,255,0.06)" }}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-mono text-4xl font-black" style={{ color: idx === 2 ? "rgba(251,191,36,0.25)" : "rgba(129,140,248,0.2)", lineHeight: 1 }}>{step}</span>
+                  <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: `${badgeColor}18`, border: `1px solid ${badgeColor}40`, color: badgeColor }}>{badge}</span>
+                </div>
+                <div className="w-9 h-9 rounded-sm flex items-center justify-center" style={{ backgroundColor: idx === 2 ? "rgba(251,191,36,0.12)" : "rgba(129,140,248,0.12)" }}>
+                  <Icon className="w-4 h-4" style={{ color: idx === 2 ? "#FBBF24" : "#818CF8" }} />
+                </div>
+                <h3 className="font-semibold text-base text-foreground/90">{title}</h3>
+                <p className="text-sm text-foreground/70 leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 lg:px-16 py-20 border-b border-border bg-card">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex items-center justify-center gap-3 mb-12">
+            <div className="flex-1 h-px" style={{ background: "linear-gradient(to right, transparent, rgba(251,191,36,0.2))" }} />
+            <p className="text-[10px] text-foreground/60 font-mono uppercase tracking-widest whitespace-nowrap">O que dizem quem já fez</p>
+            <div className="flex-1 h-px" style={{ background: "linear-gradient(to left, transparent, rgba(251,191,36,0.2))" }} />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {TESTIMONIALS.map((t) => (
+              <div key={t.name} className="relative flex flex-col gap-5 p-6 rounded-sm overflow-hidden transition-transform duration-300 hover:-translate-y-1" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderTop: "2px solid rgba(251,191,36,0.4)" }}>
+                <div style={{ color: "#FBBF24", fontSize: "14px", letterSpacing: "2px" }}>★★★★★</div>
+                <p className="text-sm text-foreground/80 leading-relaxed flex-1 italic">"{t.text}"</p>
+                <div className="pt-4 border-t space-y-1" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+                  <p className="text-xs font-semibold text-foreground/90">{t.name}</p>
+                  <p className="text-[11px] text-foreground/60">{t.role}</p>
+                  <span className="text-[10px] font-mono px-2.5 py-1 rounded-full font-medium inline-block mt-2" style={{ backgroundColor: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.25)", color: "#FBBF24" }}>Índice {t.score} · {t.profile}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 lg:px-16 py-24 border-b border-border">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-12 items-center">
+          <div className="rounded-sm border border-primary/25 bg-card p-8 min-h-[420px] flex flex-col justify-end relative overflow-hidden">
+            <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(129,140,248,0.18), rgba(251,191,36,0.08))" }} />
+            <div className="relative w-28 h-32 rounded-sm border border-primary/30 bg-background/70 flex items-center justify-center font-mono text-3xl font-bold text-primary mb-8">PN</div>
+            <div className="relative">
+              <p className="text-[10px] text-primary font-mono uppercase tracking-widest mb-2">Foto / Perfil do criador</p>
+              <h3 className="text-2xl" style={{ fontFamily: "var(--font-display)" }}>Patrick Naufel</h3>
+            </div>
+          </div>
+          <div>
+            <p className="text-[10px] text-primary font-mono uppercase tracking-widest mb-5">Quem criou o Raio-X do Designer?</p>
+            <h2 className="mb-6" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 4vw, 3.2rem)", lineHeight: 1.08 }}>Criado por quem vive design, ensino e mentoria na prática.</h2>
+            <p className="text-foreground/75 leading-relaxed mb-8 max-w-2xl">O Raio-X do Designer nasce da experiência de Patrick Naufel — professor, especialista em UX, mentor e pesquisador, com mais de 20 anos de atuação em Design e Produtos Digitais.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {["Professor universitário", "Especialista em UX", "Mentor de designers", "Pesquisador", "20+ anos em Design", "Produtos Digitais"].map((item) => (
+                <span key={item} className="flex items-center gap-2 rounded-sm border border-border bg-card px-4 py-3 text-sm text-foreground/78"><Check className="w-4 h-4 text-primary" /> {item}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 lg:px-16 py-24 border-b border-border bg-card">
+        <div className="max-w-4xl mx-auto">
+          <p className="text-[10px] text-primary font-mono uppercase tracking-widest mb-5">FAQ</p>
+          <h2 className="mb-10" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 4vw, 3rem)", lineHeight: 1.08 }}>Dúvidas comuns antes de começar.</h2>
+          <div className="space-y-3">
+            {FAQS.map((item) => (
+              <div key={item.q} className="rounded-sm border border-border bg-background p-6">
+                <h3 className="text-sm font-semibold mb-2">{item.q}</h3>
+                <p className="text-sm text-foreground/72 leading-relaxed">{item.a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="relative border-b border-border overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(251,191,36,0.06) 0%, rgba(11,17,32,1) 60%)" }}>
         <div className="pointer-events-none absolute inset-0"><div style={{ position: "absolute", top: "-20%", left: "-5%", width: "50%", height: "80%", background: "radial-gradient(ellipse, rgba(251,191,36,0.07) 0%, transparent 70%)" }} /></div>
         <div className="relative max-w-6xl mx-auto px-6 lg:px-16 py-24 grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-12 items-center">
@@ -465,8 +670,8 @@ function Landing({ onStart, onAbout }) {
             <p className="text-foreground/75 mb-4 text-lg leading-relaxed max-w-lg">Designers excepcionais dominam ferramentas — mas também dominam a si mesmos. Comece pelo diagnóstico.</p>
             <p className="text-sm text-foreground/70 mb-10">Diagnóstico <span className="text-foreground/90 font-semibold">gratuito</span>.{" "}Plano completo com IA + mentoria por <span className="font-bold" style={{ color: "#FBBF24" }}>R$ 97</span> — pagamento único.</p>
             <div className="flex flex-col gap-4">
-              <button onClick={onStart} className="inline-flex items-center gap-2.5 rounded-sm font-bold hover:opacity-90 active:scale-[0.98] transition-all whitespace-nowrap w-fit" style={{ backgroundColor: "#FBBF24", color: "#0B1120", boxShadow: "0 0 40px rgba(251,191,36,0.3)", padding: "16px 36px", fontSize: "15px" }}>
-                Fazer o diagnóstico — grátis <ArrowRight className="w-4 h-4 shrink-0" />
+              <button onClick={onStart} className="inline-flex items-center gap-2.5 rounded-sm font-bold hover:opacity-90 hover:-translate-y-0.5 active:scale-[0.98] transition-all whitespace-nowrap w-fit" style={{ backgroundColor: "#FBBF24", color: "#0B1120", boxShadow: "0 0 40px rgba(251,191,36,0.3)", padding: "16px 36px", fontSize: "15px" }}>
+                Quero meu Raio-X <ArrowRight className="w-4 h-4 shrink-0" />
               </button>
               <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-foreground/65">{["Sem cadastro", "Resultado imediato", "Satisfação garantida"].map((t) => (<span key={t}>✓ {t}</span>))}</div>
             </div>
@@ -516,7 +721,7 @@ function AboutPage({ onBack, onStart }) {
         <div className="max-w-3xl">
           <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-6">Sobre nós</p>
           <h1 className="leading-[1.1] mb-6" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.5rem, 5vw, 4rem)" }}>Dois designers que acreditam no poder do autoconhecimento.</h1>
-          <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl">O Raio-X de Soft Skills nasceu da observação de um padrão recorrente: profissionais talentosos travando não por falta de técnica, mas por falta de consciência sobre suas próprias competências humanas. Construímos a ferramenta que gostaríamos de ter tido.</p>
+          <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl">O Raio-X do Designer nasceu da observação de um padrão recorrente: profissionais talentosos travando não por falta de técnica, mas por falta de consciência sobre suas próprias competências comportamentais. Construímos a ferramenta que gostaríamos de ter tido.</p>
         </div>
       </section>
       <section className="px-6 lg:px-16 py-20 border-b border-border">
@@ -545,7 +750,7 @@ function AboutPage({ onBack, onStart }) {
           </div>
           <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
             <p>Existem inúmeras ferramentas para avaliar habilidades técnicas. Poucas — com seriedade e profundidade — avaliam o que realmente diferencia profissionais ao longo do tempo: como pensam, como se relacionam, como reagem sob pressão.</p>
-            <p>O Raio-X de Soft Skills é nossa resposta a essa lacuna. Uma ferramenta construída com rigor metodológico, linguagem humana e resultado acionável. Não um quiz de entretenimento — um diagnóstico profissional que pode ser o ponto de inflexão em uma carreira.</p>
+            <p>O Raio-X do Designer é nossa resposta a essa lacuna. Uma ferramenta construída com rigor metodológico, linguagem humana e resultado acionável. Não um quiz de entretenimento — um diagnóstico profissional que pode ser o ponto de inflexão em uma carreira.</p>
             <p>Nasceu de anos de experiência em design, mentoria e ensino. E foi feito especialmente para quem vive de criar — porque criar bem começa por se conhecer bem.</p>
           </div>
         </div>
@@ -553,7 +758,7 @@ function AboutPage({ onBack, onStart }) {
       <section className="px-6 lg:px-16 py-20 bg-card">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8">
           <div><h3 className="text-2xl mb-2" style={{ fontFamily: "var(--font-display)" }}>Pronto para começar?</h3><p className="text-sm text-muted-foreground">O diagnóstico é gratuito e leva 15 minutos.</p></div>
-          <button onClick={onStart} className="flex items-center gap-2 px-8 py-4 rounded-sm font-semibold hover:opacity-90 transition-opacity text-sm shrink-0" style={{ backgroundColor: "#FBBF24", color: "#0B1120" }}>Fazer o diagnóstico <ArrowRight className="w-4 h-4" /></button>
+          <button onClick={onStart} className="flex items-center gap-2 px-8 py-4 rounded-sm font-semibold hover:opacity-90 transition-opacity text-sm shrink-0" style={{ backgroundColor: "#FBBF24", color: "#0B1120" }}>Quero meu Raio-X <ArrowRight className="w-4 h-4" /></button>
         </div>
       </section>
       <PageFooter />
@@ -868,7 +1073,7 @@ function Results({ profileData, scores, answers, onReset, onAbout }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <nav className="flex items-center justify-between px-6 lg:px-12 py-5 border-b border-border">
-        <div className="flex items-center gap-2.5"><div className="w-7 h-7 bg-primary rounded-sm flex items-center justify-center"><BarChart2 className="w-3.5 h-3.5 text-primary-foreground" /></div><span className="text-sm font-medium">Raio-X de Soft Skills</span></div>
+        <div className="flex items-center gap-2.5"><div className="w-7 h-7 bg-primary rounded-sm flex items-center justify-center"><BarChart2 className="w-3.5 h-3.5 text-primary-foreground" /></div><span className="text-sm font-medium">Raio-X do Designer</span></div>
         <div className="flex items-center gap-3">
           <button onClick={() => exportPDF({ profileData, scores, generalScore, generalLevel, profileName: profile.name, profileDesc: profile.desc, strengths, opportunities })} className="flex items-center gap-2 border border-border text-muted-foreground px-4 py-2 rounded-sm text-sm hover:border-primary hover:text-foreground transition-colors"><Download className="w-3.5 h-3.5" /> Exportar PDF</button>
           <button onClick={onReset} className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm transition-colors"><RefreshCw className="w-4 h-4" /> Nova avaliação</button>
@@ -939,7 +1144,7 @@ function Results({ profileData, scores, answers, onReset, onAbout }) {
           <UpgradeSection profileData={profileData} scores={scores} answers={answers} generalScore={generalScore} generalLevel={generalLevel} profileName={profile.name} profileDesc={profile.desc} strengths={strengths} opportunities={opportunities} />
         </div>
         <div className="border-t border-border pt-8 flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">Raio-X de Soft Skills · {new Date().getFullYear()}</p>
+          <p className="text-xs text-muted-foreground">Raio-X do Designer · {new Date().getFullYear()}</p>
           <div className="flex items-center gap-5">
             <button onClick={onAbout} className="text-xs text-muted-foreground hover:text-foreground transition-colors">Sobre nós</button>
             <button onClick={onReset} className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"><RefreshCw className="w-3.5 h-3.5" /> Nova avaliação</button>
