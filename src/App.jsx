@@ -1,18 +1,66 @@
 import { useState } from "react";
-import ReactMarkdown from "react-markdown";
-import {
-  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-  Radar, ResponsiveContainer,
-} from "recharts";
+import patrickPhoto from "../imports/WhatsApp_Image_2026-07-07_at_10.33.42.jpeg";
+import carlosPhoto from "../imports/image.png";
 import {
   ChevronLeft, ArrowRight, BarChart2, BookOpen, Target,
   Zap, Check, RefreshCw, Sparkles, Loader2, Lock,
   Brain, Calendar, MessageCircle, ExternalLink, ChevronDown, ChevronUp, Download,
 } from "lucide-react";
 
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
 const OWNER_WHATSAPP = "554991106400";
 const PRODUCT_PRICE = "R$ 97";
 
+// ─── SIMPLE MARKDOWN RENDERER ────────────────────────────────────────────────
+function MarkdownText({ children }) {
+  if (!children) return null;
+  const lines = children.split("\n");
+  const elements = [];
+  let listItems = [];
+
+  const flushList = (key) => {
+    if (listItems.length > 0) {
+      elements.push(
+        <ul key={key} className="space-y-1.5 my-2 ml-1">
+          {listItems.map((item, i) => (
+            <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+              <span className="mt-1.5 w-1 h-1 rounded-full bg-primary/60 shrink-0" />
+              {item}
+            </li>
+          ))}
+        </ul>
+      );
+      listItems = [];
+    }
+  };
+
+  lines.forEach((line, i) => {
+    if (line.startsWith("## ")) {
+      flushList(`list-${i}`);
+      elements.push(
+        <h2 key={i} className="text-sm font-medium text-foreground mt-7 mb-2 tracking-tight">
+          {line.slice(3)}
+        </h2>
+      );
+    } else if (line.startsWith("- ") || line.startsWith("* ")) {
+      listItems.push(line.slice(2));
+    } else if (line.trim() === "") {
+      flushList(`list-${i}`);
+    } else {
+      flushList(`list-${i}`);
+      elements.push(
+        <p key={i} className="text-sm text-muted-foreground leading-relaxed">
+          {line}
+        </p>
+      );
+    }
+  });
+  flushList("list-end");
+
+  return <div className="space-y-1">{elements}</div>;
+}
+
+// ─── DATA ─────────────────────────────────────────────────────────────────────
 const COMPETENCIES = [
   { id: "comunicacao", name: "Comunicação", icon: "💬", desc: "Transmitir ideias com clareza, reduzir ruídos e adaptar a linguagem ao contexto." },
   { id: "empatia", name: "Empatia", icon: "❤️", desc: "Compreender contextos e perspectivas diversas antes de tirar conclusões." },
@@ -82,6 +130,7 @@ const PDI_ACTIONS = {
   proposito: { days30: ["Escrever sobre o impacto que seu trabalho gera nas pessoas ao redor.", "Identificar quais atividades te geram mais energia e significado."], days60: ["Ter uma conversa sobre valores com alguém que você admira.", "Conectar seu trabalho atual a um objetivo de médio prazo."], days90: ["Definir um projeto que esteja alinhado aos seus valores.", "Criar rituais de reflexão periódica sobre direção e propósito."] },
 };
 
+// ─── SCORING ─────────────────────────────────────────────────────────────────
 function getLevel(score) {
   if (score <= 20) return "Inicial";
   if (score <= 40) return "Emergente";
@@ -94,7 +143,7 @@ const LEVEL_COLORS = { Inicial: "#f87171", Emergente: "#fb923c", Consistente: "#
 
 function calculateScores(answers) {
   return COMPETENCIES.map((c) => {
-    const raw = [1, 2, 3, 4, 5].reduce((sum, i) => sum + (answers[`${c.id}_${i}`] || 0), 0);
+    const raw = [1, 2, 3, 4, 5].reduce((sum, i) => sum + ((answers[`${c.id}_${i}`]) || 0), 0);
     const score = Math.round(((raw - 5) / 20) * 100);
     return { id: c.id, name: c.name, score, level: getLevel(score) };
   });
@@ -115,9 +164,11 @@ function getCrossResults(scores) {
   return CROSS_ANALYSIS.filter((r) => r.high.every((id) => (map[id] || 0) >= 60) && r.low.every((id) => (map[id] || 0) <= 50)).slice(0, 4);
 }
 
+// ─── EXPORT PDF ───────────────────────────────────────────────────────────────
 function exportPDF({ profileData, scores, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities, aiText = "" }) {
   const sorted = [...scores].sort((a, b) => b.score - a.score);
   const year = new Date().getFullYear();
+
   const colorMap = { Inicial: "#ef4444", Emergente: "#f97316", Consistente: "#eab308", Avançado: "#6366f1", Referência: "#10b981" };
 
   const barRows = sorted.map((s) => {
@@ -174,8 +225,14 @@ function exportPDF({ profileData, scores, generalScore, generalLevel, profileNam
   <h2>Pontuação por Competência</h2>
   ${barRows}
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:28px;">
-    <div><h2 style="margin-top:0;">Forças</h2>${makeList(strengths)}</div>
-    <div><h2 style="margin-top:0;">Oportunidades</h2>${makeList(opportunities)}</div>
+    <div>
+      <h2 style="margin-top:0;">Forças</h2>
+      ${makeList(strengths)}
+    </div>
+    <div>
+      <h2 style="margin-top:0;">Oportunidades</h2>
+      ${makeList(opportunities)}
+    </div>
   </div>
   ${aiSection}
   <div style="margin-top:40px;border-top:1px solid #e5e7eb;padding-top:16px;">
@@ -190,6 +247,7 @@ function exportPDF({ profileData, scores, generalScore, generalLevel, profileNam
   setTimeout(() => w.print(), 400);
 }
 
+// ─── VALIDATE CODE ────────────────────────────────────────────────────────────
 function validateCode(entered, whatsapp) {
   const digits = whatsapp.replace(/\D/g, "");
   const last4 = digits.slice(-4);
@@ -200,6 +258,7 @@ function validateCode(entered, whatsapp) {
   return "valid";
 }
 
+// ─── SHARED NAV ───────────────────────────────────────────────────────────────
 function TopNav({ onAbout, onStart, rightSlot }) {
   return (
     <nav className="flex items-center justify-between px-6 lg:px-12 py-5 border-b border-border">
@@ -227,6 +286,7 @@ function TopNav({ onAbout, onStart, rightSlot }) {
   );
 }
 
+// ─── SHARED FOOTER ────────────────────────────────────────────────────────────
 function PageFooter({ onAbout }) {
   return (
     <footer className="border-t border-border px-6 lg:px-12 py-8">
@@ -255,12 +315,31 @@ function PageFooter({ onAbout }) {
   );
 }
 
+// ─── LANDING ─────────────────────────────────────────────────────────────────
 const DEMO_SCORES = [85, 72, 68, 91, 77, 63, 88, 74, 80, 59];
 
 const TESTIMONIALS = [
-  { name: "Ana Carolina M.", role: "UX Designer Sênior · Fintech", text: "Fiz o diagnóstico sem expectativas. Saí com um mapa claro do que precisava desenvolver — e palavras para nomear coisas que sentia mas não conseguia articular.", score: 74, profile: "Pensador Analítico" },
-  { name: "Rafael S.", role: "Product Designer · Agência", text: "A análise com IA foi o que mais me surpreendeu. Precisa de um jeito que me deu vontade de começar o plano de ação no mesmo dia. Valeu muito mais do que esperava.", score: 81, profile: "Líder Inspirador" },
-  { name: "Mariana T.", role: "Designer de Produto · SaaS", text: "Nunca tinha pensado em soft skills com esse nível de seriedade. A sessão de mentoria valeu muito mais do que o investimento — saí com clareza de onde focar.", score: 68, profile: "Facilitador Humano" },
+  {
+    name: "Ana Carolina M.",
+    role: "UX Designer Sênior · Fintech",
+    text: "Fiz o diagnóstico sem expectativas. Saí com um mapa claro do que precisava desenvolver — e palavras para nomear coisas que sentia mas não conseguia articular.",
+    score: 74,
+    profile: "Pensador Analítico",
+  },
+  {
+    name: "Rafael S.",
+    role: "Product Designer · Agência",
+    text: "A análise com IA foi o que mais me surpreendeu. Precisa de um jeito que me deu vontade de começar o plano de ação no mesmo dia. Valeu muito mais do que esperava.",
+    score: 81,
+    profile: "Líder Inspirador",
+  },
+  {
+    name: "Mariana T.",
+    role: "Designer de Produto · SaaS",
+    text: "Nunca tinha pensado em soft skills com esse nível de seriedade. A sessão de mentoria valeu muito mais do que o investimento — saí com clareza de onde focar.",
+    score: 68,
+    profile: "Facilitador Humano",
+  },
 ];
 
 const RESEARCH_STATS = [
@@ -280,93 +359,115 @@ function Landing({ onStart, onAbout }) {
         <span className="hidden sm:inline opacity-40">·</span>
         <span className="hidden sm:flex items-center gap-1">
           <span>★★★★★</span>
-          <span style={{ color: "#FBBF24", opacity: 0.7 }}>4.9 de satisfação</span>
+          <span className="opacity-70 text-foreground/50" style={{ color: "#FBBF24" }}>4.9 de satisfação</span>
         </span>
       </div>
       */}
       <TopNav onAbout={onAbout} onStart={onStart} />
 
-      {/* HERO */}
-      <section className="grid grid-cols-1 lg:grid-cols-[1fr_400px] min-h-[90vh] border-b border-border">
-        <div className="flex flex-col justify-center px-6 lg:px-16 py-24">
-          <div className="inline-flex items-center gap-2 border border-primary/30 text-primary px-3 py-1 rounded-full text-xs font-medium mb-12 w-fit">
+      {/* ── HERO ── */}
+      <section className="relative grid grid-cols-1 lg:grid-cols-[1fr_420px] min-h-[92vh] border-b border-border overflow-hidden">
+        {/* gradient blobs */}
+        <div className="pointer-events-none absolute inset-0 z-0">
+          <div style={{ position: "absolute", top: "-10%", left: "-5%", width: "55%", height: "70%", background: "radial-gradient(ellipse at center, rgba(251,191,36,0.08) 0%, transparent 70%)" }} />
+          <div style={{ position: "absolute", bottom: "0", right: "30%", width: "40%", height: "50%", background: "radial-gradient(ellipse at center, rgba(129,140,248,0.1) 0%, transparent 70%)" }} />
+        </div>
+        <div className="relative z-10 flex flex-col justify-center px-6 lg:px-16 py-24">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-12 w-fit"
+            style={{ backgroundColor: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.3)", color: "#FBBF24" }}>
             <Zap className="w-3 h-3" /> Avaliação gratuita · 15 minutos
           </div>
-          <h1 className="leading-[1.05] mb-8 tracking-tight" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(3rem, 6vw, 5.5rem)" }}>
+          <h1 className="leading-[1.02] mb-8 tracking-tight" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(3.2rem, 6.5vw, 6rem)" }}>
             Descubra o que<br />
-            <em className="not-italic" style={{ color: "#FBBF24" }}>move</em>
+            <span style={{
+              color: "#FBBF24",
+              textShadow: "0 0 60px rgba(251,191,36,0.35)",
+            }}>move</span>
             {" — ou trava —"}<br />
             sua carreira.
           </h1>
-          <p className="text-muted-foreground text-lg leading-relaxed mb-4 max-w-md">
-            50 perguntas calibradas. 10 competências mapeadas. 1 diagnóstico preciso sobre quem você é — e quem pode se tornar.
+          <p className="text-foreground/60 text-lg leading-relaxed mb-4 max-w-lg">
+            50 perguntas calibradas. 10 competências mapeadas. Um diagnóstico preciso sobre quem você é — e quem pode se tornar.
           </p>
           <p className="text-sm mb-10 max-w-md">
-            <span className="text-foreground/70">Diagnóstico gratuito. Plano completo por </span>
-            <span className="font-semibold" style={{ color: "#FBBF24" }}>R$ 97</span>
-            <span className="text-foreground/50"> — pagamento único.</span>
+            <span className="text-foreground/50">Diagnóstico gratuito. Plano completo por </span>
+            <span className="font-bold" style={{ color: "#FBBF24" }}>R$ 97</span>
+            <span className="text-foreground/40"> — pagamento único.</span>
           </p>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
             <button onClick={onStart}
-              className="flex items-center gap-2.5 px-8 py-4 rounded-sm font-semibold hover:opacity-90 transition-opacity text-sm shadow-lg"
-              style={{ backgroundColor: "#FBBF24", color: "#0B1120" }}>
+              className="flex items-center gap-2.5 px-8 py-4 rounded-sm font-bold hover:opacity-90 active:scale-[0.98] transition-all text-sm"
+              style={{ backgroundColor: "#FBBF24", color: "#0B1120", boxShadow: "0 0 32px rgba(251,191,36,0.35)" }}>
               Fazer o diagnóstico — grátis <ArrowRight className="w-4 h-4" />
             </button>
-            <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
+            <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-foreground/50">
               {["Sem cadastro", "Resultado imediato", "Satisfação garantida"].map((t) => (
-                <span key={t} className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5" style={{ color: "#FBBF24" }} /> {t}</span>
+                <span key={t} className="flex items-center gap-1.5">
+                  <Check className="w-3.5 h-3.5" style={{ color: "#FBBF24" }} /> {t}
+                </span>
               ))}
             </div>
           </div>
         </div>
-        <div className="hidden lg:flex items-center justify-center bg-card border-l border-border px-8 py-16">
-          <div className="w-full space-y-2.5">
-            <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-6">Prévia · diagnóstico</p>
+
+        {/* PREVIEW PANEL */}
+        <div className="relative z-10 hidden lg:flex flex-col justify-center border-l border-border px-8 py-12"
+          style={{ background: "linear-gradient(160deg, rgba(129,140,248,0.06) 0%, rgba(11,17,32,0.95) 60%)" }}>
+          <p className="text-[10px] text-foreground/40 font-mono uppercase tracking-widest mb-6">Prévia · diagnóstico</p>
+          <div className="space-y-2.5 mb-8">
             {COMPETENCIES.map((c, i) => (
               <div key={c.id} className="flex items-center gap-3">
-                <span className="text-[11px] text-muted-foreground w-36 truncate text-right leading-tight">{c.name}</span>
-                <div className="flex-1 bg-secondary rounded-full h-1">
-                  <div className="h-1 rounded-full" style={{ width: `${DEMO_SCORES[i]}%`, backgroundColor: LEVEL_COLORS[getLevel(DEMO_SCORES[i])], opacity: 0.8 }} />
+                <span className="text-[11px] text-foreground/40 w-32 truncate text-right leading-tight">{c.name}</span>
+                <div className="flex-1 rounded-full h-1.5" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
+                  <div className="h-1.5 rounded-full transition-all"
+                    style={{ width: `${DEMO_SCORES[i]}%`, backgroundColor: LEVEL_COLORS[getLevel(DEMO_SCORES[i])], opacity: 0.85 }} />
                 </div>
-                <span className="text-[11px] font-mono text-muted-foreground w-5 text-right">{DEMO_SCORES[i]}</span>
+                <span className="text-[11px] font-mono w-6 text-right" style={{ color: LEVEL_COLORS[getLevel(DEMO_SCORES[i])] }}>{DEMO_SCORES[i]}</span>
               </div>
             ))}
-            <div className="pt-6 mt-2 border-t border-border">
-              <div className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-2">Índice geral</div>
-              <div className="font-mono font-medium text-primary" style={{ fontSize: "3rem", lineHeight: 1 }}>77</div>
-              <div className="text-sm text-muted-foreground mt-1.5">Nível <span className="text-primary font-medium">Avançado</span></div>
-            </div>
+          </div>
+          <div className="rounded-sm p-5 border" style={{ backgroundColor: "rgba(129,140,248,0.06)", borderColor: "rgba(129,140,248,0.18)" }}>
+            <div className="text-[10px] text-foreground/40 font-mono uppercase tracking-widest mb-1">Índice geral</div>
+            <div className="font-mono font-bold leading-none mb-1" style={{ fontSize: "3.5rem", color: "#818CF8", textShadow: "0 0 40px rgba(129,140,248,0.4)" }}>77</div>
+            <div className="text-sm text-foreground/50">Nível <span className="font-semibold" style={{ color: "#818CF8" }}>Avançado</span></div>
+            <div className="mt-3 pt-3 border-t border-border text-[11px] text-foreground/40">Perfil · <span className="text-foreground/60">Líder Inspirador</span></div>
           </div>
         </div>
       </section>
 
-      {/* RESEARCH STATS */}
-      <section className="border-b border-border">
+      {/* ── RESEARCH STATS ── */}
+      <section className="border-b border-border" style={{ background: "linear-gradient(180deg, rgba(251,191,36,0.04) 0%, transparent 100%)" }}>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {RESEARCH_STATS.map((s, i) => (
-            <div key={i} className={`px-8 py-10 ${i < RESEARCH_STATS.length - 1 ? "border-b sm:border-b-0 sm:border-r border-border" : ""}`}>
-              <div className="font-mono font-medium mb-3" style={{ fontSize: "2.5rem", lineHeight: 1, color: "#FBBF24" }}>{s.value}</div>
-              <p className="text-sm text-foreground/80 leading-relaxed mb-3">{s.label}</p>
-              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">{s.source}</p>
+            <div key={i} className={`px-8 py-12 ${i < RESEARCH_STATS.length - 1 ? "border-b sm:border-b-0 sm:border-r border-border" : ""}`}>
+              <div className="font-mono font-black mb-3" style={{ fontSize: "3rem", lineHeight: 1, color: "#FBBF24", textShadow: "0 0 30px rgba(251,191,36,0.3)" }}>{s.value}</div>
+              <p className="text-sm text-foreground/70 leading-relaxed mb-3">{s.label}</p>
+              <p className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "rgba(251,191,36,0.4)" }}>{s.source}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* TESTIMONIALS */}
-      <section className="px-6 lg:px-16 py-16 border-b border-border">
+      {/* ── TESTIMONIALS ── */}
+      <section className="px-6 lg:px-16 py-20 border-b border-border bg-card">
         <div className="max-w-5xl mx-auto">
-          <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-10 text-center">O que dizem quem já fez</p>
+          <div className="flex items-center justify-center gap-3 mb-12">
+            <div className="flex-1 h-px" style={{ background: "linear-gradient(to right, transparent, rgba(251,191,36,0.2))" }} />
+            <p className="text-[10px] text-foreground/40 font-mono uppercase tracking-widest whitespace-nowrap">O que dizem quem já fez</p>
+            <div className="flex-1 h-px" style={{ background: "linear-gradient(to left, transparent, rgba(251,191,36,0.2))" }} />
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {TESTIMONIALS.map((t) => (
-              <div key={t.name} className="bg-card border border-border rounded-sm p-6 flex flex-col gap-5">
-                <div style={{ color: "#FBBF24", fontSize: "13px" }}>★★★★★</div>
-                <p className="text-sm text-foreground/80 leading-relaxed flex-1">"{t.text}"</p>
-                <div className="pt-4 border-t border-border space-y-1">
-                  <p className="text-xs font-medium">{t.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{t.role}</p>
-                  <div className="flex items-center gap-1.5 mt-1.5">
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(251,191,36,0.08)", color: "#FBBF24" }}>
+              <div key={t.name} className="relative flex flex-col gap-5 p-6 rounded-sm overflow-hidden"
+                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderTop: "2px solid rgba(251,191,36,0.4)" }}>
+                <div style={{ color: "#FBBF24", fontSize: "14px", letterSpacing: "2px" }}>★★★★★</div>
+                <p className="text-sm text-foreground/70 leading-relaxed flex-1 italic">"{t.text}"</p>
+                <div className="pt-4 border-t space-y-1" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+                  <p className="text-xs font-semibold text-foreground/90">{t.name}</p>
+                  <p className="text-[11px] text-foreground/40">{t.role}</p>
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <span className="text-[10px] font-mono px-2.5 py-1 rounded-full font-medium"
+                      style={{ backgroundColor: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.25)", color: "#FBBF24" }}>
                       Índice {t.score} · {t.profile}
                     </span>
                   </div>
@@ -377,14 +478,14 @@ function Landing({ onStart, onAbout }) {
         </div>
       </section>
 
-      {/* WHY */}
-      <section className="px-6 lg:px-16 py-24 border-b border-border">
+      {/* ── WHY SECTION ── */}
+      <section className="px-6 lg:px-16 py-24 border-b border-border bg-card">
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-16 items-start">
           <div>
-            <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-6">Por que isso importa</p>
+            <p className="text-[10px] text-foreground/40 font-mono uppercase tracking-widest mb-6">Por que isso importa</p>
             <h2 className="leading-[1.1] mb-0" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 3.5vw, 2.8rem)" }}>
               Em um mundo de habilidades técnicas descartáveis, o que sobrevive é{" "}
-              <em className="not-italic text-primary">genuinamente humano.</em>
+              <em className="not-italic" style={{ color: "#818CF8" }}>genuinamente humano.</em>
             </h2>
           </div>
           <div className="space-y-5 text-sm text-muted-foreground leading-relaxed">
@@ -393,7 +494,12 @@ function Landing({ onStart, onAbout }) {
             <p>Para designers, isso é ainda mais crítico. Empatia, comunicação, escuta ativa e pensamento crítico não são soft skills adjacentes ao nosso trabalho — <strong className="text-foreground font-medium">elas são o trabalho.</strong></p>
             <p>O Raio-X de Soft Skills nasceu dessa lacuna. Uma avaliação séria, baseada em pesquisa, construída por designers para designers — com resultado imediato e plano de ação concreto.</p>
             <div className="pt-4 border-t border-border space-y-1.5">
-              {["LinkedIn Global Talent Trends Report, 2024", "World Economic Forum — Future of Jobs Report, 2025", "Goleman, D. (1998). What Makes a Leader? Harvard Business Review.", "McKinsey Global Institute — The Future of Work in America, 2019"].map((ref) => (
+              {[
+                "LinkedIn Global Talent Trends Report, 2024",
+                "World Economic Forum — Future of Jobs Report, 2025",
+                "Goleman, D. (1998). What Makes a Leader? Harvard Business Review.",
+                "McKinsey Global Institute — The Future of Work in America, 2019",
+              ].map((ref) => (
                 <p key={ref} className="text-[10px] font-mono text-muted-foreground/70 flex items-start gap-1.5">
                   <ExternalLink className="w-2.5 h-2.5 shrink-0 mt-0.5 opacity-50" /> {ref}
                 </p>
@@ -403,33 +509,42 @@ function Landing({ onStart, onAbout }) {
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section className="px-6 lg:px-16 py-24 border-b border-border">
+      {/* ── HOW IT WORKS ── */}
+      <section className="px-6 lg:px-16 py-24 border-b border-border" style={{ background: "linear-gradient(180deg, rgba(129,140,248,0.04) 0%, transparent 100%)" }}>
         <div className="max-w-5xl mx-auto">
-          <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-4">Como funciona</p>
-          <h2 className="text-3xl mb-16" style={{ fontFamily: "var(--font-display)" }}>Três etapas. Quinze minutos.</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-border">
+          <p className="text-[10px] text-foreground/40 font-mono uppercase tracking-widest mb-4">Como funciona</p>
+          <h2 className="mb-16" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.8rem, 3vw, 2.6rem)" }}>Três etapas. Quinze minutos.</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
-              { step: "01", Icon: BookOpen, title: "Avaliação", desc: "50 afirmações sobre comportamentos reais no trabalho. Escala Likert de 1 a 5. Sem respostas certas ou erradas." },
-              { step: "02", Icon: BarChart2, title: "Diagnóstico imediato", desc: "Score em 10 competências, perfil predominante, forças, oportunidades e padrões comportamentais — grátis." },
-              { step: "03", Icon: Target, title: "Plano completo", desc: "PDI com ações para 30, 60 e 90 dias + análise narrativa com IA + 1 sessão de mentoria ao vivo. Plano pago." },
-            ].map(({ step, Icon, title, desc }) => (
-              <div key={step} className="bg-background px-8 py-10">
-                <div className="flex items-center gap-3 mb-6">
-                  <span className="font-mono text-xs text-muted-foreground">{step}</span>
-                  <div className="w-8 h-8 bg-primary/10 rounded-sm flex items-center justify-center">
-                    <Icon className="w-3.5 h-3.5 text-primary" />
-                  </div>
+              { step: "01", Icon: BookOpen, title: "Avaliação", badge: "Grátis", badgeColor: "#818CF8", desc: "50 afirmações sobre comportamentos reais no trabalho. Escala Likert de 1 a 5. Sem respostas certas ou erradas." },
+              { step: "02", Icon: BarChart2, title: "Diagnóstico imediato", badge: "Grátis", badgeColor: "#818CF8", desc: "Score em 10 competências, perfil predominante, forças, oportunidades e padrões comportamentais." },
+              { step: "03", Icon: Target, title: "Plano completo", badge: "R$ 97", badgeColor: "#FBBF24", desc: "PDI com ações para 30, 60 e 90 dias + análise narrativa com IA + 1 sessão de mentoria ao vivo." },
+            ].map(({ step, Icon, title, badge, badgeColor, desc }, idx) => (
+              <div key={step} className="relative p-8 rounded-sm flex flex-col gap-4 overflow-hidden"
+                style={{
+                  background: idx === 2 ? "linear-gradient(135deg, rgba(251,191,36,0.07) 0%, rgba(251,191,36,0.02) 100%)" : "rgba(255,255,255,0.02)",
+                  border: idx === 2 ? "1px solid rgba(251,191,36,0.25)" : "1px solid rgba(255,255,255,0.06)",
+                }}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-mono text-4xl font-black" style={{ color: idx === 2 ? "rgba(251,191,36,0.25)" : "rgba(129,140,248,0.2)", lineHeight: 1 }}>{step}</span>
+                  <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full"
+                    style={{ backgroundColor: `${badgeColor}18`, border: `1px solid ${badgeColor}40`, color: badgeColor }}>
+                    {badge}
+                  </span>
                 </div>
-                <h3 className="font-medium mb-2 text-sm">{title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+                <div className="w-9 h-9 rounded-sm flex items-center justify-center"
+                  style={{ backgroundColor: idx === 2 ? "rgba(251,191,36,0.12)" : "rgba(129,140,248,0.12)" }}>
+                  <Icon className="w-4 h-4" style={{ color: idx === 2 ? "#FBBF24" : "#818CF8" }} />
+                </div>
+                <h3 className="font-semibold text-base text-foreground/90">{title}</h3>
+                <p className="text-sm text-foreground/50 leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* PLANO COMPLETO */}
+      {/* ── PLANO COMPLETO ── */}
       <section className="px-6 lg:px-16 py-24 border-b border-border">
         <div className="max-w-5xl mx-auto">
           <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-4">O que você leva</p>
@@ -440,6 +555,7 @@ function Landing({ onStart, onAbout }) {
             Pagamento único. Sem assinatura. Acesso imediato após confirmação — tudo entregue em uma única sessão.
           </p>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-px bg-border">
+            {/* Entregável 1 */}
             <div className="bg-background px-8 py-10 flex flex-col">
               <div className="w-9 h-9 rounded-sm flex items-center justify-center mb-6" style={{ backgroundColor: "rgba(251,191,36,0.1)" }}>
                 <Brain className="w-4 h-4" style={{ color: "#FBBF24" }} />
@@ -457,6 +573,7 @@ function Landing({ onStart, onAbout }) {
                 ))}
               </ul>
             </div>
+            {/* Entregável 2 */}
             <div className="bg-background px-8 py-10 flex flex-col">
               <div className="w-9 h-9 rounded-sm flex items-center justify-center mb-6" style={{ backgroundColor: "rgba(251,191,36,0.1)" }}>
                 <Target className="w-4 h-4" style={{ color: "#FBBF24" }} />
@@ -474,6 +591,7 @@ function Landing({ onStart, onAbout }) {
                 ))}
               </ul>
             </div>
+            {/* Entregável 3 */}
             <div className="bg-background px-8 py-10 flex flex-col">
               <div className="w-9 h-9 rounded-sm flex items-center justify-center mb-6" style={{ backgroundColor: "rgba(251,191,36,0.1)" }}>
                 <Calendar className="w-4 h-4" style={{ color: "#FBBF24" }} />
@@ -492,7 +610,8 @@ function Landing({ onStart, onAbout }) {
               </ul>
             </div>
           </div>
-          <div className="mt-px bg-card grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-6 px-8 py-6 border border-border border-t-0">
+          {/* Rodapé da seção com preço e garantia */}
+          <div className="mt-px bg-card border-t-0 grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-6 px-8 py-6 border border-t-0" style={{ borderColor: "var(--border)" }}>
             <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
               <div>
                 <span className="text-2xl font-mono font-medium">R$ 97</span>
@@ -513,29 +632,98 @@ function Landing({ onStart, onAbout }) {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="px-6 lg:px-16 py-24 bg-card border-b border-border">
-        <div className="max-w-2xl">
-          <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-mono mb-6" style={{ backgroundColor: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.25)", color: "#FBBF24" }}>
-            <Zap className="w-2.5 h-2.5" /> Vagas para mentoria limitadas este mês
+      {/* ── CTA ── */}
+      <section className="relative border-b border-border overflow-hidden"
+        style={{ background: "linear-gradient(135deg, rgba(251,191,36,0.06) 0%, rgba(11,17,32,1) 60%)" }}>
+        <div className="pointer-events-none absolute inset-0">
+          <div style={{ position: "absolute", top: "-20%", left: "-5%", width: "50%", height: "80%", background: "radial-gradient(ellipse, rgba(251,191,36,0.07) 0%, transparent 70%)" }} />
+        </div>
+        <div className="relative max-w-6xl mx-auto px-6 lg:px-16 py-24 grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-12 items-center">
+          {/* TEXT SIDE */}
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-mono mb-8"
+              style={{ backgroundColor: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.3)", color: "#FBBF24" }}>
+              <Zap className="w-2.5 h-2.5" /> Vagas para mentoria limitadas este mês
+            </div>
+            <h2 className="mb-5" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.4rem, 5vw, 3.8rem)", lineHeight: 1.08 }}>
+              Você sabe criar.<br />
+              <span style={{ color: "#FBBF24" }}>Agora conheça quem cria.</span>
+            </h2>
+            <p className="text-foreground/60 mb-4 text-lg leading-relaxed max-w-lg">
+              Designers excepcionais dominam ferramentas — mas também dominam a si mesmos. Comece pelo diagnóstico.
+            </p>
+            <p className="text-sm text-foreground/50 mb-10">
+              Diagnóstico <span className="text-foreground/80 font-semibold">gratuito</span>.{" "}
+              Plano completo com IA + mentoria por <span className="font-bold" style={{ color: "#FBBF24" }}>R$ 97</span> — pagamento único.
+            </p>
+            <div className="flex flex-col gap-4">
+              <button onClick={onStart}
+                className="inline-flex items-center gap-2.5 rounded-sm font-bold hover:opacity-90 active:scale-[0.98] transition-all whitespace-nowrap w-fit"
+                style={{ backgroundColor: "#FBBF24", color: "#0B1120", boxShadow: "0 0 40px rgba(251,191,36,0.3)", padding: "16px 36px", fontSize: "15px" }}>
+                Fazer o diagnóstico — grátis <ArrowRight className="w-4 h-4 shrink-0" />
+              </button>
+              <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-foreground/40">
+                {["Sem cadastro", "Resultado imediato", "Satisfação garantida"].map((t) => (
+                  <span key={t}>✓ {t}</span>
+                ))}
+              </div>
+            </div>
           </div>
-          <h2 className="text-4xl mb-4" style={{ fontFamily: "var(--font-display)" }}>
-            Você sabe criar.<br />Agora conheça quem cria.
-          </h2>
-          <p className="text-muted-foreground mb-4 text-lg leading-relaxed">
-            Designers excepcionais dominam ferramentas — mas também dominam a si mesmos. Comece pelo diagnóstico.
-          </p>
-          <p className="text-sm text-muted-foreground mb-10">
-            Diagnóstico <span className="text-foreground font-medium">gratuito</span>.{" "}
-            Plano completo com IA + mentoria por <span className="font-semibold" style={{ color: "#FBBF24" }}>R$ 97</span> — pagamento único.
-          </p>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-            <button onClick={onStart}
-              className="flex items-center gap-2.5 px-8 py-4 rounded-sm font-semibold hover:opacity-90 transition-opacity text-sm shadow-lg"
-              style={{ backgroundColor: "#FBBF24", color: "#0B1120" }}>
-              Fazer o diagnóstico — grátis <ArrowRight className="w-4 h-4" />
-            </button>
-            <p className="text-xs text-muted-foreground">✓ Sem cadastro &nbsp;·&nbsp; ✓ Resultado imediato &nbsp;·&nbsp; ✓ Satisfação garantida</p>
+
+          {/* RADAR SIDE */}
+          <div className="hidden lg:flex flex-col items-center justify-center rounded-sm p-6"
+            style={{ background: "rgba(129,140,248,0.05)", border: "1px solid rgba(129,140,248,0.12)" }}>
+            <p className="text-[10px] text-foreground/40 font-mono uppercase tracking-widest mb-1 self-start">Prévia · mapa de competências</p>
+            <p className="text-[11px] text-foreground/60 mb-4 self-start">
+              Índice geral <span className="font-mono font-bold" style={{ color: "#818CF8" }}>77</span>
+              <span className="text-foreground/40"> · Nível </span>
+              <span className="font-medium" style={{ color: "#818CF8" }}>Avançado</span>
+            </p>
+            <svg viewBox="0 0 280 280" width="100%" style={{ maxHeight: 280 }}>
+              {(() => {
+                const cx = 140, cy = 140, maxR = 100, n = COMPETENCIES.length;
+                const toXY = (i, r) => {
+                  const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
+                  return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
+                };
+                const rings = [25, 50, 75, 100];
+                const scorePoints = DEMO_SCORES.map((s, i) => toXY(i, (s / 100) * maxR));
+                const scorePath = scorePoints.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ") + " Z";
+                return (
+                  <g>
+                    {rings.map(r => {
+                      const pts = Array.from({ length: n }, (_, i) => toXY(i, (r / 100) * maxR));
+                      const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ") + " Z";
+                      return <path key={`ring-${r}`} d={d} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={1} />;
+                    })}
+                    {COMPETENCIES.map((_, i) => {
+                      const outer = toXY(i, maxR);
+                      return <line key={`spoke-${i}`} x1={cx} y1={cy} x2={outer.x} y2={outer.y} stroke="rgba(255,255,255,0.06)" strokeWidth={1} />;
+                    })}
+                    <path d={scorePath} fill="rgba(129,140,248,0.18)" stroke="#818CF8" strokeWidth={1.5} />
+                    {COMPETENCIES.map((c, i) => {
+                      const p = scorePoints[i];
+                      const label = toXY(i, maxR + 16);
+                      const anchor = label.x < cx - 4 ? "end" : label.x > cx + 4 ? "start" : "middle";
+                      return (
+                        <g key={`node-${c.id}`}>
+                          <circle cx={p.x} cy={p.y} r={3} fill="#818CF8" />
+                          <text x={label.x} y={label.y + 3} textAnchor={anchor} fill="rgba(255,255,255,0.38)" fontSize={9}>{c.name.split(" ")[0]}</text>
+                        </g>
+                      );
+                    })}
+                  </g>
+                );
+              })()}
+            </svg>
+            <div className="flex flex-wrap gap-2 mt-2 justify-center">
+              {COMPETENCIES.slice(0, 5).map((c, i) => (
+                <span key={c.id} className="text-[10px] font-mono px-2 py-0.5 rounded-full"
+                  style={{ backgroundColor: `${LEVEL_COLORS[getLevel(DEMO_SCORES[i])]}18`, color: LEVEL_COLORS[getLevel(DEMO_SCORES[i])] }}>
+                  {c.name.split(" ")[0]} · {DEMO_SCORES[i]}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -545,9 +733,10 @@ function Landing({ onStart, onAbout }) {
   );
 }
 
+// ─── ABOUT PAGE ───────────────────────────────────────────────────────────────
 const MENTORS = [
   {
-    initials: "PN",
+    photo: patrickPhoto,
     name: "Patrick A. G. Naufel",
     role: "Designer · Professor · Mentor",
     linkedin: "https://www.linkedin.com/in/naufelpatrick",
@@ -555,7 +744,7 @@ const MENTORS = [
     highlights: ["20 anos em design", "UX & Produtos Digitais", "Professor universitário", "Mentor na Fóton/Caixa"],
   },
   {
-    initials: "CA",
+    photo: carlosPhoto,
     name: "Carlos Guilherme Alencar",
     role: "Designer · Líder de Mentores",
     linkedin: "https://www.linkedin.com/in/ocarlosguilherme/",
@@ -590,15 +779,21 @@ function AboutPage({ onBack, onStart }) {
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-px bg-border">
           {MENTORS.map((m) => (
             <div key={m.name} className="bg-background p-10">
-              <div className="w-14 h-14 rounded-sm bg-primary flex items-center justify-center mb-6">
-                <span className="font-mono font-medium text-primary-foreground text-lg">{m.initials}</span>
+              <div className="flex items-end gap-5 mb-7">
+                <div className="rounded-sm overflow-hidden shrink-0"
+                  style={{ width: 80, height: 96, border: "1px solid rgba(255,255,255,0.1)" }}>
+                  <img src={m.photo} alt={m.name}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }} />
+                </div>
+                <div>
+                  <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1">{m.role}</p>
+                  <h3 className="text-xl font-medium mb-1" style={{ fontFamily: "var(--font-display)" }}>{m.name}</h3>
+                  <a href={m.linkedin} target="_blank" rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-[11px] text-primary hover:opacity-70 transition-opacity font-mono">
+                    LinkedIn <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                </div>
               </div>
-              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1">{m.role}</p>
-              <h3 className="text-xl font-medium mb-1" style={{ fontFamily: "var(--font-display)" }}>{m.name}</h3>
-              <a href={m.linkedin} target="_blank" rel="noreferrer"
-                className="inline-flex items-center gap-1.5 text-[11px] text-primary hover:opacity-70 transition-opacity font-mono mb-6">
-                LinkedIn <ExternalLink className="w-2.5 h-2.5" />
-              </a>
               <p className="text-sm text-muted-foreground leading-relaxed mb-6">{m.bio}</p>
               <div className="flex flex-wrap gap-2">
                 {m.highlights.map((h) => (
@@ -642,6 +837,7 @@ function AboutPage({ onBack, onStart }) {
   );
 }
 
+// ─── PROFILE FORM ─────────────────────────────────────────────────────────────
 function ProfileForm({ onSubmit, onBack }) {
   const [form, setForm] = useState({ name: "", age: "", experience: "", currentRole: "", professionalLevel: "", mainArea: "", careerGoal: "", currentChallenge: "" });
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
@@ -697,6 +893,7 @@ function ProfileForm({ onSubmit, onBack }) {
   );
 }
 
+// ─── ASSESSMENT ───────────────────────────────────────────────────────────────
 function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
   const [step, setStep] = useState(0);
   const TOTAL = 11;
@@ -705,7 +902,7 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
 
   const stepAnswered = () => {
     if (!isOpen) return [1, 2, 3, 4, 5].every((i) => answers[`${competency.id}_${i}`]);
-    return OPEN_QUESTIONS.every((_, i) => (answers[`open_${i + 1}`] || "").trim().length > 0);
+    return OPEN_QUESTIONS.every((_, i) => ((answers[`open_${i + 1}`]) || "").trim().length > 0);
   };
 
   const progress = Math.round((step / TOTAL) * 100);
@@ -768,7 +965,7 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
               {OPEN_QUESTIONS.map((q, i) => (
                 <div key={i}>
                   <p className="text-sm leading-relaxed mb-3 text-foreground/90">{q}</p>
-                  <textarea value={answers[`open_${i + 1}`] || ""} onChange={(e) => onAnswer(`open_${i + 1}`, e.target.value)}
+                  <textarea value={(answers[`open_${i + 1}`]) || ""} onChange={(e) => onAnswer(`open_${i + 1}`, e.target.value)}
                     placeholder="Sua resposta..." rows={4}
                     className="w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors resize-none" />
                 </div>
@@ -787,6 +984,7 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
   );
 }
 
+// ─── PDI CARD ─────────────────────────────────────────────────────────────────
 function PdiCard({ competencyId }) {
   const [open, setOpen] = useState(false);
   const comp = COMPETENCIES.find((c) => c.id === competencyId);
@@ -826,6 +1024,7 @@ function PdiCard({ competencyId }) {
   );
 }
 
+// ─── UPGRADE SECTION ──────────────────────────────────────────────────────────
 function UpgradeSection({ profileData, scores, answers, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities }) {
   const [phase, setPhase] = useState("preview");
   const [lead, setLead] = useState({ name: profileData?.name || "", email: "", whatsapp: "" });
@@ -910,8 +1109,8 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
             <Brain className="w-4 h-4 text-primary" />
             <p className="text-xs font-mono text-primary uppercase tracking-widest">Análise com IA · Claude</p>
           </div>
-          <div className="px-6 py-8 prose prose-sm prose-invert max-w-none">
-            <ReactMarkdown>{aiText}</ReactMarkdown>
+          <div className="px-6 py-8">
+            <MarkdownText>{aiText}</MarkdownText>
           </div>
         </div>
         {opportunities.length > 0 && (
@@ -1004,6 +1203,7 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
             <Sparkles className="w-4 h-4" /> Quero o diagnóstico completo
           </button>
         )}
+
         {phase === "form" && (
           <div className="max-w-md space-y-6">
             <p className="text-sm text-muted-foreground leading-relaxed">
@@ -1027,6 +1227,7 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
             </div>
           </div>
         )}
+
         {phase === "code" && (
           <div className="max-w-md space-y-6">
             <div className="flex items-center gap-3">
@@ -1069,6 +1270,7 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
   );
 }
 
+// ─── RESULTS ──────────────────────────────────────────────────────────────────
 function Results({ profileData, scores, answers, onReset, onAbout }) {
   const generalScore = Math.round(scores.reduce((s, c) => s + c.score, 0) / scores.length);
   const generalLevel = getLevel(generalScore);
@@ -1080,7 +1282,7 @@ function Results({ profileData, scores, answers, onReset, onAbout }) {
 
   const radarData = COMPETENCIES.map((c) => {
     const s = scores.find((x) => x.id === c.id);
-    return { subject: c.name.split(" ")[0], score: s ? s.score : 0, fullMark: 100 };
+    return { score: s ? s.score : 0 };
   });
 
   return (
@@ -1119,14 +1321,43 @@ function Results({ profileData, scores, answers, onReset, onAbout }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="bg-card border border-border rounded-sm p-6">
             <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-4">Mapa de competências</p>
-            <ResponsiveContainer width="100%" height={280}>
-              <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
-                <PolarGrid stroke="rgba(255,255,255,0.06)" />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: "#64748B", fontSize: 10 }} />
-                <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-                <Radar dataKey="score" stroke="#818CF8" fill="#818CF8" fillOpacity={0.18} strokeWidth={2} dot={{ fill: "#818CF8", r: 3, strokeWidth: 0 }} />
-              </RadarChart>
-            </ResponsiveContainer>
+            <svg viewBox="0 0 280 280" width="100%" style={{ maxHeight: 280 }}>
+              {(() => {
+                const cx = 140, cy = 140, maxR = 105, n = COMPETENCIES.length;
+                const toXY = (i, r) => {
+                  const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
+                  return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
+                };
+                const rings = [25, 50, 75, 100];
+                const scorePoints = radarData.map((d, i) => toXY(i, (d.score / 100) * maxR));
+                const scorePath = scorePoints.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ") + " Z";
+                return (
+                  <g>
+                    {rings.map(r => {
+                      const pts = Array.from({ length: n }, (_, i) => toXY(i, (r / 100) * maxR));
+                      const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ") + " Z";
+                      return <path key={`rr-${r}`} d={d} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={1} />;
+                    })}
+                    {COMPETENCIES.map((_, i) => {
+                      const outer = toXY(i, maxR);
+                      return <line key={`rs-${i}`} x1={cx} y1={cy} x2={outer.x} y2={outer.y} stroke="rgba(255,255,255,0.06)" strokeWidth={1} />;
+                    })}
+                    <path d={scorePath} fill="rgba(129,140,248,0.18)" stroke="#818CF8" strokeWidth={2} />
+                    {COMPETENCIES.map((c, i) => {
+                      const p = scorePoints[i];
+                      const label = toXY(i, maxR + 14);
+                      const anchor = label.x < cx - 4 ? "end" : label.x > cx + 4 ? "start" : "middle";
+                      return (
+                        <g key={`rn-${c.id}`}>
+                          <circle cx={p.x} cy={p.y} r={3} fill="#818CF8" />
+                          <text x={label.x} y={label.y + 3} textAnchor={anchor} fill="#64748B" fontSize={9}>{c.name.split(" ")[0]}</text>
+                        </g>
+                      );
+                    })}
+                  </g>
+                );
+              })()}
+            </svg>
           </div>
           <div className="bg-card border border-border rounded-sm p-6 flex flex-col">
             <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-4">Perfil predominante</p>
@@ -1219,6 +1450,7 @@ function Results({ profileData, scores, answers, onReset, onAbout }) {
   );
 }
 
+// ─── APP ──────────────────────────────────────────────────────────────────────
 export default function App() {
   const [view, setView] = useState("landing");
   const [profileData, setProfileData] = useState(null);
