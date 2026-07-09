@@ -296,17 +296,17 @@ function Landing({ onStart, onAbout }) {
             {" — ou trava —"}<br />
             sua carreira.
           </h1>
-          <p className="text-foreground/60 text-lg leading-relaxed mb-4 max-w-lg">50 perguntas calibradas. 10 competências mapeadas. Um diagnóstico preciso sobre quem você é — e quem pode se tornar.</p>
+          <p className="text-foreground/75 text-lg leading-relaxed mb-4 max-w-lg">50 perguntas calibradas. 10 competências mapeadas. Um diagnóstico preciso sobre quem você é — e quem pode se tornar.</p>
           <p className="text-sm mb-10 max-w-md">
-            <span className="text-foreground/50">Diagnóstico gratuito. Plano completo por </span>
+            <span className="text-foreground/70">Diagnóstico gratuito. Plano completo por </span>
             <span className="font-bold" style={{ color: "#FBBF24" }}>R$ 97</span>
-            <span className="text-foreground/40"> — pagamento único.</span>
+            <span className="text-foreground/60"> — pagamento único.</span>
           </p>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
             <button onClick={onStart} className="flex items-center gap-2.5 px-8 py-4 rounded-sm font-bold hover:opacity-90 active:scale-[0.98] transition-all text-sm" style={{ backgroundColor: "#FBBF24", color: "#0B1120", boxShadow: "0 0 32px rgba(251,191,36,0.35)" }}>
               Fazer o diagnóstico — grátis <ArrowRight className="w-4 h-4" />
             </button>
-            <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-foreground/50">
+            <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-foreground/70">
               {["Sem cadastro", "Resultado imediato", "Satisfação garantida"].map((t) => (
                 <span key={t} className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5" style={{ color: "#FBBF24" }} /> {t}</span>
               ))}
@@ -314,11 +314,11 @@ function Landing({ onStart, onAbout }) {
           </div>
         </div>
         <div className="relative z-10 hidden lg:flex flex-col justify-center border-l border-border px-8 py-12" style={{ background: "linear-gradient(160deg, rgba(129,140,248,0.06) 0%, rgba(11,17,32,0.95) 60%)" }}>
-          <p className="text-[10px] text-foreground/40 font-mono uppercase tracking-widest mb-6">Prévia · diagnóstico</p>
+          <p className="text-[10px] text-foreground/60 font-mono uppercase tracking-widest mb-6">Prévia · diagnóstico</p>
           <div className="space-y-2.5 mb-8">
             {COMPETENCIES.map((c, i) => (
               <div key={c.id} className="flex items-center gap-3">
-                <span className="text-[11px] text-foreground/40 w-32 truncate text-right leading-tight">{c.name}</span>
+                <span className="text-[11px] text-foreground/60 w-32 truncate text-right leading-tight">{c.name}</span>
                 <div className="flex-1 rounded-full h-1.5" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
                   <div className="h-1.5 rounded-full transition-all" style={{ width: `${DEMO_SCORES[i]}%`, backgroundColor: LEVEL_COLORS[getLevel(DEMO_SCORES[i])], opacity: 0.85 }} />
                 </div>
@@ -327,10 +327,10 @@ function Landing({ onStart, onAbout }) {
             ))}
           </div>
           <div className="rounded-sm p-5 border" style={{ backgroundColor: "rgba(129,140,248,0.06)", borderColor: "rgba(129,140,248,0.18)" }}>
-            <div className="text-[10px] text-foreground/40 font-mono uppercase tracking-widest mb-1">Índice geral</div>
+            <div className="text-[10px] text-foreground/60 font-mono uppercase tracking-widest mb-1">Índice geral</div>
             <div className="font-mono font-bold leading-none mb-1" style={{ fontSize: "3.5rem", color: "#818CF8", textShadow: "0 0 40px rgba(129,140,248,0.4)" }}>77</div>
-            <div className="text-sm text-foreground/50">Nível <span className="font-semibold" style={{ color: "#818CF8" }}>Avançado</span></div>
-            <div className="mt-3 pt-3 border-t border-border text-[11px] text-foreground/40">Perfil · <span className="text-foreground/60">Líder Inspirador</span></div>
+            <div className="text-sm text-foreground/70">Nível <span className="font-semibold" style={{ color: "#818CF8" }}>Avançado</span></div>
+            <div className="mt-3 pt-3 border-t border-border text-[11px] text-foreground/60">Perfil · <span className="text-foreground/80">Líder Inspirador</span></div>
           </div>
         </div>
       </section>
@@ -340,7 +340,7 @@ function Landing({ onStart, onAbout }) {
             <div key={i} className={`px-8 py-12 ${i < RESEARCH_STATS.length - 1 ? "border-b sm:border-b-0 sm:border-r border-border" : ""}`}>
               <div className="font-mono font-black mb-3" style={{ fontSize: "3rem", lineHeight: 1, color: "#FBBF24", textShadow: "0 0 30px rgba(251,191,36,0.3)" }}>{s.value}</div>
               <p className="text-sm text-foreground/70 leading-relaxed mb-3">{s.label}</p>
-              <p className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "rgba(251,191,36,0.4)" }}>{s.source}</p>
+              <p className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "rgba(251,191,36,0.68)" }}>{s.source}</p>
             </div>
           ))}
         </div>
@@ -349,17 +349,17 @@ function Landing({ onStart, onAbout }) {
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-center gap-3 mb-12">
             <div className="flex-1 h-px" style={{ background: "linear-gradient(to right, transparent, rgba(251,191,36,0.2))" }} />
-            <p className="text-[10px] text-foreground/40 font-mono uppercase tracking-widest whitespace-nowrap">O que dizem quem já fez</p>
+            <p className="text-[10px] text-foreground/60 font-mono uppercase tracking-widest whitespace-nowrap">O que dizem quem já fez</p>
             <div className="flex-1 h-px" style={{ background: "linear-gradient(to left, transparent, rgba(251,191,36,0.2))" }} />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {TESTIMONIALS.map((t) => (
               <div key={t.name} className="relative flex flex-col gap-5 p-6 rounded-sm overflow-hidden" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderTop: "2px solid rgba(251,191,36,0.4)" }}>
                 <div style={{ color: "#FBBF24", fontSize: "14px", letterSpacing: "2px" }}>★★★★★</div>
-                <p className="text-sm text-foreground/70 leading-relaxed flex-1 italic">"{t.text}"</p>
+                <p className="text-sm text-foreground/80 leading-relaxed flex-1 italic">"{t.text}"</p>
                 <div className="pt-4 border-t space-y-1" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                   <p className="text-xs font-semibold text-foreground/90">{t.name}</p>
-                  <p className="text-[11px] text-foreground/40">{t.role}</p>
+                  <p className="text-[11px] text-foreground/60">{t.role}</p>
                   <span className="text-[10px] font-mono px-2.5 py-1 rounded-full font-medium inline-block mt-2" style={{ backgroundColor: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.25)", color: "#FBBF24" }}>Índice {t.score} · {t.profile}</span>
                 </div>
               </div>
@@ -370,7 +370,7 @@ function Landing({ onStart, onAbout }) {
       <section className="px-6 lg:px-16 py-24 border-b border-border bg-card">
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-16 items-start">
           <div>
-            <p className="text-[10px] text-foreground/40 font-mono uppercase tracking-widest mb-6">Por que isso importa</p>
+            <p className="text-[10px] text-foreground/60 font-mono uppercase tracking-widest mb-6">Por que isso importa</p>
             <h2 className="leading-[1.1] mb-0" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 3.5vw, 2.8rem)" }}>
               Em um mundo de habilidades técnicas descartáveis, o que sobrevive é{" "}
               <em className="not-italic" style={{ color: "#818CF8" }}>genuinamente humano.</em>
@@ -391,7 +391,7 @@ function Landing({ onStart, onAbout }) {
       </section>
       <section className="px-6 lg:px-16 py-24 border-b border-border" style={{ background: "linear-gradient(180deg, rgba(129,140,248,0.04) 0%, transparent 100%)" }}>
         <div className="max-w-5xl mx-auto">
-          <p className="text-[10px] text-foreground/40 font-mono uppercase tracking-widest mb-4">Como funciona</p>
+          <p className="text-[10px] text-foreground/60 font-mono uppercase tracking-widest mb-4">Como funciona</p>
           <h2 className="mb-16" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.8rem, 3vw, 2.6rem)" }}>Três etapas. Quinze minutos.</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
@@ -408,7 +408,7 @@ function Landing({ onStart, onAbout }) {
                   <Icon className="w-4 h-4" style={{ color: idx === 2 ? "#FBBF24" : "#818CF8" }} />
                 </div>
                 <h3 className="font-semibold text-base text-foreground/90">{title}</h3>
-                <p className="text-sm text-foreground/50 leading-relaxed">{desc}</p>
+                <p className="text-sm text-foreground/70 leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
@@ -461,18 +461,18 @@ function Landing({ onStart, onAbout }) {
             <h2 className="mb-5" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.4rem, 5vw, 3.8rem)", lineHeight: 1.08 }}>
               Você sabe criar.<br /><span style={{ color: "#FBBF24" }}>Agora conheça quem cria.</span>
             </h2>
-            <p className="text-foreground/60 mb-4 text-lg leading-relaxed max-w-lg">Designers excepcionais dominam ferramentas — mas também dominam a si mesmos. Comece pelo diagnóstico.</p>
-            <p className="text-sm text-foreground/50 mb-10">Diagnóstico <span className="text-foreground/80 font-semibold">gratuito</span>.{" "}Plano completo com IA + mentoria por <span className="font-bold" style={{ color: "#FBBF24" }}>R$ 97</span> — pagamento único.</p>
+            <p className="text-foreground/75 mb-4 text-lg leading-relaxed max-w-lg">Designers excepcionais dominam ferramentas — mas também dominam a si mesmos. Comece pelo diagnóstico.</p>
+            <p className="text-sm text-foreground/70 mb-10">Diagnóstico <span className="text-foreground/90 font-semibold">gratuito</span>.{" "}Plano completo com IA + mentoria por <span className="font-bold" style={{ color: "#FBBF24" }}>R$ 97</span> — pagamento único.</p>
             <div className="flex flex-col gap-4">
               <button onClick={onStart} className="inline-flex items-center gap-2.5 rounded-sm font-bold hover:opacity-90 active:scale-[0.98] transition-all whitespace-nowrap w-fit" style={{ backgroundColor: "#FBBF24", color: "#0B1120", boxShadow: "0 0 40px rgba(251,191,36,0.3)", padding: "16px 36px", fontSize: "15px" }}>
                 Fazer o diagnóstico — grátis <ArrowRight className="w-4 h-4 shrink-0" />
               </button>
-              <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-foreground/40">{["Sem cadastro", "Resultado imediato", "Satisfação garantida"].map((t) => (<span key={t}>✓ {t}</span>))}</div>
+              <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-foreground/65">{["Sem cadastro", "Resultado imediato", "Satisfação garantida"].map((t) => (<span key={t}>✓ {t}</span>))}</div>
             </div>
           </div>
           <div className="hidden lg:flex flex-col items-center justify-center rounded-sm p-6" style={{ background: "rgba(129,140,248,0.05)", border: "1px solid rgba(129,140,248,0.12)" }}>
-            <p className="text-[10px] text-foreground/40 font-mono uppercase tracking-widest mb-1 self-start">Prévia · mapa de competências</p>
-            <p className="text-[11px] text-foreground/60 mb-4 self-start">Índice geral <span className="font-mono font-bold" style={{ color: "#818CF8" }}>77</span><span className="text-foreground/40"> · Nível </span><span className="font-medium" style={{ color: "#818CF8" }}>Avançado</span></p>
+            <p className="text-[10px] text-foreground/60 font-mono uppercase tracking-widest mb-1 self-start">Prévia · mapa de competências</p>
+            <p className="text-[11px] text-foreground/70 mb-4 self-start">Índice geral <span className="font-mono font-bold" style={{ color: "#818CF8" }}>77</span><span className="text-foreground/60"> · Nível </span><span className="font-medium" style={{ color: "#818CF8" }}>Avançado</span></p>
             <svg viewBox="0 0 280 280" width="100%" style={{ maxHeight: 280 }}>
               {(() => {
                 const cx = 140, cy = 140, maxR = 100, n = COMPETENCIES.length;
@@ -485,7 +485,7 @@ function Landing({ onStart, onAbout }) {
                     {rings.map(r => { const pts = Array.from({ length: n }, (_, i) => toXY(i, (r / 100) * maxR)); const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ") + " Z"; return <path key={`ring-${r}`} d={d} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={1} />; })}
                     {COMPETENCIES.map((_, i) => { const outer = toXY(i, maxR); return <line key={`spoke-${i}`} x1={cx} y1={cy} x2={outer.x} y2={outer.y} stroke="rgba(255,255,255,0.06)" strokeWidth={1} />; })}
                     <path d={scorePath} fill="rgba(129,140,248,0.18)" stroke="#818CF8" strokeWidth={1.5} />
-                    {COMPETENCIES.map((c, i) => { const p = scorePoints[i]; const label = toXY(i, maxR + 16); const anchor = label.x < cx - 4 ? "end" : label.x > cx + 4 ? "start" : "middle"; return (<g key={`node-${c.id}`}><circle cx={p.x} cy={p.y} r={3} fill="#818CF8" /><text x={label.x} y={label.y + 3} textAnchor={anchor} fill="rgba(255,255,255,0.38)" fontSize={9}>{c.name.split(" ")[0]}</text></g>); })}
+                    {COMPETENCIES.map((c, i) => { const p = scorePoints[i]; const label = toXY(i, maxR + 16); const anchor = label.x < cx - 4 ? "end" : label.x > cx + 4 ? "start" : "middle"; return (<g key={`node-${c.id}`}><circle cx={p.x} cy={p.y} r={3} fill="#818CF8" /><text x={label.x} y={label.y + 3} textAnchor={anchor} fill="rgba(255,255,255,0.62)" fontSize={9}>{c.name.split(" ")[0]}</text></g>); })}
                   </g>
                 );
               })()}
