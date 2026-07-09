@@ -956,16 +956,20 @@ export default function App() {
   const [profileData, setProfileData] = useState(null);
   const [answers, setAnswers] = useState({});
   const [scores, setScores] = useState([]);
+  const navigateTo = (nextView) => {
+    setView(nextView);
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  };
   const handleAnswer = (key, value) => setAnswers((a) => ({ ...a, [key]: value }));
-  const handleComplete = () => { setScores(calculateScores(answers)); setView("results"); };
-  const handleReset = () => { setView("landing"); setProfileData(null); setAnswers({}); setScores([]); };
+  const handleComplete = () => { setScores(calculateScores(answers)); navigateTo("results"); };
+  const handleReset = () => { navigateTo("landing"); setProfileData(null); setAnswers({}); setScores([]); };
   return (
     <>
-      {view === "landing" && <Landing onStart={() => setView("profile")} onAbout={() => setView("about")} />}
-      {view === "about" && <AboutPage onBack={() => setView("landing")} onStart={() => setView("profile")} />}
-      {view === "profile" && <ProfileForm onSubmit={(d) => { setProfileData(d); setView("assessment"); }} onBack={() => setView("landing")} />}
-      {view === "assessment" && <AssessmentForm answers={answers} onAnswer={handleAnswer} onComplete={handleComplete} onBack={() => setView("profile")} />}
-      {view === "results" && profileData && <Results profileData={profileData} scores={scores} answers={answers} onReset={handleReset} onAbout={() => setView("about")} />}
+      {view === "landing" && <Landing onStart={() => navigateTo("profile")} onAbout={() => navigateTo("about")} />}
+      {view === "about" && <AboutPage onBack={() => navigateTo("landing")} onStart={() => navigateTo("profile")} />}
+      {view === "profile" && <ProfileForm onSubmit={(d) => { setProfileData(d); navigateTo("assessment"); }} onBack={() => navigateTo("landing")} />}
+      {view === "assessment" && <AssessmentForm answers={answers} onAnswer={handleAnswer} onComplete={handleComplete} onBack={() => navigateTo("profile")} />}
+      {view === "results" && profileData && <Results profileData={profileData} scores={scores} answers={answers} onReset={handleReset} onAbout={() => navigateTo("about")} />}
     </>
   );
 }
