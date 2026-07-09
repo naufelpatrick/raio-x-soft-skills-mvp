@@ -376,14 +376,15 @@ function Landing({ onStart, onAbout }) {
               <em className="not-italic" style={{ color: "#818CF8" }}>genuinamente humano.</em>
             </h2>
           </div>
-          <div className="space-y-5 text-sm text-muted-foreground leading-relaxed">
+          <div className="space-y-5 text-[15px] text-foreground/80 leading-relaxed">
             <p>Ferramentas mudam. Frameworks ficam obsoletos. Linguagens de programação vêm e vão. Mas a capacidade de se comunicar com clareza, de ouvir de verdade, de se adaptar sem perder o fio — essas habilidades nunca saem de moda.</p>
             <p>O problema é que tratamos competências humanas como algo que "se tem ou não se tem". Raramente as mapeamos com a mesma seriedade com que avaliamos portfólios ou certificações. O resultado: profissionais talentosos travados por pontos cegos que nunca foram nomeados.</p>
             <p>Para designers, isso é ainda mais crítico. Empatia, comunicação, escuta ativa e pensamento crítico não são soft skills adjacentes ao nosso trabalho — <strong className="text-foreground font-medium">elas são o trabalho.</strong></p>
             <p>O Raio-X de Soft Skills nasceu dessa lacuna. Uma avaliação séria, baseada em pesquisa, construída por designers para designers — com resultado imediato e plano de ação concreto.</p>
-            <div className="pt-4 border-t border-border space-y-1.5">
+            <div className="pt-5 border-t border-border space-y-2">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-foreground/60 mb-3">Fontes consultadas</p>
               {["LinkedIn Global Talent Trends Report, 2024", "World Economic Forum — Future of Jobs Report, 2025", "Goleman, D. (1998). What Makes a Leader? Harvard Business Review.", "McKinsey Global Institute — The Future of Work in America, 2019"].map((ref) => (
-                <p key={ref} className="text-[10px] font-mono text-muted-foreground/70 flex items-start gap-1.5"><ExternalLink className="w-2.5 h-2.5 shrink-0 mt-0.5 opacity-50" /> {ref}</p>
+                <p key={ref} className="text-xs text-foreground/70 flex items-start gap-2 leading-relaxed"><ExternalLink className="w-3 h-3 shrink-0 mt-0.5 text-primary/80" /> {ref}</p>
               ))}
             </div>
           </div>
