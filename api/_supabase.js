@@ -54,3 +54,8 @@ export async function upsertSupabaseRecord(table, record, conflictKey) {
     prefer: "resolution=merge-duplicates,return=minimal",
   });
 }
+
+export async function updateSupabaseRecord(table, record, filterColumn, filterValue) {
+  const query = `?${encodeURIComponent(filterColumn)}=eq.${encodeURIComponent(filterValue)}`;
+  return sendSupabaseRecord(table, record, { method: "PATCH", query });
+}

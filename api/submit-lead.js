@@ -7,7 +7,7 @@ import {
   requireJson,
   requirePost,
 } from "./_security.js";
-import { upsertSupabaseRecord } from "./_supabase.js";
+import { insertSupabaseRecord, updateSupabaseRecord } from "./_supabase.js";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const allowedPurchaseStatus = new Set(["not_purchased", "requested", "purchased"]);
@@ -68,10 +68,22 @@ export default async function handler(req, res) {
 
     let saved = false;
     try {
-      const supabaseResult = await upsertSupabaseRecord("leads", lead, "session_id");
+      const supabaseResult =
+        purchaseStatus === "not_purchased"
+          ? await insertSupabaseRecord("leads", lead)
+          : await updateSupabaseRecord("leads", lead, "session_id", lead.sessionId);
       saved = Boolean(supabaseResult.saved);
     } catch (storageError) {
-      console.error("Lead Supabase error", storageError);
+      if (purchaseStatus === "not_purchased" && String(storageError).includes("409")) {
+        try {
+          const supabaseResult = await updateSupabaseRecord("leads", lead, "session_id", lead.sessionId);
+          saved = Boolean(supabaseResult.saved);
+        } catch (updateError) {
+          console.error("Lead Supabase update error", updateError);
+        }
+      } else {
+        console.error("Lead Supabase error", storageError);
+      }
     }
 
     return res.status(201).json({ received: true, saved });

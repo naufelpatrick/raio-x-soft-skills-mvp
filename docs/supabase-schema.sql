@@ -62,15 +62,18 @@ for insert
 to anon
 with check (true);
 
-create policy "Allow anonymous lead insert"
+drop policy if exists "Allow anonymous lead insert" on public.leads;
+drop policy if exists "Allow anonymous lead update" on public.leads;
+
+create policy "Allow public lead insert"
 on public.leads
 for insert
-to anon
-with check (contact_consent = true);
+to public
+with check (true);
 
-create policy "Allow anonymous lead update"
+create policy "Allow public lead update"
 on public.leads
 for update
-to anon
+to public
 using (true)
-with check (contact_consent = true);
+with check (true);
