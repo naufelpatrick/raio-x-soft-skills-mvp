@@ -54,8 +54,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Feedback incompleto ou inválido." });
     }
 
-    console.info("VALIDATION_FEEDBACK", JSON.stringify(feedback));
-
     let saved = false;
     try {
       const supabaseResult = await insertSupabaseRecord("validation_feedback", feedback);

@@ -2,6 +2,7 @@ import { storeLocalEvent } from "./sessionService";
 
 let initialized = false;
 let activeSessionId = null;
+const COOKIE_PREFERENCES_KEY = "raio_x_cookie_preferences_v1";
 
 const allowedEvents = new Set([
   "assessment_started",
@@ -22,6 +23,14 @@ export function initializeAnalytics(sessionId) {
   activeSessionId = sessionId;
 
   if (initialized) return;
+
+  try {
+    const preferences = JSON.parse(localStorage.getItem(COOKIE_PREFERENCES_KEY) || "null");
+    if (!preferences?.analytics) return;
+  } catch {
+    return;
+  }
+
   initialized = true;
 
   const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;

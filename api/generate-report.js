@@ -105,8 +105,7 @@ export default async function handler(req, res) {
     clearTimeout(timeout);
 
     if (!response.ok) {
-      const errText = await response.text();
-      console.error('OpenRouter error:', errText);
+      console.error('OpenRouter error:', response.status);
       res.status(502).json({ error: 'Erro ao chamar o OpenRouter. Tente novamente.' });
       return;
     }

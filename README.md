@@ -1,14 +1,14 @@
 # Raio-X de Soft Skills
 
-MVP de autoavaliação comportamental para profissionais de Design. A aplicação avalia 10 competências, apresenta perfil predominante, forças, oportunidades e um PDI de 90 dias. Uma devolutiva adicional pode ser gerada pelo Gemini.
+MVP de autoavaliação comportamental para profissionais de Design. A aplicação avalia 10 competências, apresenta perfil predominante, forças, oportunidades e um PDI de 90 dias. Uma devolutiva adicional pode ser gerada com apoio de IA via OpenRouter.
 
 ## Fluxo
 
-1. Landing page e consentimento.
+1. Landing page e ciência sobre privacidade/termos.
 2. Contexto profissional do participante.
 3. 50 perguntas de escala e 3 perguntas abertas.
 4. Relatório básico calculado localmente.
-5. Análise aprofundada opcional com IA.
+5. Análise aprofundada opcional com IA via OpenRouter.
 6. Pesquisa curta de validação do MVP.
 7. Inscrição opcional para participar da próxima versão.
 
@@ -34,15 +34,13 @@ As rotas em `api/` são funções serverless da Vercel. Para testá-las localmen
 
 Copie `.env.example` para `.env.local` e preencha as variáveis necessárias.
 
-- `GEMINI_API_KEY`: obrigatória para gerar a análise com IA.
-- `GEMINI_MODEL`: modelo usado na geração; possui valor padrão.
+- `OPENROUTER_API_KEY`: obrigatória para gerar a análise com IA.
 - `APP_ORIGIN`: domínio autorizado a chamar as APIs. Aceita origens separadas por vírgula.
 - `FEEDBACK_WEBHOOK_URL`: opcional. Encaminha feedbacks para Make, Zapier, Google Apps Script ou serviço equivalente.
-- `INTEREST_WEBHOOK_URL`: opcional. Encaminha nome, e-mail, consentimento e interesse principal para o fluxo de relacionamento.
-- `VITE_GA_MEASUREMENT_ID`: opcional. Ativa eventos no Google Analytics 4 após consentimento.
+- `INTEREST_WEBHOOK_URL`: opcional. Encaminha nome, e-mail, autorização de contato e interesse principal para o fluxo de relacionamento.
+- `VITE_GA_MEASUREMENT_ID`: opcional. Ativa eventos no Google Analytics 4 somente se o app também implementar gestão de preferência para analytics.
 
-Sem webhook, os feedbacks continuam registrados nos logs das funções da Vercel com o prefixo `VALIDATION_FEEDBACK`.
-As inscrições para a próxima versão usam o prefixo `VALIDATION_INTEREST` quando não há webhook configurado.
+Os endpoints não registram payloads pessoais completos em logs de aplicação. Erros técnicos podem ser registrados para depuração.
 
 ## Eventos de validação
 
@@ -68,5 +66,5 @@ Nome, e-mail, respostas abertas, objetivo e desafio profissional não são envia
 - O navegador não envia um prompt arbitrário à API; o prompt é montado no servidor.
 - Payloads, origem e frequência de chamadas são validados.
 - O limitador em memória reduz abuso básico por instância serverless. Para escala maior, use um rate limiter persistente.
-- Dados da avaliação só são enviados ao Gemini após ação explícita do participante.
+- Dados da avaliação só são enviados ao OpenRouter após ação explícita do participante no fluxo do relatório completo.
 - O produto é apresentado como autoavaliação profissional, não diagnóstico psicológico.

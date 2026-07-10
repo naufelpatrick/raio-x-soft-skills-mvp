@@ -308,7 +308,7 @@ export default function LandingPage({ onStart, hasSavedSession, onResume }) {
 
               <details className="mt-5 border-t border-slate-100 pt-4 text-xs leading-relaxed text-slate-500">
                 <summary className="cursor-pointer font-semibold text-slate-700">Privacidade e limites da avaliação</summary>
-                <p className="mt-3">Esta é uma autoavaliação de desenvolvimento profissional, não um teste psicológico. Somente ao solicitar a análise com IA, perfil e respostas são enviados ao Gemini para gerar a devolutiva.</p>
+                <p className="mt-3">Esta é uma autoavaliação de desenvolvimento profissional, não um teste psicológico. Somente ao solicitar a análise com IA, perfil e respostas são enviados ao provedor tecnológico de IA para gerar a devolutiva.</p>
               </details>
             </div>
           </div>

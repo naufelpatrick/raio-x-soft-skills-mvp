@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ChevronLeft, ArrowRight, BarChart2, BookOpen, Target,
   Zap, Check, RefreshCw, Sparkles, Loader2, Lock,
@@ -7,7 +7,10 @@ import {
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const OWNER_WHATSAPP = "554991106400";
+const CONTACT_EMAIL = "info@raioxdodesigner.com";
 const PRODUCT_PRICE = "R$ 49,90";
+const LAST_LEGAL_UPDATE = "10 de julho de 2026";
+const COOKIE_PREFERENCES_KEY = "raio_x_cookie_preferences_v1";
 
 function BoldFreeText({ children }) {
   if (typeof children !== "string") return children;
@@ -250,22 +253,397 @@ function TopNav({ onStart, rightSlot }) {
   );
 }
 
+function LegalLink({ href, children }) {
+  return <a href={href} className="text-muted-foreground hover:text-foreground transition-colors">{children}</a>;
+}
+
+function readCookiePreferences() {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = window.localStorage.getItem(COOKIE_PREFERENCES_KEY);
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveCookiePreferences(preferences) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(
+    COOKIE_PREFERENCES_KEY,
+    JSON.stringify({ ...preferences, essential: true, savedAt: new Date().toISOString() })
+  );
+}
+
+function CookieConsentBanner() {
+  const [preferences, setPreferences] = useState(() => readCookiePreferences());
+  const [visible, setVisible] = useState(() => !readCookiePreferences());
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [draft, setDraft] = useState({ essential: true, analytics: false, marketing: false });
+
+  useEffect(() => {
+    const openPreferences = () => {
+      const current = readCookiePreferences();
+      setDraft({
+        essential: true,
+        analytics: Boolean(current?.analytics),
+        marketing: Boolean(current?.marketing),
+      });
+      setVisible(true);
+      setSettingsOpen(true);
+    };
+
+    window.addEventListener("open-cookie-preferences", openPreferences);
+    return () => window.removeEventListener("open-cookie-preferences", openPreferences);
+  }, []);
+
+  function persist(nextPreferences) {
+    const normalized = { essential: true, analytics: Boolean(nextPreferences.analytics), marketing: Boolean(nextPreferences.marketing) };
+    saveCookiePreferences(normalized);
+    setPreferences(normalized);
+    setDraft(normalized);
+    setVisible(false);
+    setSettingsOpen(false);
+  }
+
+  if (!visible) return null;
+
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-50 px-4 pb-4 sm:px-6" role="region" aria-label="Preferências de cookies">
+      <div className="mx-auto max-w-4xl rounded-sm border border-border bg-background/95 p-5 shadow-2xl backdrop-blur">
+        {!settingsOpen ? (
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-sm font-medium text-foreground">Usamos cookies e tecnologias similares</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                Usamos recursos essenciais para o funcionamento do site. Cookies de analytics ou marketing só serão utilizados se você autorizar.
+                Você pode alterar sua escolha depois em “Gerenciar cookies”.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 shrink-0">
+              <button type="button" onClick={() => persist({ analytics: false, marketing: false })} className="rounded-sm border border-border px-4 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors">Recusar</button>
+              <button type="button" onClick={() => setSettingsOpen(true)} className="rounded-sm border border-border px-4 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors">Configurar</button>
+              <button type="button" onClick={() => persist({ analytics: true, marketing: true })} className="rounded-sm bg-primary px-4 py-2 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity">Aceitar</button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            <div>
+              <p className="text-sm font-medium text-foreground">Preferências de cookies</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Você controla finalidades opcionais. Recursos essenciais permanecem ativos porque são necessários para a experiência funcionar.</p>
+            </div>
+            <div className="space-y-3">
+              {[
+                ["essential", "Essenciais", "Necessários para sessão, segurança básica e funcionamento do diagnóstico.", true],
+                ["analytics", "Analytics", "Ajudam a entender uso agregado da experiência, se uma ferramenta for ativada.", false],
+                ["marketing", "Marketing", "Podem apoiar campanhas ou mensuração de mídia, se forem implementadas.", false],
+              ].map(([key, label, description, disabled]) => (
+                <label key={key} className="flex items-start justify-between gap-4 rounded-sm border border-border bg-card p-4">
+                  <span>
+                    <span className="block text-sm font-medium text-foreground">{label}</span>
+                    <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">{description}</span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(draft[key])}
+                    disabled={disabled}
+                    onChange={(event) => setDraft((current) => ({ ...current, [key]: event.target.checked }))}
+                    className="mt-1 accent-primary"
+                  />
+                </label>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={() => persist(draft)} className="rounded-sm bg-primary px-4 py-2 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity">Salvar preferências</button>
+              <button type="button" onClick={() => persist({ analytics: false, marketing: false })} className="rounded-sm border border-border px-4 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors">Recusar opcionais</button>
+              {preferences && <button type="button" onClick={() => setVisible(false)} className="rounded-sm px-4 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors">Fechar</button>}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── SHARED FOOTER ────────────────────────────────────────────────────────────
 function PageFooter() {
   return (
-    <footer className="border-t border-border px-6 lg:px-12 py-8">
-      <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <img src="/raio-x-logo-branco.svg" alt="Raio-X do Designer" className="h-7 w-auto mb-1" />
-          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} · Ferramenta de autoconhecimento profissional</p>
+    <footer className="border-t border-border px-6 lg:px-12 py-10">
+      <div className="max-w-5xl mx-auto grid grid-cols-1 gap-10 lg:grid-cols-[minmax(220px,1fr)_minmax(320px,1.2fr)] lg:items-start">
+        <div className="space-y-6">
+          <img src="/raio-x-logo-branco.svg" alt="Raio-X do Designer" className="h-8 w-auto" />
+          <p className="max-w-xs text-xs leading-relaxed text-muted-foreground">© {new Date().getFullYear()} Raio-X do Designer. Todos os direitos reservados.</p>
         </div>
-        <div className="flex items-center gap-6">
-          <a href={`https://wa.me/${OWNER_WHATSAPP}`} target="_blank" rel="noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-            Contato
-          </a>
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+          <div>
+            <p className="mb-3 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Legal</p>
+            <div className="grid grid-cols-1 gap-2 text-xs">
+              <LegalLink href="/privacidade">Política de Privacidade</LegalLink>
+              <LegalLink href="/termos">Termos de Uso</LegalLink>
+              <LegalLink href="/cookies">Política de Cookies</LegalLink>
+              <LegalLink href="/uso-de-ia">Uso de IA</LegalLink>
+            </div>
+          </div>
+          <div>
+            <p className="mb-3 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Contato e dados</p>
+            <div className="grid grid-cols-1 gap-2 text-xs">
+              <LegalLink href="/privacidade/solicitacao">Solicitar dados</LegalLink>
+              <button type="button" onClick={() => window.dispatchEvent(new Event("open-cookie-preferences"))} className="text-left text-muted-foreground hover:text-foreground transition-colors">
+                Gerenciar cookies
+              </button>
+              <LegalLink href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</LegalLink>
+              <a href={`https://wa.me/${OWNER_WHATSAPP}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
+                <MessageCircle className="w-3.5 h-3.5" />
+                Contato
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
+  );
+}
+
+function LegalLayout({ title, eyebrow, children }) {
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <TopNav rightSlot={<a href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Voltar ao início</a>} />
+      <main className="px-6 lg:px-16 py-14">
+        <article className="max-w-4xl mx-auto">
+          <p className="text-[10px] text-primary font-mono uppercase tracking-widest mb-4">{eyebrow}</p>
+          <h1 className="text-4xl lg:text-5xl mb-6" style={{ fontFamily: "var(--font-display)" }}>{title}</h1>
+          <div className="space-y-8 text-sm text-muted-foreground leading-relaxed legal-content">{children}</div>
+        </article>
+      </main>
+      <PageFooter />
+    </div>
+  );
+}
+
+function LegalSection({ title, children }) {
+  return (
+    <section className="rounded-sm border border-border bg-card p-6">
+      <h2 className="text-xl text-foreground mb-3" style={{ fontFamily: "var(--font-display)" }}>{title}</h2>
+      <div className="space-y-3">{children}</div>
+    </section>
+  );
+}
+
+function LegalList({ items }) {
+  return <ul className="space-y-2 list-disc pl-5">{items.map((item) => <li key={item}>{item}</li>)}</ul>;
+}
+
+function PrivacyPolicyPage() {
+  return (
+    <LegalLayout title="Política de Privacidade" eyebrow="Privacidade e transparência">
+      <LegalSection title="1. Apresentação">
+        <p>O Raio-X do Designer respeita a privacidade de quem utiliza a ferramenta. Usamos dados pessoais e profissionais para viabilizar o diagnóstico, personalizar os resultados e melhorar a experiência do produto, sempre de forma compatível com o funcionamento real do serviço.</p>
+      </LegalSection>
+      <LegalSection title="2. Responsável pelo tratamento">
+        <p>O controlador dos dados é quem define como os dados são tratados neste produto.</p>
+        <LegalList items={["Raio-X do Designer", "Responsável: Patrick Naufel", "Site: raioxdodesigner.com", `Contato de privacidade: ${CONTACT_EMAIL}`]} />
+      </LegalSection>
+      <LegalSection title="3. Dados coletados">
+        <p>De acordo com o código atual, podemos coletar:</p>
+        <LegalList items={[
+          "Dados de identificação: nome e e-mail.",
+          "Dados de contato: WhatsApp, quando informado.",
+          "Dados profissionais: idade, cargo, área de atuação, tempo de experiência e nível profissional.",
+          "Objetivos e desafios profissionais: respostas abertas sobre carreira e contexto atual.",
+          "Respostas ao assessment: respostas em escala para competências comportamentais e respostas abertas finais.",
+          "Resultados do diagnóstico: pontuações, perfil predominante, forças, oportunidades e relatório gerado.",
+          "Dados técnicos básicos: identificador de sessão salvo no navegador, registros técnicos de funcionamento, origem da requisição e controles de segurança/rate limit.",
+        ]} />
+      </LegalSection>
+      <LegalSection title="4. Finalidades do tratamento">
+        <LegalList items={[
+          "Identificar o respondente e associar respostas ao diagnóstico.",
+          "Calcular pontuações e gerar o perfil profissional.",
+          "Personalizar recomendações e plano de desenvolvimento.",
+          "Gerar análise narrativa quando o usuário desbloqueia o relatório completo.",
+          "Viabilizar contato solicitado pelo usuário, suporte e liberação de acesso.",
+          "Prevenir falhas, abuso e uso indevido das APIs.",
+          "Melhorar a experiência e a metodologia do produto.",
+          "Enviar comunicações sobre novidades apenas quando houver autorização específica ou outra base legal aplicável.",
+        ]} />
+      </LegalSection>
+      <LegalSection title="5. Bases legais">
+        <p>Nem todo tratamento depende de consentimento. Conforme o fluxo, podemos utilizar bases legais diferentes:</p>
+        <LegalList items={[
+          "Execução do serviço solicitado: para calcular e entregar o diagnóstico que o usuário pediu.",
+          "Ciência/aceitação dos termos: para confirmar que o usuário entendeu as condições de uso e privacidade antes de iniciar.",
+          "Consentimento: para comunicações opcionais, quando essa finalidade for oferecida separadamente.",
+          "Legítimo interesse: para segurança, prevenção de abuso e melhoria do produto, quando aplicável e proporcional.",
+          "Exercício regular de direitos e cumprimento de obrigações legais: quando necessário para atender solicitações, registros e deveres legais.",
+        ]} />
+      </LegalSection>
+      <LegalSection title="6. Uso de inteligência artificial">
+        <p>Parte da análise narrativa do relatório completo utiliza modelos de inteligência artificial. No código atual, a geração é feita por meio do OpenRouter, chamado por uma função serverless da Vercel. A chave da API não fica exposta no frontend.</p>
+        <p>Quando o relatório completo é gerado, podem ser enviados ao provedor tecnológico: nome, idade, cargo, nível, área, experiência, objetivo de carreira, desafio atual, pontuações, perfil predominante, forças, oportunidades e respostas abertas.</p>
+        <p>A IA apoia a redação do relatório, mas o resultado tem finalidade educacional e de desenvolvimento profissional. Não é avaliação psicológica, médica ou clínica, e não deve ser usado como única base para contratação, demissão, promoção ou decisões de alto impacto.</p>
+        <p>O processamento por OpenRouter e seus provedores pode envolver infraestrutura fora do Brasil.</p>
+      </LegalSection>
+      <LegalSection title="7. Compartilhamento com terceiros">
+        <p>Não comercializamos dados pessoais. Serviços identificados no projeto atual:</p>
+        <LegalList items={[
+          "Vercel: hospedagem da aplicação e execução das funções serverless.",
+          "Supabase: armazenamento de leads, feedbacks e manifestações de interesse, quando configurado.",
+          "OpenRouter: geração do relatório narrativo com IA.",
+          "WhatsApp: canal externo usado quando o usuário solicita o diagnóstico completo ou mentoria.",
+          "Google Analytics 4: existe código opcional, mas ele não está inicializado na aplicação atual; se for ativado no futuro, deverá depender de gestão de cookies/preferências.",
+          "Webhooks de feedback/interesse: existem variáveis opcionais no backend, mas não foram confirmadas como ativas em produção.",
+        ]} />
+      </LegalSection>
+      <LegalSection title="8. Armazenamento e retenção">
+        <p>Parte dos dados pode ser armazenada no Supabase. O navegador também usa localStorage para manter um identificador de sessão e registrar chaves de acesso já utilizadas naquele navegador.</p>
+        <p>O relatório completo gerado por IA é exibido ao usuário no navegador e pode ser exportado em PDF. Pelo código atual, o texto do relatório completo não é salvo em banco de dados pelo Raio-X do Designer.</p>
+        <div className="overflow-x-auto pt-2">
+          <table className="w-full text-left text-xs border border-border">
+            <thead className="bg-muted text-foreground">
+              <tr>
+                <th className="p-3 border-b border-border">Tipo de dado</th>
+                <th className="p-3 border-b border-border">Prazo de retenção</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ["Diagnósticos e relatórios", "24 meses"],
+                ["Dados da conta", "Enquanto a conta estiver ativa, caso esse recurso seja implementado no futuro"],
+                ["Solicitações de contato", "12 meses"],
+                ["Logs técnicos", "90 dias"],
+                ["Cookies e tecnologias similares", "Conforme a finalidade e a configuração descrita na Política de Cookies"],
+                ["Dados anonimizados para estatísticas", "Sem prazo definido, pois deixam de identificar a pessoa"],
+              ].map(([kind, term]) => (
+                <tr key={kind}>
+                  <td className="p-3 border-b border-border align-top text-foreground">{kind}</td>
+                  <td className="p-3 border-b border-border align-top">{term}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </LegalSection>
+      <LegalSection title="9. Segurança">
+        <p>Adotamos medidas técnicas e administrativas razoáveis, como validação de payloads, restrição de origem nas APIs, rate limit básico e execução das chaves sensíveis no servidor. Nenhum sistema é 100% seguro, mas buscamos reduzir riscos e exposição desnecessária.</p>
+      </LegalSection>
+      <LegalSection title="10. Direitos do titular">
+        <p>Você pode solicitar confirmação de tratamento, acesso, correção, exclusão, informação sobre compartilhamento, revogação de consentimento, oposição, portabilidade quando aplicável e esclarecimentos sobre análise automatizada.</p>
+        <a href="/privacidade/solicitacao" className="inline-flex mt-2 bg-primary text-primary-foreground px-5 py-3 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity">Solicitar acesso ou exclusão dos meus dados</a>
+      </LegalSection>
+      <LegalSection title="11. Crianças e adolescentes">
+        <p>O Raio-X do Designer é direcionado a profissionais e não é destinado a menores de 18 anos.</p>
+      </LegalSection>
+      <LegalSection title="12. Atualizações">
+        <LegalList items={[`Última atualização: ${LAST_LEGAL_UPDATE}`, "Versão da política: 1.0"]} />
+      </LegalSection>
+    </LegalLayout>
+  );
+}
+
+function TermsPage() {
+  return (
+    <LegalLayout title="Termos de Uso" eyebrow="Condições do serviço">
+      {[
+        ["1. Aceitação dos termos", "Ao usar o Raio-X do Designer, você declara que leu e compreendeu estes termos, a Política de Privacidade e o aviso sobre uso de Inteligência Artificial."],
+        ["2. Descrição do serviço", "O Raio-X do Designer é uma ferramenta educacional de autoconhecimento e desenvolvimento profissional para designers. A experiência calcula pontuações comportamentais, apresenta um perfil predominante e pode gerar relatório completo com apoio de IA."],
+        ["3. Elegibilidade para uso", "O serviço é destinado a profissionais maiores de 18 anos."],
+        ["4. Responsabilidade pelas informações fornecidas", "Os resultados dependem da qualidade e sinceridade das respostas. Você é responsável pelas informações que fornece e pelas decisões tomadas a partir da interpretação do relatório."],
+        ["5. Limitações do diagnóstico", "O Raio-X do Designer não é teste psicológico, não oferece diagnóstico clínico e não substitui psicólogo, terapeuta, médico, RH ou consultoria individual. Recomendações não garantem promoção, contratação, aumento salarial ou sucesso profissional."],
+        ["6. Uso de inteligência artificial", "A IA apoia a elaboração da análise narrativa e pode produzir imprecisões. O relatório deve ser interpretado criticamente e não deve ser usado isoladamente para decisões de alto impacto."],
+        ["7. Propriedade intelectual", "Textos, metodologia, interface, marca e materiais do Raio-X do Designer pertencem aos seus responsáveis. É proibido copiar, revender ou reproduzir integralmente a metodologia sem autorização."],
+        ["8. Usos proibidos", "É proibido tentar burlar a liberação de acesso, sobrecarregar APIs, copiar a ferramenta, explorar vulnerabilidades ou usar resultados de terceiros sem autorização."],
+        ["9. Disponibilidade do serviço", "O serviço pode passar por instabilidades, manutenção ou alterações. Buscamos manter a experiência disponível, mas não garantimos operação ininterrupta."],
+        ["10. Limitação razoável de responsabilidade", "O Raio-X do Designer oferece informações para reflexão e desenvolvimento. O usuário é responsável por suas decisões profissionais e pelo uso prático das recomendações."],
+        ["11. Pagamentos e reembolsos", `O produto possui uma opção paga de relatório completo no valor atual de ${PRODUCT_PRICE}, liberada manualmente após confirmação pelo WhatsApp. Como o fluxo de pagamento ainda é manual, condições de reembolso devem ser tratadas pelo contato oficial: ${CONTACT_EMAIL}.`],
+        ["12. Cancelamento e encerramento", "Não há conta de usuário ou assinatura recorrente no fluxo atual. O usuário pode solicitar exclusão de dados pela página de solicitação de privacidade."],
+        ["13. Alterações dos termos", "Estes termos podem ser atualizados para refletir mudanças no produto, na legislação ou no fluxo operacional."],
+        ["14. Legislação aplicável", "Estes termos são regidos pela legislação brasileira."],
+        ["15. Contato", `Para dúvidas, escreva para ${CONTACT_EMAIL}. Empresas não devem usar resultados isoladamente para decisões que afetem profissionais.`],
+      ].map(([title, text]) => <LegalSection key={title} title={title}><p>{text}</p></LegalSection>)}
+      <p className="text-xs">Última atualização: {LAST_LEGAL_UPDATE} · Versão: 1.0</p>
+    </LegalLayout>
+  );
+}
+
+function CookiesPage() {
+  return (
+    <LegalLayout title="Política de Cookies" eyebrow="Tecnologias de navegação">
+      <LegalSection title="Resumo">
+        <p>O site exibe um banner de preferências para que você possa aceitar, recusar ou configurar finalidades opcionais. Pela auditoria do código atual, o site não carrega cookies não essenciais nem inicializa Google Analytics antes da sua escolha.</p>
+        <p>O site utiliza localStorage para funcionalidades essenciais da experiência, como manter um identificador de sessão, registrar chaves de acesso usadas no navegador e salvar sua preferência de cookies.</p>
+      </LegalSection>
+      <LegalSection title="Tabela de tecnologias identificadas">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs border border-border">
+            <thead className="bg-muted text-foreground"><tr>{["Nome ou categoria", "Fornecedor", "Finalidade", "Duração", "Tipo"].map((h) => <th key={h} className="p-3 border-b border-border">{h}</th>)}</tr></thead>
+            <tbody>
+              {[
+                ["raio_x_session_id", "Raio-X do Designer", "Identificar a sessão do diagnóstico no navegador.", "Até remoção pelo usuário/navegador", "localStorage essencial"],
+                ["rxused_[chave]", "Raio-X do Designer", "Evitar reutilização da mesma chave de acesso no mesmo navegador.", "Até remoção pelo usuário/navegador", "localStorage essencial"],
+                [COOKIE_PREFERENCES_KEY, "Raio-X do Designer", "Salvar a escolha sobre cookies essenciais, analytics e marketing.", "Até alteração pelo usuário ou remoção pelo navegador", "localStorage de preferência"],
+                ["Google Analytics", "Google", "Código opcional existe no repositório, mas não está inicializado no app atual.", "Não aplicável no fluxo atual", "Não carregado atualmente"],
+              ].map((row) => <tr key={row[0]}>{row.map((cell) => <td key={cell} className="p-3 border-b border-border align-top">{cell}</td>)}</tr>)}
+            </tbody>
+          </table>
+        </div>
+      </LegalSection>
+      <LegalSection title="Se analytics for ativado no futuro">
+        <p>Caso cookies ou scripts não essenciais sejam ativados, eles devem respeitar a preferência registrada no banner e permanecer bloqueados quando o usuário recusar finalidades opcionais.</p>
+      </LegalSection>
+    </LegalLayout>
+  );
+}
+
+function AIUsagePage() {
+  return (
+    <LegalLayout title="Como utilizamos Inteligência Artificial" eyebrow="Transparência sobre IA">
+      <LegalSection title="Onde a IA aparece">
+        <p>A IA é usada na geração da análise narrativa do relatório completo, após a liberação do acesso. O diagnóstico gratuito e as pontuações são calculados pela própria aplicação.</p>
+      </LegalSection>
+      <LegalSection title="Quais dados podem ser enviados">
+        <p>O prompt enviado pode incluir dados do perfil profissional, objetivo e desafio de carreira, respostas abertas, pontuações, perfil predominante, forças e oportunidades. O provedor identificado no código atual é o OpenRouter.</p>
+      </LegalSection>
+      <LegalSection title="Papel e limites da IA">
+        <p>A IA ajuda a organizar uma devolutiva personalizada, mas pode gerar imprecisões. O relatório deve ser lido de forma crítica e não substitui avaliação humana especializada.</p>
+        <p>Os resultados não devem ser usados isoladamente para contratação, demissão, promoção ou outras decisões de alto impacto.</p>
+      </LegalSection>
+      <LegalSection title="Contestação e esclarecimentos">
+        <p>Se você quiser esclarecer, contestar ou pedir revisão sobre um resultado, entre em contato pelo e-mail <a href={`mailto:${CONTACT_EMAIL}`} className="text-foreground hover:text-primary">{CONTACT_EMAIL}</a>.</p>
+      </LegalSection>
+    </LegalLayout>
+  );
+}
+
+function PrivacyRequestPage() {
+  const [form, setForm] = useState({ name: "", email: "", type: "acessar meus dados", description: "", ownership: false });
+  const update = (field) => (event) => setForm((current) => ({ ...current, [field]: field === "ownership" ? event.target.checked : event.target.value }));
+  const canSubmit = form.name.trim() && form.email.includes("@") && form.description.trim() && form.ownership;
+  const subject = encodeURIComponent(`Solicitação de privacidade — ${form.type}`);
+  const body = encodeURIComponent([
+    `Nome: ${form.name}`,
+    `E-mail usado no diagnóstico: ${form.email}`,
+    `Tipo de solicitação: ${form.type}`,
+    "",
+    "Descrição:",
+    form.description,
+    "",
+    "Confirmo que sou titular dos dados relacionados a esta solicitação.",
+  ].join("\n"));
+  const inputCls = "w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors";
+  return (
+    <LegalLayout title="Solicitação de privacidade" eyebrow="Direitos do titular">
+      <LegalSection title="Solicite acesso, correção ou exclusão">
+        <p>Preencha os campos abaixo. Como ainda não há um backend específico para este formulário, o botão abrirá um e-mail pré-preenchido para o canal oficial de privacidade.</p>
+        <div className="space-y-4 pt-2">
+          <div><label className="block text-xs font-mono uppercase tracking-wider mb-2">Nome</label><input className={inputCls} value={form.name} onChange={update("name")} /></div>
+          <div><label className="block text-xs font-mono uppercase tracking-wider mb-2">E-mail usado no diagnóstico</label><input type="email" className={inputCls} value={form.email} onChange={update("email")} /></div>
+          <div><label className="block text-xs font-mono uppercase tracking-wider mb-2">Tipo de solicitação</label><select className={inputCls} value={form.type} onChange={update("type")}>{["acessar meus dados", "corrigir meus dados", "excluir meus dados", "revogar consentimento", "obter informações sobre uso e compartilhamento", "esclarecer resultado automatizado", "outro"].map((option) => <option key={option}>{option}</option>)}</select></div>
+          <div><label className="block text-xs font-mono uppercase tracking-wider mb-2">Descrição</label><textarea className={inputCls + " resize-none"} rows={5} value={form.description} onChange={update("description")} /></div>
+          <label className="flex gap-3 text-xs text-muted-foreground"><input type="checkbox" checked={form.ownership} onChange={update("ownership")} className="mt-0.5 accent-primary" /><span>Confirmo que sou titular dos dados relacionados a esta solicitação.</span></label>
+          <a href={canSubmit ? `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}` : undefined} aria-disabled={!canSubmit} className={`inline-flex bg-primary text-primary-foreground px-5 py-3 rounded-sm text-sm font-medium transition-opacity ${canSubmit ? "hover:opacity-90" : "opacity-30 pointer-events-none"}`}>Gerar e-mail de solicitação</a>
+        </div>
+      </LegalSection>
+    </LegalLayout>
   );
 }
 
@@ -591,7 +969,7 @@ function Landing({ onStart }) {
             {[
               { step: "01", Icon: BookOpen, title: "Responda com honestidade", badge: "Grátis", badgeColor: "#818CF8", desc: "50 afirmações sobre situações reais de trabalho. Sem julgamento, sem resposta certa — apenas um retrato mais claro do seu momento." },
               { step: "02", Icon: BarChart2, title: "Entenda seu perfil", badge: "Grátis", badgeColor: "#818CF8", desc: "Veja seu radar de competências, forças, oportunidades e padrões que influenciam sua evolução como designer." },
-              { step: "03", Icon: Target, title: "Transforme em plano", badge: "R$ 97", badgeColor: "#FBBF24", desc: "Desbloqueie análise com IA, PDI 30/60/90 dias e mentoria para transformar clareza em movimento." },
+              { step: "03", Icon: Target, title: "Transforme em plano", badge: PRODUCT_PRICE, badgeColor: "#FBBF24", desc: "Desbloqueie análise com IA, PDI 30/60/90 dias e mentoria para transformar clareza em movimento." },
             ].map(({ step, Icon, title, badge, badgeColor, desc }, idx) => (
               <div key={step} className="relative p-8 rounded-sm flex flex-col gap-4 overflow-hidden transition-all duration-300 hover:-translate-y-1" style={{ background: idx === 2 ? "linear-gradient(135deg, rgba(251,191,36,0.07) 0%, rgba(251,191,36,0.02) 100%)" : "rgba(255,255,255,0.02)", border: idx === 2 ? "1px solid rgba(251,191,36,0.25)" : "1px solid rgba(255,255,255,0.06)" }}>
                 <div className="flex items-center justify-between mb-2">
@@ -799,7 +1177,7 @@ function AboutPage({ onBack, onStart }) {
 
 // ─── PROFILE FORM ─────────────────────────────────────────────────────────────
 function ProfileForm({ onSubmit, onBack }) {
-  const [form, setForm] = useState({ name: "", email: "", whatsapp: "", contactConsent: false, age: "", experience: "", currentRole: "", professionalLevel: "", mainArea: "", careerGoal: "", currentChallenge: "" });
+  const [form, setForm] = useState({ name: "", email: "", whatsapp: "", contactConsent: false, marketingConsent: false, age: "", experience: "", currentRole: "", professionalLevel: "", mainArea: "", careerGoal: "", currentChallenge: "" });
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
   const updateChecked = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.checked }));
   const requiredTextFields = ["name", "email", "age", "experience", "currentRole", "professionalLevel", "mainArea", "careerGoal", "currentChallenge"];
@@ -834,10 +1212,25 @@ function ProfileForm({ onSubmit, onBack }) {
           </div>
           <div><label className={labelCls}>Objetivo de carreira (próximos 12 meses)</label><textarea placeholder="O que você quer alcançar profissionalmente no próximo ano?" value={form.careerGoal} onChange={update("careerGoal")} rows={3} className={inputCls + " resize-none"} /></div>
           <div><label className={labelCls}>Principal desafio atual</label><textarea placeholder="Qual é o maior obstáculo que você enfrenta hoje?" value={form.currentChallenge} onChange={update("currentChallenge")} rows={3} className={inputCls + " resize-none"} /></div>
-          <label className="flex items-start gap-3 rounded-sm border border-border bg-card p-4 text-xs text-muted-foreground leading-relaxed">
-            <input type="checkbox" checked={form.contactConsent} onChange={updateChecked("contactConsent")} className="mt-0.5 accent-primary" />
-            <span>Autorizo o uso dos meus dados para receber meu resultado, comunicações sobre o Raio-X do Designer e ações futuras de desenvolvimento profissional.</span>
-          </label>
+          <div className="rounded-sm border border-border bg-card p-5 text-xs text-muted-foreground leading-relaxed space-y-4">
+            <p>
+              Utilizaremos suas informações e respostas para calcular seus resultados e gerar um relatório profissional personalizado.
+              Parte da análise poderá ser processada com apoio de inteligência artificial. Consulte a{" "}
+              <a href="/privacidade" target="_blank" rel="noreferrer" className="text-foreground hover:text-primary transition-colors">Política de Privacidade</a>{" "}
+              e os{" "}
+              <a href="/termos" target="_blank" rel="noreferrer" className="text-foreground hover:text-primary transition-colors">Termos de Uso</a>{" "}
+              para entender como seus dados são utilizados.
+            </p>
+            <label className="flex items-start gap-3">
+              <input type="checkbox" checked={form.contactConsent} onChange={updateChecked("contactConsent")} className="mt-0.5 accent-primary" />
+              <span>Declaro que li e estou ciente da Política de Privacidade e dos Termos de Uso.</span>
+            </label>
+            <label className="flex items-start gap-3">
+              <input type="checkbox" checked={form.marketingConsent} onChange={updateChecked("marketingConsent")} className="mt-0.5 accent-primary" />
+              <span>Quero receber conteúdos, novidades e materiais sobre carreira e desenvolvimento profissional.</span>
+            </label>
+            <p>Você poderá solicitar a exclusão dos seus dados a qualquer momento.</p>
+          </div>
           <button onClick={() => canSubmit && onSubmit(form)} disabled={!canSubmit} className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-4 rounded-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">Iniciar avaliação <ArrowRight className="w-5 h-5" /></button>
         </div>
       </div>
@@ -1196,8 +1589,16 @@ function Results({ profileData, scores, answers, onReset }) {
           <div className="flex items-center gap-3 mb-8"><div className="flex-1 border-t border-border" /><span className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest px-3">Próximo nível</span><div className="flex-1 border-t border-border" /></div>
           <UpgradeSection profileData={profileData} scores={scores} answers={answers} generalScore={generalScore} generalLevel={generalLevel} profileName={profile.name} profileDesc={profile.desc} strengths={strengths} opportunities={opportunities} />
         </div>
-        <div className="border-t border-border pt-8 flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">Raio-X do Designer · {new Date().getFullYear()}</p>
+        <div className="border-t border-border pt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="text-xs text-muted-foreground space-y-2">
+            <p>Raio-X do Designer · {new Date().getFullYear()} · <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-foreground transition-colors">{CONTACT_EMAIL}</a></p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1">
+              <LegalLink href="/privacidade">Privacidade</LegalLink>
+              <LegalLink href="/termos">Termos</LegalLink>
+              <LegalLink href="/cookies">Cookies</LegalLink>
+              <LegalLink href="/uso-de-ia">Uso de IA</LegalLink>
+            </div>
+          </div>
           <div className="flex items-center gap-5">
             <button onClick={onReset} className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"><RefreshCw className="w-3.5 h-3.5" /> Nova avaliação</button>
           </div>
@@ -1208,7 +1609,16 @@ function Results({ profileData, scores, answers, onReset }) {
 }
 
 // ─── APP ──────────────────────────────────────────────────────────────────────
+const LEGAL_ROUTES = {
+  "/privacidade": PrivacyPolicyPage,
+  "/termos": TermsPage,
+  "/cookies": CookiesPage,
+  "/uso-de-ia": AIUsagePage,
+  "/privacidade/solicitacao": PrivacyRequestPage,
+};
+
 export default function App() {
+  const LegalRoute = typeof window !== "undefined" ? LEGAL_ROUTES[window.location.pathname] : null;
   const [view, setView] = useState("landing");
   const [sessionId] = useState(() => getSessionId());
   const [profileData, setProfileData] = useState(null);
@@ -1227,6 +1637,7 @@ export default function App() {
   };
   const handleComplete = () => { setScores(calculateScores(answers)); navigateTo("results"); };
   const handleReset = () => { navigateTo("landing"); setProfileData(null); setAnswers({}); setScores([]); };
+  if (LegalRoute) return <><LegalRoute /><CookieConsentBanner /></>;
   return (
     <>
       {view === "landing" && <Landing onStart={() => navigateTo("profile")} />}
@@ -1234,6 +1645,7 @@ export default function App() {
       {view === "profile" && <ProfileForm onSubmit={handleProfileSubmit} onBack={() => navigateTo("landing")} />}
       {view === "assessment" && <AssessmentForm answers={answers} onAnswer={handleAnswer} onComplete={handleComplete} onBack={() => navigateTo("profile")} />}
       {view === "results" && profileData && <Results profileData={profileData} scores={scores} answers={answers} onReset={handleReset} />}
+      <CookieConsentBanner />
     </>
   );
 }

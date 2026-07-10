@@ -62,8 +62,6 @@ export default async function handler(req, res) {
       delete interest.recommendation;
     }
 
-    console.info("VALIDATION_INTEREST", JSON.stringify(interest));
-
     let saved = false;
     try {
       const supabaseResult = await insertSupabaseRecord("validation_interest", interest);
