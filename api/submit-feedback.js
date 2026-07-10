@@ -7,6 +7,7 @@ import {
   requireJson,
   requirePost,
 } from "./_security.js";
+import { insertSupabaseRecord } from "./_supabase.js";
 
 const allowedUsefulParts = new Set([
   "Perfil predominante",
@@ -55,6 +56,14 @@ export default async function handler(req, res) {
 
     console.info("VALIDATION_FEEDBACK", JSON.stringify(feedback));
 
+    let saved = false;
+    try {
+      const supabaseResult = await insertSupabaseRecord("validation_feedback", feedback);
+      saved = Boolean(supabaseResult.saved);
+    } catch (storageError) {
+      console.error("Feedback Supabase error", storageError);
+    }
+
     let forwarded = false;
     if (process.env.FEEDBACK_WEBHOOK_URL) {
       const webhookResponse = await fetch(process.env.FEEDBACK_WEBHOOK_URL, {
@@ -70,7 +79,7 @@ export default async function handler(req, res) {
       }
     }
 
-    return res.status(201).json({ received: true, forwarded });
+    return res.status(201).json({ received: true, forwarded, saved });
   } catch (error) {
     console.error("Feedback error", error);
     return res.status(400).json({ error: "Não foi possível processar o feedback." });

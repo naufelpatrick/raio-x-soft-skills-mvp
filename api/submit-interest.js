@@ -7,6 +7,7 @@ import {
   requireJson,
   requirePost,
 } from "./_security.js";
+import { insertSupabaseRecord } from "./_supabase.js";
 
 const allowedInterests = new Set([
   "individual_guidance",
@@ -63,6 +64,14 @@ export default async function handler(req, res) {
 
     console.info("VALIDATION_INTEREST", JSON.stringify(interest));
 
+    let saved = false;
+    try {
+      const supabaseResult = await insertSupabaseRecord("validation_interest", interest);
+      saved = Boolean(supabaseResult.saved);
+    } catch (storageError) {
+      console.error("Interest Supabase error", storageError);
+    }
+
     let forwarded = false;
     if (process.env.INTEREST_WEBHOOK_URL) {
       const webhookResponse = await fetch(process.env.INTEREST_WEBHOOK_URL, {
@@ -78,7 +87,7 @@ export default async function handler(req, res) {
       }
     }
 
-    return res.status(201).json({ received: true, forwarded });
+    return res.status(201).json({ received: true, forwarded, saved });
   } catch (error) {
     console.error("Interest error", error);
     return res.status(400).json({ error: "Não foi possível registrar o interesse." });

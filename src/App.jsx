@@ -17,6 +17,29 @@ function BoldFreeText({ children }) {
   ));
 }
 
+function getSessionId() {
+  if (typeof window === "undefined") return "";
+  const storageKey = "raio_x_session_id";
+  const existing = window.localStorage.getItem(storageKey);
+  if (existing) return existing;
+
+  const nextId = window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  window.localStorage.setItem(storageKey, nextId);
+  return nextId;
+}
+
+async function submitLead(leadData) {
+  try {
+    await fetch("/api/submit-lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(leadData),
+    });
+  } catch (error) {
+    console.error("Lead submit error", error);
+  }
+}
+
 // ─── SIMPLE MARKDOWN RENDERER ────────────────────────────────────────────────
 function MarkdownText({ children }) {
   if (!children) return null;
@@ -326,7 +349,7 @@ function Landing({ onStart }) {
               Quero meu Raio-X <ArrowRight className="w-4 h-4" />
             </button>
             <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-foreground/70">
-              {["Sem cadastro", "Resultado imediato", "Satisfação garantida"].map((t) => (
+              {["Sem login", "Resultado imediato", "Satisfação garantida"].map((t) => (
                 <span key={t} className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5" style={{ color: "#FBBF24" }} /> {t}</span>
               ))}
             </div>
@@ -681,7 +704,7 @@ function Landing({ onStart }) {
               <button onClick={onStart} className="inline-flex items-center gap-2.5 rounded-sm font-bold hover:opacity-90 hover:-translate-y-0.5 active:scale-[0.98] transition-all whitespace-nowrap w-fit" style={{ backgroundColor: "#FBBF24", color: "#0B1120", boxShadow: "0 0 40px rgba(251,191,36,0.3)", padding: "16px 36px", fontSize: "15px" }}>
                 Quero meu Raio-X <ArrowRight className="w-4 h-4 shrink-0" />
               </button>
-              <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-foreground/65">{["Sem cadastro", "Resultado imediato", "Satisfação garantida"].map((t) => (<span key={t}>✓ {t}</span>))}</div>
+              <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-foreground/65">{["Sem login", "Resultado imediato", "Satisfação garantida"].map((t) => (<span key={t}>✓ {t}</span>))}</div>
             </div>
           </div>
           <div className="hidden lg:flex flex-col items-center justify-center rounded-sm p-6" style={{ background: "rgba(129,140,248,0.05)", border: "1px solid rgba(129,140,248,0.12)" }}>
@@ -776,9 +799,11 @@ function AboutPage({ onBack, onStart }) {
 
 // ─── PROFILE FORM ─────────────────────────────────────────────────────────────
 function ProfileForm({ onSubmit, onBack }) {
-  const [form, setForm] = useState({ name: "", age: "", experience: "", currentRole: "", professionalLevel: "", mainArea: "", careerGoal: "", currentChallenge: "" });
+  const [form, setForm] = useState({ name: "", email: "", whatsapp: "", contactConsent: false, age: "", experience: "", currentRole: "", professionalLevel: "", mainArea: "", careerGoal: "", currentChallenge: "" });
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
-  const canSubmit = Object.values(form).every((v) => v.trim().length > 0);
+  const updateChecked = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.checked }));
+  const requiredTextFields = ["name", "email", "age", "experience", "currentRole", "professionalLevel", "mainArea", "careerGoal", "currentChallenge"];
+  const canSubmit = requiredTextFields.every((field) => form[field].trim().length > 0) && form.email.includes("@") && form.contactConsent;
   const inputCls = "w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors";
   const labelCls = "block text-xs text-muted-foreground font-mono uppercase tracking-wider mb-2";
   return (
@@ -791,20 +816,28 @@ function ProfileForm({ onSubmit, onBack }) {
         <h1 className="text-3xl lg:text-4xl mb-2" style={{ fontFamily: "var(--font-display)" }}>Seu perfil profissional</h1>
         <p className="text-muted-foreground mb-10">Essas informações personalizam a análise e o plano de desenvolvimento.</p>
         <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><label className={labelCls}>Nome</label><input type="text" placeholder="Seu nome completo" value={form.name} onChange={update("name")} className={inputCls} /></div>
+            <div><label className={labelCls}>E-mail</label><input type="email" placeholder="seu@email.com" value={form.email} onChange={update("email")} className={inputCls} /></div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><label className={labelCls}>WhatsApp</label><input type="tel" placeholder="(49) 99999-9999" value={form.whatsapp} onChange={update("whatsapp")} className={inputCls} /></div>
             <div><label className={labelCls}>Idade</label><input type="number" placeholder="Ex: 32" value={form.age} onChange={update("age")} className={inputCls} /></div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><label className={labelCls}>Cargo atual</label><input type="text" placeholder="Ex: Product Designer" value={form.currentRole} onChange={update("currentRole")} className={inputCls} /></div>
             <div><label className={labelCls}>Tempo de experiência</label><input type="text" placeholder="Ex: 5 anos" value={form.experience} onChange={update("experience")} className={inputCls} /></div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><label className={labelCls}>Nível profissional</label><select value={form.professionalLevel} onChange={update("professionalLevel")} className={inputCls}><option value="">Selecione</option>{["Júnior", "Pleno", "Sênior", "Especialista", "Líder", "Gestor"].map((v) => <option key={v}>{v}</option>)}</select></div>
             <div><label className={labelCls}>Área principal</label><select value={form.mainArea} onChange={update("mainArea")} className={inputCls}><option value="">Selecione</option>{["Pesquisa", "UX", "UI", "Product Design", "Design System", "Liderança", "Generalista", "Outro"].map((v) => <option key={v}>{v}</option>)}</select></div>
           </div>
           <div><label className={labelCls}>Objetivo de carreira (próximos 12 meses)</label><textarea placeholder="O que você quer alcançar profissionalmente no próximo ano?" value={form.careerGoal} onChange={update("careerGoal")} rows={3} className={inputCls + " resize-none"} /></div>
           <div><label className={labelCls}>Principal desafio atual</label><textarea placeholder="Qual é o maior obstáculo que você enfrenta hoje?" value={form.currentChallenge} onChange={update("currentChallenge")} rows={3} className={inputCls + " resize-none"} /></div>
+          <label className="flex items-start gap-3 rounded-sm border border-border bg-card p-4 text-xs text-muted-foreground leading-relaxed">
+            <input type="checkbox" checked={form.contactConsent} onChange={updateChecked("contactConsent")} className="mt-0.5 accent-primary" />
+            <span>Autorizo o uso dos meus dados para receber meu resultado, comunicações sobre o Raio-X do Designer e ações futuras de desenvolvimento profissional.</span>
+          </label>
           <button onClick={() => canSubmit && onSubmit(form)} disabled={!canSubmit} className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-4 rounded-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">Iniciar avaliação <ArrowRight className="w-5 h-5" /></button>
         </div>
       </div>
@@ -924,7 +957,7 @@ function PdiCard({ competencyId }) {
 // ─── UPGRADE SECTION ──────────────────────────────────────────────────────────
 function UpgradeSection({ profileData, scores, answers, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities }) {
   const [phase, setPhase] = useState("preview");
-  const [lead, setLead] = useState({ name: profileData?.name || "", email: "", whatsapp: "" });
+  const [lead, setLead] = useState({ name: profileData?.name || "", email: profileData?.email || "", whatsapp: profileData?.whatsapp || "" });
   const [accessCode, setAccessCode] = useState("");
   const [codeError, setCodeError] = useState(null);
   const [aiText, setAiText] = useState("");
@@ -937,6 +970,12 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
   const whatsappUrl = `https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent(whatsappMessage)}`;
   async function handleSubmit() {
     if (!canSubmit) return;
+    submitLead({
+      ...profileData,
+      ...lead,
+      contactConsent: profileData?.contactConsent === true,
+      purchaseStatus: "requested",
+    });
     window.open(whatsappUrl, "_blank");
     setPhase("code");
   }
@@ -946,6 +985,12 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
     if (result === "invalid") { setCodeError("Chave inválida. Confira a chave recebida no WhatsApp e tente novamente."); return; }
     if (result === "used") { setCodeError("Esta chave já foi utilizada neste navegador."); return; }
     localStorage.setItem(`rxused_${normalizeAccessCode(accessCode)}`, "1");
+    submitLead({
+      ...profileData,
+      ...lead,
+      contactConsent: profileData?.contactConsent === true,
+      purchaseStatus: "purchased",
+    });
     setPhase("loading");
     setAiError(null);
     try {
@@ -1165,6 +1210,7 @@ function Results({ profileData, scores, answers, onReset }) {
 // ─── APP ──────────────────────────────────────────────────────────────────────
 export default function App() {
   const [view, setView] = useState("landing");
+  const [sessionId] = useState(() => getSessionId());
   const [profileData, setProfileData] = useState(null);
   const [answers, setAnswers] = useState({});
   const [scores, setScores] = useState([]);
@@ -1173,13 +1219,19 @@ export default function App() {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   };
   const handleAnswer = (key, value) => setAnswers((a) => ({ ...a, [key]: value }));
+  const handleProfileSubmit = (data) => {
+    const leadProfile = { ...data, sessionId, purchaseStatus: "not_purchased" };
+    setProfileData(leadProfile);
+    submitLead(leadProfile);
+    navigateTo("assessment");
+  };
   const handleComplete = () => { setScores(calculateScores(answers)); navigateTo("results"); };
   const handleReset = () => { navigateTo("landing"); setProfileData(null); setAnswers({}); setScores([]); };
   return (
     <>
       {view === "landing" && <Landing onStart={() => navigateTo("profile")} />}
       {view === "about" && <AboutPage onBack={() => navigateTo("landing")} onStart={() => navigateTo("profile")} />}
-      {view === "profile" && <ProfileForm onSubmit={(d) => { setProfileData(d); navigateTo("assessment"); }} onBack={() => navigateTo("landing")} />}
+      {view === "profile" && <ProfileForm onSubmit={handleProfileSubmit} onBack={() => navigateTo("landing")} />}
       {view === "assessment" && <AssessmentForm answers={answers} onAnswer={handleAnswer} onComplete={handleComplete} onBack={() => navigateTo("profile")} />}
       {view === "results" && profileData && <Results profileData={profileData} scores={scores} answers={answers} onReset={handleReset} />}
     </>
