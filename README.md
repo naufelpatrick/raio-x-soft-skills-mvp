@@ -39,6 +39,7 @@ Copie `.env.example` para `.env.local` e preencha as variáveis necessárias.
 - `FEEDBACK_WEBHOOK_URL`: opcional. Encaminha feedbacks para Make, Zapier, Google Apps Script ou serviço equivalente.
 - `INTEREST_WEBHOOK_URL`: opcional. Encaminha nome, e-mail, autorização de contato e interesse principal para o fluxo de relacionamento.
 - `VITE_GA_MEASUREMENT_ID`: opcional. O projeto usa `G-RFRY1LERDY` como fallback e só carrega o Google Analytics 4 quando o usuário aceita Analytics no banner de cookies.
+- `VITE_CLARITY_PROJECT_ID`: opcional. O projeto usa `xkxrzsnluj` como fallback e só carrega o Microsoft Clarity quando o usuário aceita Analytics no banner de cookies.
 
 Os endpoints não registram payloads pessoais completos em logs de aplicação. Erros técnicos podem ser registrados para depuração.
 

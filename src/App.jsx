@@ -606,7 +606,7 @@ function CookiesPage() {
   return (
     <LegalLayout title="Política de Cookies" eyebrow="Tecnologias de navegação">
       <LegalSection title="Resumo">
-        <p>O site exibe um banner de preferências para que você possa aceitar, recusar ou configurar finalidades opcionais. Pela auditoria do código atual, o site não carrega cookies não essenciais nem inicializa Google Analytics antes da sua escolha.</p>
+        <p>O site exibe um banner de preferências para que você possa aceitar, recusar ou configurar finalidades opcionais. O site não carrega ferramentas de analytics, como Google Analytics e Microsoft Clarity, antes da sua escolha.</p>
         <p>O site utiliza localStorage para funcionalidades essenciais da experiência, como manter um identificador de sessão, registrar chaves de acesso usadas no navegador e salvar sua preferência de cookies.</p>
       </LegalSection>
       <LegalSection title="Tabela de tecnologias identificadas">
@@ -618,7 +618,8 @@ function CookiesPage() {
                 ["raio_x_session_id", "Raio-X do Designer", "Identificar a sessão do diagnóstico no navegador.", "Até remoção pelo usuário/navegador", "localStorage essencial"],
                 ["rxused_[chave]", "Raio-X do Designer", "Evitar reutilização da mesma chave de acesso no mesmo navegador.", "Até remoção pelo usuário/navegador", "localStorage essencial"],
                 [COOKIE_PREFERENCES_KEY, "Raio-X do Designer", "Salvar a escolha sobre cookies essenciais, analytics e marketing.", "Até alteração pelo usuário ou remoção pelo navegador", "localStorage de preferência"],
-                ["Google Analytics", "Google", "Código opcional existe no repositório, mas não está inicializado no app atual.", "Não aplicável no fluxo atual", "Não carregado atualmente"],
+                ["Google Analytics", "Google", "Mensurar visitas e uso agregado da experiência após aceite de Analytics.", "Definida pelo Google Analytics", "Analytics opcional"],
+                ["Microsoft Clarity", "Microsoft", "Entender navegação, cliques e mapas de calor para melhorar a experiência após aceite de Analytics.", "Definida pelo Microsoft Clarity", "Analytics opcional"],
               ].map((row) => <tr key={row[0]}>{row.map((cell) => <td key={cell} className="p-3 border-b border-border align-top">{cell}</td>)}</tr>)}
             </tbody>
           </table>

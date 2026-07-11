@@ -4,6 +4,7 @@ let initialized = false;
 let activeSessionId = null;
 const COOKIE_PREFERENCES_KEY = "raio_x_cookie_preferences_v1";
 const DEFAULT_MEASUREMENT_ID = "G-RFRY1LERDY";
+const DEFAULT_CLARITY_PROJECT_ID = "xkxrzsnluj";
 
 const allowedEvents = new Set([
   "assessment_started",
@@ -52,6 +53,18 @@ export function initializeAnalytics(sessionId) {
   script.async = true;
   script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
   document.head.appendChild(script);
+
+  const clarityProjectId = import.meta.env.VITE_CLARITY_PROJECT_ID || DEFAULT_CLARITY_PROJECT_ID;
+  if (clarityProjectId && !document.querySelector(`script[src="https://www.clarity.ms/tag/${clarityProjectId}"]`)) {
+    window.clarity = window.clarity || function clarity() {
+      (window.clarity.q = window.clarity.q || []).push(arguments);
+    };
+
+    const clarityScript = document.createElement("script");
+    clarityScript.async = true;
+    clarityScript.src = `https://www.clarity.ms/tag/${clarityProjectId}`;
+    document.head.appendChild(clarityScript);
+  }
 }
 
 export function trackEvent(name, parameters = {}) {
