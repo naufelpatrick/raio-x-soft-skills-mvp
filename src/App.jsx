@@ -7,7 +7,7 @@ import {
 import { initializeAnalytics } from "./services/analyticsService";
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
-const OWNER_WHATSAPP = "554991106400";
+const OWNER_WHATSAPP = "5549984361569";
 const CONTACT_EMAIL = "info@raioxdodesigner.com";
 const PRODUCT_PRICE = "R$ 49,90";
 const LAST_LEGAL_UPDATE = "10 de julho de 2026";
@@ -1237,7 +1237,7 @@ function ProfileForm({ onSubmit, onBack }) {
             <div><label className={labelCls}>E-mail</label><input type="email" placeholder="seu@email.com" value={form.email} onChange={update("email")} className={inputCls} /></div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div><label className={labelCls}>WhatsApp</label><input type="tel" placeholder="(49) 99999-9999" value={form.whatsapp} onChange={update("whatsapp")} className={inputCls} /></div>
+            <div><label className={labelCls}>WhatsApp</label><input type="tel" placeholder="(49) 98436-1569" value={form.whatsapp} onChange={update("whatsapp")} className={inputCls} /></div>
             <div><label className={labelCls}>Idade</label><input type="number" placeholder="Ex: 32" value={form.age} onChange={update("age")} className={inputCls} /></div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1513,7 +1513,7 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
             <div className="space-y-4">
               <div><label className={labelCls}>Nome completo</label><input type="text" value={lead.name} onChange={(e) => setLead((l) => ({ ...l, name: e.target.value }))} placeholder="Seu nome" className={inputCls} /></div>
               <div><label className={labelCls}>E-mail</label><input type="email" value={lead.email} onChange={(e) => setLead((l) => ({ ...l, email: e.target.value }))} placeholder="seu@email.com" className={inputCls} /></div>
-              <div><label className={labelCls}>WhatsApp (com DDD)</label><input type="tel" value={lead.whatsapp} onChange={(e) => setLead((l) => ({ ...l, whatsapp: e.target.value }))} placeholder="(49) 99999-9999" className={inputCls} /></div>
+              <div><label className={labelCls}>WhatsApp (com DDD)</label><input type="tel" value={lead.whatsapp} onChange={(e) => setLead((l) => ({ ...l, whatsapp: e.target.value }))} placeholder="(49) 98436-1569" className={inputCls} /></div>
               <div className="flex gap-3 pt-2">
                 <button onClick={handleSubmit} disabled={!canSubmit} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"><MessageCircle className="w-4 h-4" /> Confirmar pelo WhatsApp</button>
                 <button onClick={() => setPhase("preview")} className="px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors">Cancelar</button>
@@ -1665,7 +1665,7 @@ function createDemoFreeReportData() {
     sessionId: "preview-relatorio-gratuito",
     name: "Marina Teste",
     email: "marina.teste@example.com",
-    whatsapp: "(49) 99999-0000",
+    whatsapp: "(49) 98436-1569",
     contactConsent: true,
     marketingConsent: false,
     age: "32",
