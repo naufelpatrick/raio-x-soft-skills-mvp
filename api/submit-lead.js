@@ -42,7 +42,6 @@ export default async function handler(req, res) {
       careerGoal: cleanText(body.careerGoal, 1000),
       currentChallenge: cleanText(body.currentChallenge, 1000),
       purchaseStatus,
-      purchasedPackage: purchaseStatus === "purchased",
       lastSeenAt: now,
     };
 
@@ -51,6 +50,7 @@ export default async function handler(req, res) {
     }
 
     if (purchaseStatus === "purchased") {
+      lead.purchasedPackage = true;
       lead.packagePurchasedAt = now;
     }
 
@@ -66,11 +66,22 @@ export default async function handler(req, res) {
 
     let saved = false;
     try {
-      const supabaseResult =
-        purchaseStatus === "not_purchased"
-          ? await insertSupabaseRecord("leads", lead)
-          : await updateSupabaseRecord("leads", lead, "session_id", lead.sessionId);
-      saved = Boolean(supabaseResult.saved);
+      if (purchaseStatus === "not_purchased") {
+        const supabaseResult = await insertSupabaseRecord("leads", lead);
+        saved = Boolean(supabaseResult.saved);
+      } else {
+        const updateTargets = [
+          ["session_id", lead.sessionId],
+          ["email", lead.email],
+          ["whatsapp", lead.whatsapp],
+        ].filter(([, value]) => Boolean(value));
+
+        for (const [column, value] of updateTargets) {
+          await updateSupabaseRecord("leads", lead, column, value);
+        }
+
+        saved = true;
+      }
     } catch (storageError) {
       if (purchaseStatus === "not_purchased" && String(storageError).includes("409")) {
         try {

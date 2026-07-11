@@ -33,13 +33,19 @@ function getSessionId() {
 
 async function submitLead(leadData) {
   try {
-    await fetch("/api/submit-lead", {
+    const response = await fetch("/api/submit-lead", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(leadData),
     });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || result.saved === false) {
+      throw new Error(result.error || "Não foi possível registrar o lead.");
+    }
+    return result;
   } catch (error) {
     console.error("Lead submit error", error);
+    throw error;
   }
 }
 
@@ -1390,30 +1396,34 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
   const whatsappUrl = `https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent(whatsappMessage)}`;
   async function handleSubmit() {
     if (!canSubmit) return;
-    submitLead({
-      ...profileData,
-      ...lead,
-      contactConsent: profileData?.contactConsent === true,
-      purchaseStatus: "requested",
-    });
-    window.open(whatsappUrl, "_blank");
-    setPhase("code");
+    try {
+      await submitLead({
+        ...profileData,
+        ...lead,
+        contactConsent: profileData?.contactConsent === true,
+        purchaseStatus: "requested",
+      });
+      window.open(whatsappUrl, "_blank");
+      setPhase("code");
+    } catch {
+      setAiError("Não foi possível registrar sua solicitação agora. Tente novamente em instantes.");
+    }
   }
   async function handleCodeSubmit() {
     setCodeError(null);
     const result = validateCode(accessCode, lead.whatsapp);
     if (result === "invalid") { setCodeError("Chave inválida. Confira a chave recebida no WhatsApp e tente novamente."); return; }
     if (result === "used") { setCodeError("Esta chave já foi utilizada neste navegador."); return; }
-    localStorage.setItem(`rxused_${normalizeAccessCode(accessCode)}`, "1");
-    submitLead({
-      ...profileData,
-      ...lead,
-      contactConsent: profileData?.contactConsent === true,
-      purchaseStatus: "purchased",
-    });
     setPhase("loading");
     setAiError(null);
     try {
+      await submitLead({
+        ...profileData,
+        ...lead,
+        contactConsent: profileData?.contactConsent === true,
+        purchaseStatus: "purchased",
+      });
+      localStorage.setItem(`rxused_${normalizeAccessCode(accessCode)}`, "1");
       const res = await fetch("/api/generate-report", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ profileData, scores, answers, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities }) });
       const data = await res.json();
       if (data.text) { setAiText(data.text); onAiReportGenerated?.(data.text); setPhase("report"); }
@@ -1698,7 +1708,7 @@ export default function App() {
   const handleProfileSubmit = (data) => {
     const leadProfile = { ...data, sessionId, purchaseStatus: "not_purchased" };
     setProfileData(leadProfile);
-    submitLead(leadProfile);
+    submitLead(leadProfile).catch(() => {});
     navigateTo("assessment");
   };
   const handleComplete = () => { setScores(calculateScores(answers)); navigateTo("results"); };
