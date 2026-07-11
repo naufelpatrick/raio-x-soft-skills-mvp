@@ -40,7 +40,7 @@ ${openAnswers || 'Não fornecidas.'}
 
 ---
 
-Produza um diagnóstico com até 900 palavras, em português brasileiro, com as seguintes seções (use ## para títulos):
+Produza um diagnóstico com 700 a 900 palavras, em português brasileiro, com as seguintes seções (use ## para títulos):
 
 ## Resumo Executivo
 ## Leitura de Maturidade Profissional
@@ -53,7 +53,9 @@ Regras:
 - Não invente fatos ou diagnósticos clínicos
 - Evite clichês motivacionais
 - Tom: direto, analítico, humano, prático
-- Adapte tudo ao cargo, nível e área do profissional`.trim();
+- Adapte tudo ao cargo, nível e área do profissional
+- Finalize todas as seções solicitadas
+- Nunca termine o texto no meio de uma frase, tópico ou palavra`.trim();
 }
 
 export default async function handler(req, res) {
@@ -76,7 +78,7 @@ export default async function handler(req, res) {
 
   const prompt = buildPrompt(body);
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 60000);
+  const timeout = setTimeout(() => controller.abort(), 90000);
 
   try {
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -97,7 +99,7 @@ export default async function handler(req, res) {
           },
           { role: 'user', content: prompt },
         ],
-        max_tokens: 1600,
+        max_tokens: 3000,
         temperature: 0.65,
       }),
     });
