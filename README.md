@@ -38,7 +38,7 @@ Copie `.env.example` para `.env.local` e preencha as variáveis necessárias.
 - `APP_ORIGIN`: domínio autorizado a chamar as APIs. Aceita origens separadas por vírgula.
 - `FEEDBACK_WEBHOOK_URL`: opcional. Encaminha feedbacks para Make, Zapier, Google Apps Script ou serviço equivalente.
 - `INTEREST_WEBHOOK_URL`: opcional. Encaminha nome, e-mail, autorização de contato e interesse principal para o fluxo de relacionamento.
-- `VITE_GA_MEASUREMENT_ID`: opcional. Ativa eventos no Google Analytics 4 somente se o app também implementar gestão de preferência para analytics.
+- `VITE_GA_MEASUREMENT_ID`: opcional. O projeto usa `G-RFRY1LERDY` como fallback e só carrega o Google Analytics 4 quando o usuário aceita Analytics no banner de cookies.
 
 Os endpoints não registram payloads pessoais completos em logs de aplicação. Erros técnicos podem ser registrados para depuração.
 

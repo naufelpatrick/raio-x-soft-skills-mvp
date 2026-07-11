@@ -3,6 +3,7 @@ import { storeLocalEvent } from "./sessionService";
 let initialized = false;
 let activeSessionId = null;
 const COOKIE_PREFERENCES_KEY = "raio_x_cookie_preferences_v1";
+const DEFAULT_MEASUREMENT_ID = "G-RFRY1LERDY";
 
 const allowedEvents = new Set([
   "assessment_started",
@@ -33,7 +34,7 @@ export function initializeAnalytics(sessionId) {
 
   initialized = true;
 
-  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
+  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID || DEFAULT_MEASUREMENT_ID;
   if (!measurementId) return;
 
   window.dataLayer = window.dataLayer || [];
@@ -44,7 +45,7 @@ export function initializeAnalytics(sessionId) {
   window.gtag("js", new Date());
   window.gtag("config", measurementId, {
     anonymize_ip: true,
-    send_page_view: false,
+    send_page_view: true,
   });
 
   const script = document.createElement("script");

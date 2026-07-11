@@ -4,6 +4,7 @@ import {
   Zap, Check, RefreshCw, Sparkles, Loader2, Lock,
   Brain, Calendar, MessageCircle, ExternalLink, ChevronDown, ChevronUp, Download,
 } from "lucide-react";
+import { initializeAnalytics } from "./services/analyticsService";
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const OWNER_WHATSAPP = "554991106400";
@@ -308,7 +309,7 @@ function saveCookiePreferences(preferences) {
   );
 }
 
-function CookieConsentBanner() {
+function CookieConsentBanner({ sessionId }) {
   const [preferences, setPreferences] = useState(() => readCookiePreferences());
   const [visible, setVisible] = useState(() => !readCookiePreferences());
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -337,6 +338,9 @@ function CookieConsentBanner() {
     setDraft(normalized);
     setVisible(false);
     setSettingsOpen(false);
+    if (normalized.analytics) {
+      initializeAnalytics(sessionId);
+    }
   }
 
   if (!visible) return null;
@@ -1700,6 +1704,9 @@ export default function App() {
   const [profileData, setProfileData] = useState(null);
   const [answers, setAnswers] = useState({});
   const [scores, setScores] = useState([]);
+  useEffect(() => {
+    initializeAnalytics(sessionId);
+  }, [sessionId]);
   const navigateTo = (nextView) => {
     setView(nextView);
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
@@ -1713,8 +1720,8 @@ export default function App() {
   };
   const handleComplete = () => { setScores(calculateScores(answers)); navigateTo("results"); };
   const handleReset = () => { navigateTo("landing"); setProfileData(null); setAnswers({}); setScores([]); };
-  if (PreviewRoute) return <><PreviewRoute /><CookieConsentBanner /></>;
-  if (LegalRoute) return <><LegalRoute /><CookieConsentBanner /></>;
+  if (PreviewRoute) return <><PreviewRoute /><CookieConsentBanner sessionId={sessionId} /></>;
+  if (LegalRoute) return <><LegalRoute /><CookieConsentBanner sessionId={sessionId} /></>;
   return (
     <>
       {view === "landing" && <Landing onStart={() => navigateTo("profile")} />}
@@ -1722,7 +1729,7 @@ export default function App() {
       {view === "profile" && <ProfileForm onSubmit={handleProfileSubmit} onBack={() => navigateTo("landing")} />}
       {view === "assessment" && <AssessmentForm answers={answers} onAnswer={handleAnswer} onComplete={handleComplete} onBack={() => navigateTo("profile")} />}
       {view === "results" && profileData && <Results profileData={profileData} scores={scores} answers={answers} onReset={handleReset} />}
-      <CookieConsentBanner />
+      <CookieConsentBanner sessionId={sessionId} />
     </>
   );
 }
