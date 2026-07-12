@@ -87,8 +87,8 @@ export default async function handler(req, res) {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://raio-x-soft-skills-mvp.vercel.app',
-        'X-Title': 'Raio-X de Soft Skills',
+        'HTTP-Referer': 'https://raioxdodesigner.com',
+        'X-Title': 'Raio-X do Designer',
       },
       body: JSON.stringify({
         model: 'anthropic/claude-sonnet-4-5',

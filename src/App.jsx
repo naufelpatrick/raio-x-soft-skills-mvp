@@ -13,6 +13,41 @@ const PRODUCT_PRICE = "R$ 49,90";
 const LAST_LEGAL_UPDATE = "10 de julho de 2026";
 const COOKIE_PREFERENCES_KEY = "raio_x_cookie_preferences_v1";
 const PROGRESS_STORAGE_KEY = "raio_x_progress_v1";
+const SITE_URL = "https://raioxdodesigner.com";
+const DEFAULT_SEO_DESCRIPTION = "Diagnóstico de competências humanas e comportamentais para profissionais de Design, com perfil profissional, radar de competências e plano de desenvolvimento.";
+
+const SEO_ROUTES = {
+  "/": {
+    title: "Raio-X do Designer | Diagnóstico de competências comportamentais para designers",
+    description: DEFAULT_SEO_DESCRIPTION,
+    robots: "index, follow",
+  },
+  "/privacidade": {
+    title: "Política de Privacidade | Raio-X do Designer",
+    description: "Entenda como o Raio-X do Designer trata dados pessoais, respostas do diagnóstico, pagamentos, cookies e solicitações de privacidade.",
+    robots: "index, follow",
+  },
+  "/termos": {
+    title: "Termos de Uso | Raio-X do Designer",
+    description: "Condições de uso do Raio-X do Designer, diagnóstico de competências comportamentais para profissionais de Design.",
+    robots: "index, follow",
+  },
+  "/cookies": {
+    title: "Política de Cookies | Raio-X do Designer",
+    description: "Veja como o Raio-X do Designer usa cookies, localStorage, analytics opcionais e preferências de navegação.",
+    robots: "index, follow",
+  },
+  "/uso-de-ia": {
+    title: "Uso de Inteligência Artificial | Raio-X do Designer",
+    description: "Transparência sobre como o Raio-X do Designer utiliza IA para gerar a análise narrativa do relatório completo.",
+    robots: "index, follow",
+  },
+  "/privacidade/solicitacao": {
+    title: "Solicitação de Privacidade | Raio-X do Designer",
+    description: "Canal para solicitar acesso, correção ou exclusão de dados relacionados ao diagnóstico.",
+    robots: "noindex, follow",
+  },
+};
 
 function RequiredMark() {
   return <span className="text-primary" aria-label="obrigatório">*</span>;
@@ -52,6 +87,53 @@ function writeSavedProgress(progress) {
 function clearSavedProgress() {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(PROGRESS_STORAGE_KEY);
+}
+
+function upsertMeta(selector, createTag, attributes) {
+  let tag = document.head.querySelector(selector);
+  if (!tag) {
+    tag = createTag();
+    document.head.appendChild(tag);
+  }
+  Object.entries(attributes).forEach(([key, value]) => tag.setAttribute(key, value));
+}
+
+function applySeoForPath(pathname, hasQuery = false) {
+  if (typeof document === "undefined") return;
+  const seo = SEO_ROUTES[pathname] || {
+    title: "Raio-X do Designer",
+    description: DEFAULT_SEO_DESCRIPTION,
+    robots: "noindex, follow",
+  };
+  const canonicalPath = SEO_ROUTES[pathname] && seo.robots.startsWith("index") ? pathname : "/";
+  const canonical = `${SITE_URL}${canonicalPath === "/" ? "/" : canonicalPath}`;
+  const robots = hasQuery ? "noindex, follow" : seo.robots;
+
+  document.title = seo.title;
+  upsertMeta('meta[name="description"]', () => Object.assign(document.createElement("meta"), { name: "description" }), { name: "description", content: seo.description });
+  upsertMeta('meta[name="robots"]', () => Object.assign(document.createElement("meta"), { name: "robots" }), { name: "robots", content: robots });
+  upsertMeta('link[rel="canonical"]', () => {
+    const link = document.createElement("link");
+    link.rel = "canonical";
+    return link;
+  }, { rel: "canonical", href: canonical });
+  upsertMeta('meta[property="og:title"]', () => {
+    const meta = document.createElement("meta");
+    meta.setAttribute("property", "og:title");
+    return meta;
+  }, { property: "og:title", content: seo.title });
+  upsertMeta('meta[property="og:description"]', () => {
+    const meta = document.createElement("meta");
+    meta.setAttribute("property", "og:description");
+    return meta;
+  }, { property: "og:description", content: seo.description });
+  upsertMeta('meta[property="og:url"]', () => {
+    const meta = document.createElement("meta");
+    meta.setAttribute("property", "og:url");
+    return meta;
+  }, { property: "og:url", content: canonical });
+  upsertMeta('meta[name="twitter:title"]', () => Object.assign(document.createElement("meta"), { name: "twitter:title" }), { name: "twitter:title", content: seo.title });
+  upsertMeta('meta[name="twitter:description"]', () => Object.assign(document.createElement("meta"), { name: "twitter:description" }), { name: "twitter:description", content: seo.description });
 }
 
 function getSessionId() {
@@ -1784,6 +1866,10 @@ export default function App() {
   useEffect(() => {
     initializeAnalytics(sessionId);
   }, [sessionId]);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    applySeoForPath(window.location.pathname, Boolean(window.location.search));
+  }, []);
   useEffect(() => {
     if (typeof window !== "undefined" && paymentReturn) {
       window.history.replaceState({}, "", window.location.pathname);

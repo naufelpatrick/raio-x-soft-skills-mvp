@@ -1,6 +1,46 @@
 {
+  "redirects": [
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "www.raioxdodesigner.com" }],
+      "destination": "https://raioxdodesigner.com/",
+      "permanent": true
+    },
+    {
+      "source": "/privacidade",
+      "has": [{ "type": "host", "value": "www.raioxdodesigner.com" }],
+      "destination": "https://raioxdodesigner.com/privacidade",
+      "permanent": true
+    },
+    {
+      "source": "/termos",
+      "has": [{ "type": "host", "value": "www.raioxdodesigner.com" }],
+      "destination": "https://raioxdodesigner.com/termos",
+      "permanent": true
+    },
+    {
+      "source": "/cookies",
+      "has": [{ "type": "host", "value": "www.raioxdodesigner.com" }],
+      "destination": "https://raioxdodesigner.com/cookies",
+      "permanent": true
+    },
+    {
+      "source": "/uso-de-ia",
+      "has": [{ "type": "host", "value": "www.raioxdodesigner.com" }],
+      "destination": "https://raioxdodesigner.com/uso-de-ia",
+      "permanent": true
+    },
+    {
+      "source": "/sitemap.xml",
+      "has": [{ "type": "host", "value": "www.raioxdodesigner.com" }],
+      "destination": "https://raioxdodesigner.com/sitemap.xml",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/robots.txt", "destination": "/robots.txt" },
+    { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

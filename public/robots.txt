@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+Disallow: /api/
+Disallow: /preview/
+Disallow: /checkout/
+Disallow: /pagamento/
+Disallow: /payment/
+Disallow: /resultado/
+Disallow: /relatorio/
+Disallow: /*?payment=
+Disallow: /*?sessionId=
+Disallow: /*?token=
+
+Sitemap: https://raioxdodesigner.com/sitemap.xml
