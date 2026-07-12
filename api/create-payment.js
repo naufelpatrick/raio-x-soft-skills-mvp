@@ -13,15 +13,6 @@ import { updateSupabaseRecord } from "./_supabase.js";
 const PRODUCT_VALUE = 49.9;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function getAppUrl(req) {
-  const configuredUrl = process.env.APP_URL || process.env.VITE_APP_URL;
-  if (configuredUrl) return configuredUrl.replace(/\/$/, "");
-
-  const proto = req.headers["x-forwarded-proto"] || "https";
-  const host = req.headers["x-forwarded-host"] || req.headers.host;
-  return `${proto}://${host}`;
-}
-
 export default async function handler(req, res) {
   applySecurityHeaders(res);
 
@@ -67,7 +58,6 @@ export default async function handler(req, res) {
       sessionId: lead.sessionId,
       name: lead.name,
       value: PRODUCT_VALUE,
-      appUrl: getAppUrl(req),
     });
 
     const paymentUrl = payment.invoiceUrl || payment.bankSlipUrl;

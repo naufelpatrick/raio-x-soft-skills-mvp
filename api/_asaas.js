@@ -62,9 +62,8 @@ export async function createAsaasCustomer({ name, email, whatsapp, cpfCnpj }) {
   });
 }
 
-export async function createAsaasPayment({ customerId, sessionId, name, value, appUrl }) {
+export async function createAsaasPayment({ customerId, sessionId, name, value }) {
   const dueDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-  const successUrl = `${appUrl}/?payment=success&sessionId=${encodeURIComponent(sessionId)}`;
 
   return requestAsaas("/payments", {
     method: "POST",
@@ -75,10 +74,6 @@ export async function createAsaasPayment({ customerId, sessionId, name, value, a
       dueDate,
       description: `Raio-X do Designer — Diagnóstico Completo (${name})`,
       externalReference: sessionId,
-      callback: {
-        successUrl,
-        autoRedirect: true,
-      },
     },
   });
 }
