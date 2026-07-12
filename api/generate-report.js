@@ -87,7 +87,7 @@ export default async function handler(req, res) {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://raioxdodesigner.com',
+        'HTTP-Referer': 'https://www.raioxdodesigner.com',
         'X-Title': 'Raio-X do Designer',
       },
       body: JSON.stringify({

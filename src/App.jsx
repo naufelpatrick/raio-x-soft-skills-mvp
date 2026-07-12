@@ -13,7 +13,7 @@ const PRODUCT_PRICE = "R$ 49,90";
 const LAST_LEGAL_UPDATE = "10 de julho de 2026";
 const COOKIE_PREFERENCES_KEY = "raio_x_cookie_preferences_v1";
 const PROGRESS_STORAGE_KEY = "raio_x_progress_v1";
-const SITE_URL = "https://raioxdodesigner.com";
+const SITE_URL = "https://www.raioxdodesigner.com";
 const DEFAULT_SEO_DESCRIPTION = "Diagnóstico de competências humanas e comportamentais para profissionais de Design, com perfil profissional, radar de competências e plano de desenvolvimento.";
 
 const SEO_ROUTES = {

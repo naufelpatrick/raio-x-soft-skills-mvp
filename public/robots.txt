@@ -12,4 +12,4 @@ Disallow: /*?payment=
 Disallow: /*?sessionId=
 Disallow: /*?token=
 
-Sitemap: https://raioxdodesigner.com/sitemap.xml
+Sitemap: https://www.raioxdodesigner.com/sitemap.xml
