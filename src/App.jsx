@@ -13,6 +13,14 @@ const PRODUCT_PRICE = "R$ 49,90";
 const LAST_LEGAL_UPDATE = "10 de julho de 2026";
 const COOKIE_PREFERENCES_KEY = "raio_x_cookie_preferences_v1";
 
+function RequiredMark() {
+  return <span className="text-primary" aria-label="obrigatório">*</span>;
+}
+
+function RequiredLabel({ children, className }) {
+  return <label className={className}>{children}<RequiredMark /></label>;
+}
+
 function BoldFreeText({ children }) {
   if (typeof children !== "string") return children;
   const parts = children.split(/(gratuito)/gi);
@@ -603,7 +611,7 @@ function TermsPage() {
         ["8. Usos proibidos", "É proibido tentar burlar a liberação de acesso, sobrecarregar APIs, copiar a ferramenta, explorar vulnerabilidades ou usar resultados de terceiros sem autorização."],
         ["9. Disponibilidade do serviço", "O serviço pode passar por instabilidades, manutenção ou alterações. Buscamos manter a experiência disponível, mas não garantimos operação ininterrupta."],
         ["10. Limitação razoável de responsabilidade", "O Raio-X do Designer oferece informações para reflexão e desenvolvimento. O usuário é responsável por suas decisões profissionais e pelo uso prático das recomendações."],
-        ["11. Pagamentos e reembolsos", `O produto possui uma opção paga de relatório completo no valor atual de ${PRODUCT_PRICE}, liberada manualmente após confirmação pelo WhatsApp. Como o fluxo de pagamento ainda é manual, condições de reembolso devem ser tratadas pelo contato oficial: ${CONTACT_EMAIL}.`],
+        ["11. Pagamentos e reembolsos", `O produto possui uma opção paga de relatório completo no valor atual de ${PRODUCT_PRICE}, processada pelo Asaas. Condições de reembolso devem ser tratadas pelo contato oficial: ${CONTACT_EMAIL}.`],
         ["12. Cancelamento e encerramento", "Não há conta de usuário ou assinatura recorrente no fluxo atual. O usuário pode solicitar exclusão de dados pela página de solicitação de privacidade."],
         ["13. Alterações dos termos", "Estes termos podem ser atualizados para refletir mudanças no produto, na legislação ou no fluxo operacional."],
         ["14. Legislação aplicável", "Estes termos são regidos pela legislação brasileira."],
@@ -684,10 +692,10 @@ function PrivacyRequestPage() {
       <LegalSection title="Solicite acesso, correção ou exclusão">
         <p>Preencha os campos abaixo. Como ainda não há um backend específico para este formulário, o botão abrirá um e-mail pré-preenchido para o canal oficial de privacidade.</p>
         <div className="space-y-4 pt-2">
-          <div><label className="block text-xs font-mono uppercase tracking-wider mb-2">Nome</label><input className={inputCls} value={form.name} onChange={update("name")} /></div>
-          <div><label className="block text-xs font-mono uppercase tracking-wider mb-2">E-mail usado no diagnóstico</label><input type="email" className={inputCls} value={form.email} onChange={update("email")} /></div>
-          <div><label className="block text-xs font-mono uppercase tracking-wider mb-2">Tipo de solicitação</label><select className={inputCls} value={form.type} onChange={update("type")}>{["acessar meus dados", "corrigir meus dados", "excluir meus dados", "revogar consentimento", "obter informações sobre uso e compartilhamento", "esclarecer resultado automatizado", "outro"].map((option) => <option key={option}>{option}</option>)}</select></div>
-          <div><label className="block text-xs font-mono uppercase tracking-wider mb-2">Descrição</label><textarea className={inputCls + " resize-none"} rows={5} value={form.description} onChange={update("description")} /></div>
+          <div><RequiredLabel className="block text-xs font-mono uppercase tracking-wider mb-2">Nome</RequiredLabel><input className={inputCls} value={form.name} onChange={update("name")} /></div>
+          <div><RequiredLabel className="block text-xs font-mono uppercase tracking-wider mb-2">E-mail usado no diagnóstico</RequiredLabel><input type="email" className={inputCls} value={form.email} onChange={update("email")} /></div>
+          <div><RequiredLabel className="block text-xs font-mono uppercase tracking-wider mb-2">Tipo de solicitação</RequiredLabel><select className={inputCls} value={form.type} onChange={update("type")}>{["acessar meus dados", "corrigir meus dados", "excluir meus dados", "revogar consentimento", "obter informações sobre uso e compartilhamento", "esclarecer resultado automatizado", "outro"].map((option) => <option key={option}>{option}</option>)}</select></div>
+          <div><RequiredLabel className="block text-xs font-mono uppercase tracking-wider mb-2">Descrição</RequiredLabel><textarea className={inputCls + " resize-none"} rows={5} value={form.description} onChange={update("description")} /></div>
           <label className="flex gap-3 text-xs text-muted-foreground"><input type="checkbox" checked={form.ownership} onChange={update("ownership")} className="mt-0.5 accent-primary" /><span>Confirmo que sou titular dos dados relacionados a esta solicitação.</span></label>
           <a href={canSubmit ? `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}` : undefined} aria-disabled={!canSubmit} className={`inline-flex bg-primary text-primary-foreground px-5 py-3 rounded-sm text-sm font-medium transition-opacity ${canSubmit ? "hover:opacity-90" : "opacity-30 pointer-events-none"}`}>Gerar e-mail de solicitação</a>
         </div>
@@ -1215,23 +1223,23 @@ function ProfileForm({ onSubmit, onBack }) {
         <p className="text-muted-foreground mb-10">Essas informações personalizam a análise e o plano de desenvolvimento.</p>
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div><label className={labelCls}>Nome</label><input type="text" placeholder="Seu nome completo" value={form.name} onChange={update("name")} className={inputCls} /></div>
-            <div><label className={labelCls}>E-mail</label><input type="email" placeholder="seu@email.com" value={form.email} onChange={update("email")} className={inputCls} /></div>
+            <div><RequiredLabel className={labelCls}>Nome</RequiredLabel><input type="text" placeholder="Seu nome completo" value={form.name} onChange={update("name")} className={inputCls} /></div>
+            <div><RequiredLabel className={labelCls}>E-mail</RequiredLabel><input type="email" placeholder="seu@email.com" value={form.email} onChange={update("email")} className={inputCls} /></div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div><label className={labelCls}>WhatsApp</label><input type="tel" placeholder="(49) 98436-1569" value={form.whatsapp} onChange={update("whatsapp")} className={inputCls} /></div>
-            <div><label className={labelCls}>Idade</label><input type="number" placeholder="Ex: 32" value={form.age} onChange={update("age")} className={inputCls} /></div>
+            <div><RequiredLabel className={labelCls}>WhatsApp</RequiredLabel><input type="tel" placeholder="(49) 98436-1569" value={form.whatsapp} onChange={update("whatsapp")} className={inputCls} /></div>
+            <div><RequiredLabel className={labelCls}>Idade</RequiredLabel><input type="number" placeholder="Ex: 32" value={form.age} onChange={update("age")} className={inputCls} /></div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div><label className={labelCls}>Cargo atual</label><input type="text" placeholder="Ex: Product Designer" value={form.currentRole} onChange={update("currentRole")} className={inputCls} /></div>
-            <div><label className={labelCls}>Tempo de experiência</label><input type="text" placeholder="Ex: 5 anos" value={form.experience} onChange={update("experience")} className={inputCls} /></div>
+            <div><RequiredLabel className={labelCls}>Cargo atual</RequiredLabel><input type="text" placeholder="Ex: Product Designer" value={form.currentRole} onChange={update("currentRole")} className={inputCls} /></div>
+            <div><RequiredLabel className={labelCls}>Tempo de experiência</RequiredLabel><input type="text" placeholder="Ex: 5 anos" value={form.experience} onChange={update("experience")} className={inputCls} /></div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div><label className={labelCls}>Nível profissional</label><select value={form.professionalLevel} onChange={update("professionalLevel")} className={inputCls}><option value="">Selecione</option>{["Júnior", "Pleno", "Sênior", "Especialista", "Líder", "Gestor"].map((v) => <option key={v}>{v}</option>)}</select></div>
-            <div><label className={labelCls}>Área principal</label><select value={form.mainArea} onChange={update("mainArea")} className={inputCls}><option value="">Selecione</option>{["Pesquisa", "UX", "UI", "Product Design", "Design System", "Liderança", "Generalista", "Outro"].map((v) => <option key={v}>{v}</option>)}</select></div>
+            <div><RequiredLabel className={labelCls}>Nível profissional</RequiredLabel><select value={form.professionalLevel} onChange={update("professionalLevel")} className={inputCls}><option value="">Selecione</option>{["Júnior", "Pleno", "Sênior", "Especialista", "Líder", "Gestor"].map((v) => <option key={v}>{v}</option>)}</select></div>
+            <div><RequiredLabel className={labelCls}>Área principal</RequiredLabel><select value={form.mainArea} onChange={update("mainArea")} className={inputCls}><option value="">Selecione</option>{["Pesquisa", "UX", "UI", "Product Design", "Design System", "Liderança", "Generalista", "Outro"].map((v) => <option key={v}>{v}</option>)}</select></div>
           </div>
-          <div><label className={labelCls}>Objetivo de carreira (próximos 12 meses)</label><textarea placeholder="O que você quer alcançar profissionalmente no próximo ano?" value={form.careerGoal} onChange={update("careerGoal")} rows={3} className={inputCls + " resize-none"} /></div>
-          <div><label className={labelCls}>Principal desafio atual</label><textarea placeholder="Qual é o maior obstáculo que você enfrenta hoje?" value={form.currentChallenge} onChange={update("currentChallenge")} rows={3} className={inputCls + " resize-none"} /></div>
+          <div><RequiredLabel className={labelCls}>Objetivo de carreira (próximos 12 meses)</RequiredLabel><textarea placeholder="O que você quer alcançar profissionalmente no próximo ano?" value={form.careerGoal} onChange={update("careerGoal")} rows={3} className={inputCls + " resize-none"} /></div>
+          <div><RequiredLabel className={labelCls}>Principal desafio atual</RequiredLabel><textarea placeholder="Qual é o maior obstáculo que você enfrenta hoje?" value={form.currentChallenge} onChange={update("currentChallenge")} rows={3} className={inputCls + " resize-none"} /></div>
           <div className="rounded-sm border border-border bg-card p-5 text-xs text-muted-foreground leading-relaxed space-y-4">
             <p>
               Utilizaremos suas informações e respostas para calcular seus resultados e gerar um relatório profissional personalizado.
@@ -1514,10 +1522,10 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
             <p className="text-sm text-muted-foreground leading-relaxed">Confirme seus dados para gerar o link seguro de pagamento do Asaas. Após a confirmação, seu diagnóstico completo será liberado automaticamente.</p>
             {aiError && (<div className="p-3 bg-red-500/10 border border-red-500/20 rounded-sm text-xs text-red-400">{aiError}</div>)}
             <div className="space-y-4">
-              <div><label className={labelCls}>Nome completo</label><input type="text" value={lead.name} onChange={(e) => setLead((l) => ({ ...l, name: e.target.value }))} placeholder="Seu nome" className={inputCls} /></div>
-              <div><label className={labelCls}>E-mail</label><input type="email" value={lead.email} onChange={(e) => setLead((l) => ({ ...l, email: e.target.value }))} placeholder="seu@email.com" className={inputCls} /></div>
-              <div><label className={labelCls}>WhatsApp (com DDD)</label><input type="tel" value={lead.whatsapp} onChange={(e) => setLead((l) => ({ ...l, whatsapp: e.target.value }))} placeholder="(49) 98436-1569" className={inputCls} /></div>
-              <div><label className={labelCls}>CPF ou CNPJ</label><input type="text" inputMode="numeric" value={lead.cpfCnpj} onChange={(e) => setLead((l) => ({ ...l, cpfCnpj: e.target.value }))} placeholder="Somente números" className={inputCls} /></div>
+              <div><RequiredLabel className={labelCls}>Nome completo</RequiredLabel><input type="text" value={lead.name} onChange={(e) => setLead((l) => ({ ...l, name: e.target.value }))} placeholder="Seu nome" className={inputCls} /></div>
+              <div><RequiredLabel className={labelCls}>E-mail</RequiredLabel><input type="email" value={lead.email} onChange={(e) => setLead((l) => ({ ...l, email: e.target.value }))} placeholder="seu@email.com" className={inputCls} /></div>
+              <div><RequiredLabel className={labelCls}>WhatsApp (com DDD)</RequiredLabel><input type="tel" value={lead.whatsapp} onChange={(e) => setLead((l) => ({ ...l, whatsapp: e.target.value }))} placeholder="(49) 98436-1569" className={inputCls} /></div>
+              <div><RequiredLabel className={labelCls}>CPF ou CNPJ</RequiredLabel><input type="text" inputMode="numeric" value={lead.cpfCnpj} onChange={(e) => setLead((l) => ({ ...l, cpfCnpj: e.target.value }))} placeholder="Somente números" className={inputCls} /></div>
               <div className="flex gap-3 pt-2">
                 <button onClick={handleSubmit} disabled={!canSubmit} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"><Sparkles className="w-4 h-4" /> Pagar com Asaas</button>
                 <button onClick={() => setPhase("preview")} className="px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors">Cancelar</button>
