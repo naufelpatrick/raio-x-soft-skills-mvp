@@ -688,12 +688,6 @@ function PrivacyRequestPage() {
 // ─── LANDING ─────────────────────────────────────────────────────────────────
 const DEMO_SCORES = [85, 72, 68, 91, 77, 63, 88, 74, 80, 59];
 
-const TESTIMONIALS = [
-  { name: "A.C.", role: "UX Designer Sênior", text: "Fiz o diagnóstico sem expectativas. Saí com um mapa claro do que precisava desenvolver — e palavras para nomear coisas que sentia mas não conseguia articular.", score: 74, profile: "Pensador Analítico" },
-  { name: "R.S.", role: "Product Designer", text: "A análise com IA foi o que mais me surpreendeu. Precisa de um jeito que me deu vontade de começar o plano de ação no mesmo dia. Valeu muito mais do que esperava.", score: 81, profile: "Líder Inspirador" },
-  { name: "M.T.", role: "Designer de Produto", text: "Nunca tinha pensado em soft skills com esse nível de seriedade. A sessão de mentoria valeu muito mais do que o investimento — saí com clareza de onde focar.", score: 68, profile: "Facilitador Humano" },
-];
-
 const RESEARCH_STATS = [
   { value: "89%", label: "dos profissionais que falham em novas posições falham por razões comportamentais, não técnicas.", source: "LinkedIn Global Talent Trends, 2024" },
   { value: "Top 5", label: "das habilidades mais demandadas até 2030 incluem IE, pensamento crítico e adaptabilidade.", source: "WEF Future of Jobs Report, 2025" },
@@ -1019,29 +1013,6 @@ function Landing({ onStart }) {
                 </div>
                 <h3 className="font-semibold text-base text-foreground/90">{title}</h3>
                 <p className="text-sm text-foreground/70 leading-relaxed">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="px-6 lg:px-16 py-20 border-b border-border bg-card">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-center justify-center gap-3 mb-12">
-            <div className="flex-1 h-px" style={{ background: "linear-gradient(to right, transparent, rgba(251,191,36,0.2))" }} />
-            <p className="text-[10px] text-foreground/60 font-mono uppercase tracking-widest whitespace-nowrap">O que dizem quem já fez</p>
-            <div className="flex-1 h-px" style={{ background: "linear-gradient(to left, transparent, rgba(251,191,36,0.2))" }} />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {TESTIMONIALS.map((t) => (
-              <div key={t.name} className="relative flex flex-col gap-5 p-6 rounded-sm overflow-hidden transition-transform duration-300 hover:-translate-y-1" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderTop: "2px solid rgba(251,191,36,0.4)" }}>
-                <div style={{ color: "#FBBF24", fontSize: "14px", letterSpacing: "2px" }}>★★★★★</div>
-                <p className="text-sm text-foreground/80 leading-relaxed flex-1 italic">"{t.text}"</p>
-                <div className="pt-4 border-t space-y-1" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                  <p className="text-xs font-semibold text-foreground/90">{t.name}</p>
-                  <p className="text-[11px] text-foreground/60">{t.role}</p>
-                  <span className="text-[10px] font-mono px-2.5 py-1 rounded-full font-medium inline-block mt-2" style={{ backgroundColor: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.25)", color: "#FBBF24" }}>Índice {t.score} · {t.profile}</span>
-                </div>
               </div>
             ))}
           </div>
