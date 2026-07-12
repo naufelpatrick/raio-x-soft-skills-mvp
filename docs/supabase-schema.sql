@@ -42,9 +42,26 @@ create table if not exists public.leads (
   purchased_package boolean not null default false,
   package_requested_at timestamptz,
   package_purchased_at timestamptz,
+  asaas_customer_id text,
+  asaas_payment_id text,
+  payment_status text,
+  payment_url text,
+  payment_created_at timestamptz,
+  payment_confirmed_at timestamptz,
   last_seen_at timestamptz not null default now(),
   created_at timestamptz not null default now()
 );
+
+alter table public.leads
+  add column if not exists asaas_customer_id text,
+  add column if not exists asaas_payment_id text,
+  add column if not exists payment_status text,
+  add column if not exists payment_url text,
+  add column if not exists payment_created_at timestamptz,
+  add column if not exists payment_confirmed_at timestamptz;
+
+create index if not exists leads_asaas_payment_id_idx
+on public.leads (asaas_payment_id);
 
 alter table public.validation_feedback enable row level security;
 alter table public.validation_interest enable row level security;

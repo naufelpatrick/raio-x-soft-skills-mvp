@@ -50,6 +50,32 @@ async function submitLead(leadData) {
   }
 }
 
+async function createPayment(leadData) {
+  const response = await fetch("/api/create-payment", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(leadData),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || !result.paymentUrl || !result.paymentId) {
+    throw new Error(result.error || "Não foi possível criar o pagamento.");
+  }
+  return result;
+}
+
+async function checkPaymentStatus({ paymentId, sessionId }) {
+  const response = await fetch("/api/payment-status", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ paymentId, sessionId }),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(result.error || "Não foi possível verificar o pagamento.");
+  }
+  return result;
+}
+
 // ─── SIMPLE MARKDOWN RENDERER ────────────────────────────────────────────────
 function renderInlineMarkdown(text) {
   return String(text).split(/(\*\*.*?\*\*)/g).map((part, index) => {
@@ -250,21 +276,6 @@ function exportPDF({ profileData, scores, generalScore, generalLevel, profileNam
   w.document.write(html);
   w.document.close();
   setTimeout(() => w.print(), 400);
-}
-
-// ─── VALIDATE CODE ────────────────────────────────────────────────────────────
-function normalizeAccessCode(value) {
-  return value.replace(/[^a-z0-9]/gi, "").toUpperCase();
-}
-
-function validateCode(entered, whatsapp) {
-  const digits = whatsapp.replace(/\D/g, "");
-  const last4 = digits.slice(-4);
-  const expected = `RAIO${last4}`.toUpperCase();
-  const clean = normalizeAccessCode(entered);
-  if (clean !== expected) return "invalid";
-  if (localStorage.getItem(`rxused_${clean}`)) return "used";
-  return "valid";
 }
 
 // ─── SHARED NAV ───────────────────────────────────────────────────────────────
@@ -526,13 +537,14 @@ function PrivacyPolicyPage() {
           "Vercel: hospedagem da aplicação e execução das funções serverless.",
           "Supabase: armazenamento de leads, feedbacks e manifestações de interesse, quando configurado.",
           "OpenRouter: geração do relatório narrativo com IA.",
-          "WhatsApp: canal externo usado quando o usuário solicita o diagnóstico completo ou mentoria.",
+          "Asaas: processamento do pagamento do diagnóstico completo.",
+          "WhatsApp: canal externo usado para dúvidas, contato e mentoria.",
           "Google Analytics 4: existe código opcional, mas ele não está inicializado na aplicação atual; se for ativado no futuro, deverá depender de gestão de cookies/preferências.",
           "Webhooks de feedback/interesse: existem variáveis opcionais no backend, mas não foram confirmadas como ativas em produção.",
         ]} />
       </LegalSection>
       <LegalSection title="8. Armazenamento e retenção">
-        <p>Parte dos dados pode ser armazenada no Supabase. O navegador também usa localStorage para manter um identificador de sessão e registrar chaves de acesso já utilizadas naquele navegador.</p>
+        <p>Parte dos dados pode ser armazenada no Supabase. O navegador também usa localStorage para manter um identificador de sessão e salvar preferências essenciais da experiência.</p>
         <p>O relatório completo gerado por IA é exibido ao usuário no navegador e pode ser exportado em PDF. Pelo código atual, o texto do relatório completo não é salvo em banco de dados pelo Raio-X do Designer.</p>
         <div className="overflow-x-auto pt-2">
           <table className="w-full text-left text-xs border border-border">
@@ -607,7 +619,7 @@ function CookiesPage() {
     <LegalLayout title="Política de Cookies" eyebrow="Tecnologias de navegação">
       <LegalSection title="Resumo">
         <p>O site exibe um banner de preferências para que você possa aceitar, recusar ou configurar finalidades opcionais. O site não carrega ferramentas de analytics, como Google Analytics e Microsoft Clarity, antes da sua escolha.</p>
-        <p>O site utiliza localStorage para funcionalidades essenciais da experiência, como manter um identificador de sessão, registrar chaves de acesso usadas no navegador e salvar sua preferência de cookies.</p>
+        <p>O site utiliza localStorage para funcionalidades essenciais da experiência, como manter um identificador de sessão e salvar sua preferência de cookies.</p>
       </LegalSection>
       <LegalSection title="Tabela de tecnologias identificadas">
         <div className="overflow-x-auto">
@@ -616,7 +628,6 @@ function CookiesPage() {
             <tbody>
               {[
                 ["raio_x_session_id", "Raio-X do Designer", "Identificar a sessão do diagnóstico no navegador.", "Até remoção pelo usuário/navegador", "localStorage essencial"],
-                ["rxused_[chave]", "Raio-X do Designer", "Evitar reutilização da mesma chave de acesso no mesmo navegador.", "Até remoção pelo usuário/navegador", "localStorage essencial"],
                 [COOKIE_PREFERENCES_KEY, "Raio-X do Designer", "Salvar a escolha sobre cookies essenciais, analytics e marketing.", "Até alteração pelo usuário ou remoção pelo navegador", "localStorage de preferência"],
                 ["Google Analytics", "Google", "Mensurar visitas e uso agregado da experiência após aceite de Analytics.", "Definida pelo Google Analytics", "Analytics opcional"],
                 ["Microsoft Clarity", "Microsoft", "Entender navegação, cliques e mapas de calor para melhorar a experiência após aceite de Analytics.", "Definida pelo Microsoft Clarity", "Analytics opcional"],
@@ -1360,62 +1371,82 @@ function PdiCard({ competencyId }) {
 function UpgradeSection({ profileData, scores, answers, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities, onAiReportGenerated }) {
   const [phase, setPhase] = useState("preview");
   const [lead, setLead] = useState({ name: profileData?.name || "", email: profileData?.email || "", whatsapp: profileData?.whatsapp || "" });
-  const [accessCode, setAccessCode] = useState("");
-  const [codeError, setCodeError] = useState(null);
+  const [payment, setPayment] = useState(null);
   const [aiText, setAiText] = useState("");
   const [aiError, setAiError] = useState(null);
   const inputCls = "w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors";
   const labelCls = "block text-xs text-muted-foreground font-mono uppercase tracking-wider mb-2";
   const whatsappDigits = lead.whatsapp.replace(/\D/g, "");
   const canSubmit = lead.name.trim() && lead.email.includes("@") && whatsappDigits.length >= 10;
-  const whatsappMessage = ["🎯 *Nova lead — Diagnóstico Completo*", "", `*Nome:* ${lead.name}`, `*Email:* ${lead.email}`, `*WhatsApp:* ${lead.whatsapp}`, "", `*Cargo:* ${profileData?.currentRole || "-"} (${profileData?.professionalLevel || "-"})`, `*Área:* ${profileData?.mainArea || "-"}`, `*Índice geral:* ${generalScore}/100 — ${generalLevel}`, `*Perfil:* ${profileName}`, "", "_Aguardando confirmação de pagamento._"].join("\n");
-  const whatsappUrl = `https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent(whatsappMessage)}`;
+  async function generateFullReport() {
+    setPhase("loading");
+    setAiError(null);
+    try {
+      const res = await fetch("/api/generate-report", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ profileData, scores, answers, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities }) });
+      const data = await res.json();
+      if (data.text) { setAiText(data.text); onAiReportGenerated?.(data.text); setPhase("report"); }
+      else { setAiError(data.error || "Erro ao gerar análise. Tente novamente."); setPhase("payment"); }
+    } catch { setAiError("Erro de conexão. Verifique sua internet e tente novamente."); setPhase("payment"); }
+  }
   async function handleSubmit() {
     if (!canSubmit) return;
+    setPhase("creating-payment");
+    setAiError(null);
     try {
-      await submitLead({
+      const result = await createPayment({
         ...profileData,
         ...lead,
         contactConsent: profileData?.contactConsent === true,
         purchaseStatus: "requested",
       });
-      window.open(whatsappUrl, "_blank");
-      setPhase("code");
+      setPayment(result);
+      window.open(result.paymentUrl, "_blank", "noopener,noreferrer");
+      setPhase("payment");
     } catch {
-      setAiError("Não foi possível registrar sua solicitação agora. Tente novamente em instantes.");
+      setAiError("Não foi possível criar o pagamento agora. Tente novamente em instantes.");
+      setPhase("form");
     }
   }
-  async function handleCodeSubmit() {
-    setCodeError(null);
-    const result = validateCode(accessCode, lead.whatsapp);
-    if (result === "invalid") { setCodeError("Chave inválida. Confira a chave recebida no WhatsApp e tente novamente."); return; }
-    if (result === "used") { setCodeError("Esta chave já foi utilizada neste navegador."); return; }
-    setPhase("loading");
+  async function handlePaymentCheck() {
+    if (!payment?.paymentId) {
+      setAiError("Pagamento não identificado. Gere um novo link de pagamento.");
+      setPhase("form");
+      return;
+    }
+    setPhase("checking-payment");
     setAiError(null);
     try {
-      await submitLead({
-        ...profileData,
-        ...lead,
-        contactConsent: profileData?.contactConsent === true,
-        purchaseStatus: "purchased",
-      });
-      localStorage.setItem(`rxused_${normalizeAccessCode(accessCode)}`, "1");
-      const res = await fetch("/api/generate-report", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ profileData, scores, answers, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities }) });
-      const data = await res.json();
-      if (data.text) { setAiText(data.text); onAiReportGenerated?.(data.text); setPhase("report"); }
-      else { setAiError(data.error || "Erro ao gerar análise. Tente novamente."); setPhase("code"); }
-    } catch { setAiError("Erro de conexão. Verifique sua internet e tente novamente."); setPhase("code"); }
+      const result = await checkPaymentStatus({ paymentId: payment.paymentId, sessionId: profileData?.sessionId });
+      if (result.paid) {
+        await generateFullReport();
+        return;
+      }
+      setAiError("Ainda não encontramos a confirmação do pagamento. Se você acabou de pagar, aguarde alguns segundos e tente novamente.");
+      setPhase("payment");
+    } catch { setAiError("Não foi possível verificar o pagamento agora. Tente novamente em instantes."); setPhase("payment"); }
   }
   const benefits = [
     { Icon: Brain, label: "Análise narrativa com IA", desc: "Diagnóstico aprofundado gerado pelo Claude com base no seu perfil completo." },
     { Icon: Target, label: "PDI 30 / 60 / 90 dias", desc: "Plano de Desenvolvimento Individual com ações concretas por competência." },
     { Icon: Calendar, label: "1 sessão de mentoria", desc: "60 minutos ao vivo para transformar o diagnóstico em evolução real." },
   ];
-  if (phase === "loading") {
+  if (["creating-payment", "checking-payment", "loading"].includes(phase)) {
+    const loadingTitle =
+      phase === "creating-payment"
+        ? "Criando seu pagamento seguro"
+        : phase === "checking-payment"
+          ? "Verificando confirmação do pagamento"
+          : "Gerando sua análise personalizada";
+    const loadingDescription =
+      phase === "creating-payment"
+        ? "Estamos abrindo o checkout do Asaas. Isso leva alguns segundos..."
+        : phase === "checking-payment"
+          ? "Consultando o Asaas para liberar seu diagnóstico completo..."
+          : "O Claude está analisando seu perfil. Isso leva alguns segundos...";
     return (
       <div className="rounded-sm border border-primary/20 bg-card p-12 flex flex-col items-center justify-center gap-5 text-center">
         <div className="relative"><Loader2 className="w-8 h-8 text-primary animate-spin" /><div className="absolute inset-0 rounded-full bg-primary/10 blur-xl" /></div>
-        <div><p className="text-sm font-medium mb-1">Gerando sua análise personalizada</p><p className="text-xs text-muted-foreground">O Claude está analisando seu perfil. Isso leva alguns segundos...</p></div>
+        <div><p className="text-sm font-medium mb-1">{loadingTitle}</p><p className="text-xs text-muted-foreground">{loadingDescription}</p></div>
         <div className="flex gap-1.5 mt-2">{[0, 0.3, 0.6].map((d) => (<div key={d} className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-pulse" style={{ animationDelay: `${d}s` }} />))}</div>
       </div>
     );
@@ -1479,37 +1510,33 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
         {phase === "preview" && (<button onClick={() => setPhase("form")} className="flex items-center gap-2 bg-primary text-primary-foreground px-7 py-3.5 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity"><Sparkles className="w-4 h-4" /> Quero o diagnóstico completo</button>)}
         {phase === "form" && (
           <div className="max-w-md space-y-6">
-            <p className="text-sm text-muted-foreground leading-relaxed">Preencha seus dados para reservar seu acesso. Em seguida, abriremos o WhatsApp com uma mensagem pronta para confirmar o pagamento de {PRODUCT_PRICE} e liberar sua chave pessoal.</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">Confirme seus dados para gerar o link seguro de pagamento do Asaas. Após a confirmação, seu diagnóstico completo será liberado automaticamente.</p>
             {aiError && (<div className="p-3 bg-red-500/10 border border-red-500/20 rounded-sm text-xs text-red-400">{aiError}</div>)}
             <div className="space-y-4">
               <div><label className={labelCls}>Nome completo</label><input type="text" value={lead.name} onChange={(e) => setLead((l) => ({ ...l, name: e.target.value }))} placeholder="Seu nome" className={inputCls} /></div>
               <div><label className={labelCls}>E-mail</label><input type="email" value={lead.email} onChange={(e) => setLead((l) => ({ ...l, email: e.target.value }))} placeholder="seu@email.com" className={inputCls} /></div>
               <div><label className={labelCls}>WhatsApp (com DDD)</label><input type="tel" value={lead.whatsapp} onChange={(e) => setLead((l) => ({ ...l, whatsapp: e.target.value }))} placeholder="(49) 98436-1569" className={inputCls} /></div>
               <div className="flex gap-3 pt-2">
-                <button onClick={handleSubmit} disabled={!canSubmit} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"><MessageCircle className="w-4 h-4" /> Confirmar pelo WhatsApp</button>
+                <button onClick={handleSubmit} disabled={!canSubmit} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"><Sparkles className="w-4 h-4" /> Pagar com Asaas</button>
                 <button onClick={() => setPhase("preview")} className="px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors">Cancelar</button>
               </div>
-              <p className="text-[10px] text-muted-foreground">Use um e-mail válido e um WhatsApp com DDD. Suas informações são usadas apenas para contato e liberação do acesso.</p>
+              <p className="text-[10px] text-muted-foreground">Pagamento único de {PRODUCT_PRICE}. Você será levado para o ambiente seguro do Asaas.</p>
             </div>
           </div>
         )}
-        {phase === "code" && (
+        {phase === "payment" && (
           <div className="max-w-md space-y-6">
-            <div className="flex items-center gap-3"><MessageCircle className="w-5 h-5 text-green-400" /><div><p className="text-sm font-medium">Solicitação iniciada</p><p className="text-xs text-muted-foreground">Finalize a confirmação no WhatsApp. Depois volte para esta tela e insira sua chave de acesso.</p></div></div>
+            <div className="flex items-center gap-3"><Sparkles className="w-5 h-5 text-primary" /><div><p className="text-sm font-medium">Pagamento iniciado</p><p className="text-xs text-muted-foreground">Finalize o pagamento no Asaas. Depois volte para esta tela para liberar o diagnóstico completo.</p></div></div>
             <div className="bg-card border border-border rounded-sm p-5 text-xs text-muted-foreground leading-relaxed space-y-1">
-              <p className="font-mono text-primary uppercase tracking-widest text-[10px] mb-2">Liberação do acesso</p>
-              <p>1. Confirme o pagamento de {PRODUCT_PRICE} na conversa já aberta</p>
-              <p>2. Você receberá uma chave pessoal de liberação</p>
-              <p>3. Cole a chave abaixo para gerar sua análise completa</p>
+              <p className="font-mono text-primary uppercase tracking-widest text-[10px] mb-2">Liberação automática</p>
+              <p>1. Pague {PRODUCT_PRICE} no checkout seguro do Asaas</p>
+              <p>2. O Asaas confirma o pagamento automaticamente</p>
+              <p>3. Clique em verificar para gerar sua análise completa</p>
             </div>
-            {(codeError || aiError) && (<div className="p-3 bg-red-500/10 border border-red-500/20 rounded-sm text-xs text-red-400">{codeError || aiError}</div>)}
-            <div>
-              <label className={labelCls}>Chave de acesso</label>
-              <input type="text" value={accessCode} onChange={(e) => setAccessCode(e.target.value.toUpperCase())} placeholder="Cole aqui a chave recebida" className={inputCls + " font-mono tracking-widest"} />
-            </div>
-            <div className="flex gap-3">
-              <button onClick={handleCodeSubmit} disabled={!accessCode.trim()} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"><Sparkles className="w-4 h-4" /> Gerar análise completa</button>
-              <a href={whatsappUrl} target="_blank" rel="noreferrer" className="px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors">Abrir WhatsApp</a>
+            {aiError && (<div className="p-3 bg-red-500/10 border border-red-500/20 rounded-sm text-xs text-red-400">{aiError}</div>)}
+            <div className="flex flex-wrap gap-3">
+              <button onClick={handlePaymentCheck} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity"><Sparkles className="w-4 h-4" /> Já paguei, verificar</button>
+              {payment?.paymentUrl && <a href={payment.paymentUrl} target="_blank" rel="noreferrer" className="px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors">Abrir pagamento</a>}
               <button onClick={() => setPhase("form")} className="px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors">Voltar</button>
             </div>
           </div>
