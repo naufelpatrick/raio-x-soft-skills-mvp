@@ -14,7 +14,8 @@ const LAST_LEGAL_UPDATE = "10 de julho de 2026";
 const COOKIE_PREFERENCES_KEY = "raio_x_cookie_preferences_v1";
 const PROGRESS_STORAGE_KEY = "raio_x_progress_v1";
 const SITE_URL = "https://www.raioxdodesigner.com";
-const DEFAULT_SEO_DESCRIPTION = "Diagnóstico de competências humanas e comportamentais para profissionais de Design, com perfil profissional, radar de competências e plano de desenvolvimento.";
+const SOCIAL_IMAGE_URL = `${SITE_URL}/raio-x-social-card.jpg`;
+const DEFAULT_SEO_DESCRIPTION = "Diagnóstico de competências comportamentais para profissionais de Design, com perfil profissional, radar de competências e plano de desenvolvimento.";
 
 const SEO_ROUTES = {
   "/": {
@@ -132,8 +133,19 @@ function applySeoForPath(pathname, hasQuery = false) {
     meta.setAttribute("property", "og:url");
     return meta;
   }, { property: "og:url", content: canonical });
+  upsertMeta('meta[property="og:image"]', () => {
+    const meta = document.createElement("meta");
+    meta.setAttribute("property", "og:image");
+    return meta;
+  }, { property: "og:image", content: SOCIAL_IMAGE_URL });
+  upsertMeta('meta[property="og:image:alt"]', () => {
+    const meta = document.createElement("meta");
+    meta.setAttribute("property", "og:image:alt");
+    return meta;
+  }, { property: "og:image:alt", content: "Raio-X do Designer: descubra suas forças como designer." });
   upsertMeta('meta[name="twitter:title"]', () => Object.assign(document.createElement("meta"), { name: "twitter:title" }), { name: "twitter:title", content: seo.title });
   upsertMeta('meta[name="twitter:description"]', () => Object.assign(document.createElement("meta"), { name: "twitter:description" }), { name: "twitter:description", content: seo.description });
+  upsertMeta('meta[name="twitter:image"]', () => Object.assign(document.createElement("meta"), { name: "twitter:image" }), { name: "twitter:image", content: SOCIAL_IMAGE_URL });
 }
 
 function getSessionId() {
