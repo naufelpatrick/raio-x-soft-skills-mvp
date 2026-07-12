@@ -12,6 +12,7 @@ const CONTACT_EMAIL = "info@raioxdodesigner.com";
 const PRODUCT_PRICE = "R$ 49,90";
 const LAST_LEGAL_UPDATE = "10 de julho de 2026";
 const COOKIE_PREFERENCES_KEY = "raio_x_cookie_preferences_v1";
+const PROGRESS_STORAGE_KEY = "raio_x_progress_v1";
 
 function RequiredMark() {
   return <span className="text-primary" aria-label="obrigatório">*</span>;
@@ -27,6 +28,30 @@ function BoldFreeText({ children }) {
   return parts.map((part, index) => (
     part.toLowerCase() === "gratuito" ? <strong key={index} className="font-bold text-foreground/95">{part}</strong> : part
   ));
+}
+
+function readSavedProgress() {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = window.localStorage.getItem(PROGRESS_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeSavedProgress(progress) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify({ ...progress, savedAt: new Date().toISOString() }));
+  } catch {
+    // Se o navegador bloquear storage, a experiência continua sem recuperação.
+  }
+}
+
+function clearSavedProgress() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(PROGRESS_STORAGE_KEY);
 }
 
 function getSessionId() {
@@ -256,11 +281,39 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function exportPDF({ profileData, scores, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities, aiText = "" }) {
+function exportPDF({ profileData, scores, generalScore, generalLevel, profileName, profileDesc, profileCompetencies = [], strengths, opportunities, crossResults = [], aiText = "" }) {
   const sorted = [...scores].sort((a, b) => b.score - a.score);
   const year = new Date().getFullYear();
   const isComplete = Boolean(aiText);
   const colorMap = { Inicial: "#ef4444", Emergente: "#f97316", Consistente: "#eab308", Avançado: "#6366f1", Referência: "#10b981" };
+  const scoreMap = Object.fromEntries(scores.map((s) => [s.id, s]));
+  const profileTags = profileCompetencies
+    .map((id) => COMPETENCIES.find((c) => c.id === id)?.name)
+    .filter(Boolean)
+    .map((name) => `<span class="tag">${escapeHtml(name)}</span>`)
+    .join("");
+  const radarSvg = (() => {
+    const cx = 140, cy = 140, maxR = 98, n = COMPETENCIES.length;
+    const toXY = (i, r) => { const angle = (Math.PI * 2 * i) / n - Math.PI / 2; return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) }; };
+    const rings = [25, 50, 75, 100].map((r) => {
+      const pts = Array.from({ length: n }, (_, i) => toXY(i, (r / 100) * maxR));
+      const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ") + " Z";
+      return `<path d="${d}" fill="none" stroke="#e5e7eb" stroke-width="1"/>`;
+    }).join("");
+    const spokes = COMPETENCIES.map((_, i) => {
+      const p = toXY(i, maxR);
+      return `<line x1="${cx}" y1="${cy}" x2="${p.x.toFixed(1)}" y2="${p.y.toFixed(1)}" stroke="#e5e7eb" stroke-width="1"/>`;
+    }).join("");
+    const scorePoints = COMPETENCIES.map((c, i) => toXY(i, ((scoreMap[c.id]?.score || 0) / 100) * maxR));
+    const scorePath = scorePoints.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ") + " Z";
+    const nodes = COMPETENCIES.map((c, i) => {
+      const p = scorePoints[i];
+      const label = toXY(i, maxR + 18);
+      const anchor = label.x < cx - 4 ? "end" : label.x > cx + 4 ? "start" : "middle";
+      return `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="#6366f1"/><text x="${label.x.toFixed(1)}" y="${(label.y + 3).toFixed(1)}" text-anchor="${anchor}" fill="#64748b" font-size="8">${escapeHtml(c.name.split(" ")[0])}</text>`;
+    }).join("");
+    return `<svg viewBox="0 0 280 280" width="280" height="280">${rings}${spokes}<path d="${scorePath}" fill="rgba(99,102,241,0.14)" stroke="#6366f1" stroke-width="2"/>${nodes}</svg>`;
+  })();
   const barRows = sorted.map((s) => {
     const color = colorMap[s.level] || "#888";
     return `<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;"><span style="width:180px;font-size:12px;color:#374151;flex-shrink:0;">${escapeHtml(s.name)}</span><div style="flex:1;background:#e5e7eb;border-radius:4px;height:8px;"><div style="width:${s.score}%;height:8px;border-radius:4px;background:${color};"></div></div><span style="font-family:monospace;font-size:12px;color:#374151;width:28px;text-align:right;">${s.score}</span><span style="font-size:11px;color:${color};width:80px;">${escapeHtml(s.level)}</span></div>`;
@@ -269,6 +322,14 @@ function exportPDF({ profileData, scores, generalScore, generalLevel, profileNam
     const color = colorMap[s.level] || "#888";
     return `<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px;"><span style="font-size:12px;color:#374151;font-weight:500;">${escapeHtml(s.name)}</span><span style="font-family:monospace;font-size:11px;color:${color};">${s.score} · ${escapeHtml(s.level)}</span></div>`;
   }).join("");
+  const contextSection = `<div class="section"><p class="label">Contexto profissional</p><div class="grid2"><div class="box"><h3>Objetivo de carreira</h3><p>${escapeHtml(profileData.careerGoal || "Não informado.")}</p></div><div class="box"><h3>Principal desafio atual</h3><p>${escapeHtml(profileData.currentChallenge || "Não informado.")}</p></div></div></div>`;
+  const radarSection = `<div class="section page-avoid"><p class="label">Mapa de competências</p><div class="grid2 align-center"><div>${radarSvg}</div><div><h2 style="margin-top:0;">Perfil predominante</h2><h3 style="font-size:18px;margin:0 0 8px;">${escapeHtml(profileName)}</h3><p>${escapeHtml(profileDesc)}</p><div class="tags">${profileTags}</div></div></div></div>`;
+  const competencyDetails = `<div class="section"><p class="label">Leitura por competência</p>${sorted.map((s) => {
+    const competency = COMPETENCIES.find((c) => c.id === s.id);
+    const color = colorMap[s.level] || "#888";
+    return `<div class="competency"><div><h3>${escapeHtml(s.name)}</h3><p>${escapeHtml(competency?.desc || "")}</p></div><div class="score" style="color:${color};">${s.score}<span>${escapeHtml(s.level)}</span></div></div>`;
+  }).join("")}</div>`;
+  const crossSection = crossResults.length > 0 ? `<div class="section"><p class="label">Padrões comportamentais</p><h2>Como suas competências se combinam</h2><div class="grid2">${crossResults.map((r) => `<div class="box"><h3>${escapeHtml(r.title)}</h3><p>${escapeHtml(r.interpretation)}</p></div>`).join("")}</div></div>` : "";
   const aiHtml = escapeHtml(aiText)
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/^## (.*)$/gm, "<h2>$1</h2>");
@@ -278,7 +339,7 @@ function exportPDF({ profileData, scores, generalScore, generalLevel, profileNam
     if (!pdi) return "";
     return `<div style="border:1px solid #e5e7eb;border-radius:6px;margin-bottom:14px;overflow:hidden;page-break-inside:avoid;"><div style="padding:14px 16px;background:#f9fafb;"><h3 style="font-size:14px;margin:0;color:#111827;">${escapeHtml(s.name)}</h3><p style="font-size:11px;color:#6b7280;margin:3px 0 0;">Plano de 90 dias</p></div>${[["30 dias", pdi.days30], ["60 dias", pdi.days60], ["90 dias", pdi.days90]].map(([label, items]) => `<div style="padding:14px 16px;border-top:1px solid #e5e7eb;"><p class="label" style="color:#6366f1;">${label}</p><ul style="margin:8px 0 0;padding-left:18px;">${items.map((item) => `<li style="font-size:12px;color:#374151;line-height:1.6;margin-bottom:4px;">${escapeHtml(item)}</li>`).join("")}</ul></div>`).join("")}</div>`;
   }).join("")}</div>` : "";
-  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Raio-X de Soft Skills — ${escapeHtml(profileData.name)}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#111827;background:#fff;margin:0;padding:40px;}@media print{body{padding:20px;}@page{margin:20mm;}}h1{font-size:28px;font-weight:600;margin:0 0 4px;}h2{font-size:16px;font-weight:600;margin:28px 0 12px;color:#111827;}h3{font-size:14px}.label{font-family:monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:#6b7280;margin:0 0 6px;}</style></head><body><div style="border-bottom:2px solid #e5e7eb;padding-bottom:20px;margin-bottom:28px;"><p class="label">Raio-X de Soft Skills · ${isComplete ? "Diagnóstico Completo" : "Diagnóstico Gratuito"}</p><h1>${escapeHtml(profileData.name)}</h1><p style="color:#6b7280;font-size:14px;margin:4px 0 0;">${escapeHtml(profileData.currentRole || "")} · ${escapeHtml(profileData.professionalLevel || "")} · ${escapeHtml(profileData.mainArea || "")}</p></div><div style="display:flex;gap:40px;margin-bottom:28px;flex-wrap:wrap;"><div><p class="label">Índice Geral</p><p style="font-size:48px;font-family:monospace;font-weight:700;color:#6366f1;margin:0;">${generalScore}</p><p style="font-size:13px;color:#6b7280;margin:4px 0 0;">Nível ${escapeHtml(generalLevel)}</p></div><div><p class="label">Perfil Predominante</p><p style="font-size:18px;font-weight:600;margin:0;">${escapeHtml(profileName)}</p><p style="font-size:13px;color:#6b7280;margin:4px 0 0;max-width:360px;">${escapeHtml(profileDesc)}</p></div></div><h2>Pontuação por Competência</h2>${barRows}<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:28px;"><div><h2 style="margin-top:0;">Forças</h2>${makeList(strengths)}</div><div><h2 style="margin-top:0;">Oportunidades</h2>${makeList(opportunities)}</div></div>${aiSection}${pdiSection}<div style="margin-top:40px;border-top:1px solid #e5e7eb;padding-top:16px;"><p style="font-size:11px;color:#9ca3af;">Gerado por Raio-X de Soft Skills · ${year} · raio-x-soft-skills-mvp.vercel.app</p></div></body></html>`;
+  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Raio-X de Soft Skills — ${escapeHtml(profileData.name)}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#111827;background:#fff;margin:0;padding:40px;}@media print{body{padding:20px;}@page{margin:18mm;}}h1{font-size:28px;font-weight:600;margin:0 0 4px;}h2{font-size:16px;font-weight:600;margin:22px 0 12px;color:#111827;}h3{font-size:14px;margin:0 0 6px}.label{font-family:monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:#6b7280;margin:0 0 8px;}.section{margin-top:30px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}.align-center{align-items:center}.box{border:1px solid #e5e7eb;background:#f9fafb;border-radius:6px;padding:16px;page-break-inside:avoid}.box p,.section p{font-size:13px;color:#4b5563;line-height:1.6;margin:0}.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}.tag{font-size:10px;color:#4f46e5;background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;padding:4px 8px}.competency{display:flex;justify-content:space-between;gap:18px;border-bottom:1px solid #e5e7eb;padding:12px 0;page-break-inside:avoid}.competency p{font-size:12px;color:#6b7280;line-height:1.5;margin:0}.score{font-family:monospace;font-size:22px;font-weight:700;text-align:right;min-width:70px}.score span{display:block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:10px;font-weight:500;margin-top:2px}.page-avoid{page-break-inside:avoid}</style></head><body><div style="border-bottom:2px solid #e5e7eb;padding-bottom:20px;margin-bottom:28px;"><p class="label">Raio-X de Soft Skills · ${isComplete ? "Diagnóstico Completo" : "Diagnóstico Gratuito"}</p><h1>${escapeHtml(profileData.name)}</h1><p style="color:#6b7280;font-size:14px;margin:4px 0 0;">${escapeHtml(profileData.currentRole || "")} · ${escapeHtml(profileData.professionalLevel || "")} · ${escapeHtml(profileData.mainArea || "")}</p></div><div style="display:flex;gap:40px;margin-bottom:28px;flex-wrap:wrap;"><div><p class="label">Índice Geral</p><p style="font-size:48px;font-family:monospace;font-weight:700;color:#6366f1;margin:0;">${generalScore}</p><p style="font-size:13px;color:#6b7280;margin:4px 0 0;">Nível ${escapeHtml(generalLevel)}</p></div><div><p class="label">Perfil Predominante</p><p style="font-size:18px;font-weight:600;margin:0;">${escapeHtml(profileName)}</p><p style="font-size:13px;color:#6b7280;margin:4px 0 0;max-width:360px;">${escapeHtml(profileDesc)}</p></div></div>${contextSection}${radarSection}<div class="section"><p class="label">Pontuação por competência</p>${barRows}</div><div class="grid2 section"><div><h2 style="margin-top:0;">Forças</h2>${makeList(strengths)}</div><div><h2 style="margin-top:0;">Oportunidades</h2>${makeList(opportunities)}</div></div>${crossSection}${competencyDetails}${aiSection}${pdiSection}<div style="margin-top:40px;border-top:1px solid #e5e7eb;padding-top:16px;"><p style="font-size:11px;color:#9ca3af;">Gerado por Raio-X do Designer · ${year} · www.raioxdodesigner.com</p></div></body></html>`;
   const w = window.open("", "_blank");
   if (!w) return;
   w.document.write(html);
@@ -552,7 +613,7 @@ function PrivacyPolicyPage() {
         ]} />
       </LegalSection>
       <LegalSection title="8. Armazenamento e retenção">
-        <p>Parte dos dados pode ser armazenada no Supabase. O navegador também usa localStorage para manter um identificador de sessão e salvar preferências essenciais da experiência.</p>
+        <p>Parte dos dados pode ser armazenada no Supabase. O navegador também usa localStorage para manter um identificador de sessão, salvar preferências essenciais e recuperar um diagnóstico em andamento.</p>
         <p>O relatório completo gerado por IA é exibido ao usuário no navegador e pode ser exportado em PDF. Pelo código atual, o texto do relatório completo não é salvo em banco de dados pelo Raio-X do Designer.</p>
         <div className="overflow-x-auto pt-2">
           <table className="w-full text-left text-xs border border-border">
@@ -627,7 +688,7 @@ function CookiesPage() {
     <LegalLayout title="Política de Cookies" eyebrow="Tecnologias de navegação">
       <LegalSection title="Resumo">
         <p>O site exibe um banner de preferências para que você possa aceitar, recusar ou configurar finalidades opcionais. O site não carrega ferramentas de analytics, como Google Analytics e Microsoft Clarity, antes da sua escolha.</p>
-        <p>O site utiliza localStorage para funcionalidades essenciais da experiência, como manter um identificador de sessão e salvar sua preferência de cookies.</p>
+        <p>O site utiliza localStorage para funcionalidades essenciais da experiência, como manter um identificador de sessão, recuperar um diagnóstico em andamento e salvar sua preferência de cookies.</p>
       </LegalSection>
       <LegalSection title="Tabela de tecnologias identificadas">
         <div className="overflow-x-auto">
@@ -636,6 +697,7 @@ function CookiesPage() {
             <tbody>
               {[
                 ["raio_x_session_id", "Raio-X do Designer", "Identificar a sessão do diagnóstico no navegador.", "Até remoção pelo usuário/navegador", "localStorage essencial"],
+                [PROGRESS_STORAGE_KEY, "Raio-X do Designer", "Salvar temporariamente o diagnóstico em andamento, respostas, estado do pagamento e relatório gerado para permitir continuidade.", "Até nova avaliação ou remoção pelo usuário/navegador", "localStorage essencial"],
                 [COOKIE_PREFERENCES_KEY, "Raio-X do Designer", "Salvar a escolha sobre cookies essenciais, analytics e marketing.", "Até alteração pelo usuário ou remoção pelo navegador", "localStorage de preferência"],
                 ["Google Analytics", "Google", "Mensurar visitas e uso agregado da experiência após aceite de Analytics.", "Definida pelo Google Analytics", "Analytics opcional"],
                 ["Microsoft Clarity", "Microsoft", "Entender navegação, cliques e mapas de calor para melhorar a experiência após aceite de Analytics.", "Definida pelo Microsoft Clarity", "Analytics opcional"],
@@ -1376,11 +1438,10 @@ function PdiCard({ competencyId }) {
 }
 
 // ─── UPGRADE SECTION ──────────────────────────────────────────────────────────
-function UpgradeSection({ profileData, scores, answers, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities, onAiReportGenerated }) {
-  const [phase, setPhase] = useState("preview");
+function UpgradeSection({ profileData, scores, answers, generalScore, generalLevel, profileName, profileDesc, profileCompetencies = [], strengths, opportunities, payment, setPayment, initialAiText = "", onAiReportGenerated }) {
+  const [phase, setPhase] = useState(() => (initialAiText ? "report" : payment?.paymentId ? "payment" : "preview"));
   const [lead, setLead] = useState({ name: profileData?.name || "", email: profileData?.email || "", whatsapp: profileData?.whatsapp || "", cpfCnpj: "" });
-  const [payment, setPayment] = useState(null);
-  const [aiText, setAiText] = useState("");
+  const [aiText, setAiText] = useState(initialAiText);
   const [aiError, setAiError] = useState(null);
   const inputCls = "w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors";
   const labelCls = "block text-xs text-muted-foreground font-mono uppercase tracking-wider mb-2";
@@ -1481,7 +1542,7 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
           </div>
           <a href={`https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent("Olá! Fiz o diagnóstico e gostaria de agendar minha sessão de mentoria.")}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity shrink-0"><MessageCircle className="w-4 h-4" /> Agendar mentoria</a>
         </div>
-        <button onClick={() => exportPDF({ profileData, scores, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities, aiText })} className="flex items-center gap-2 border border-border text-muted-foreground px-5 py-2.5 rounded-sm text-sm hover:border-primary hover:text-foreground transition-colors"><Download className="w-4 h-4" /> Exportar relatório completo</button>
+        <button onClick={() => exportPDF({ profileData, scores, generalScore, generalLevel, profileName, profileDesc, profileCompetencies, strengths, opportunities, crossResults: getCrossResults(scores), aiText })} className="flex items-center gap-2 border border-border text-muted-foreground px-5 py-2.5 rounded-sm text-sm hover:border-primary hover:text-foreground transition-colors"><Download className="w-4 h-4" /> Exportar relatório completo</button>
       </div>
     );
   }
@@ -1557,8 +1618,7 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
 }
 
 // ─── RESULTS ──────────────────────────────────────────────────────────────────
-function Results({ profileData, scores, answers, onReset }) {
-  const [fullReportText, setFullReportText] = useState("");
+function Results({ profileData, scores, answers, fullReportText = "", setFullReportText = () => {}, payment = null, setPayment = () => {}, onReset }) {
   const generalScore = Math.round(scores.reduce((s, c) => s + c.score, 0) / scores.length);
   const generalLevel = getLevel(generalScore);
   const profile = getProfileResult(scores);
@@ -1572,7 +1632,7 @@ function Results({ profileData, scores, answers, onReset }) {
       <nav className="flex items-center justify-between px-6 lg:px-12 py-5 border-b border-border">
         <img src="/raio-x-logo-branco.svg" alt="Raio-X do Designer" className="h-8 w-auto" />
         <div className="flex items-center gap-3">
-          <button onClick={() => exportPDF({ profileData, scores, generalScore, generalLevel, profileName: profile.name, profileDesc: profile.desc, strengths, opportunities, aiText: fullReportText })} className="flex items-center gap-2 border border-border text-muted-foreground px-4 py-2 rounded-sm text-sm hover:border-primary hover:text-foreground transition-colors"><Download className="w-3.5 h-3.5" /> {fullReportText ? "Exportar relatório completo" : "Exportar PDF"}</button>
+          <button onClick={() => exportPDF({ profileData, scores, generalScore, generalLevel, profileName: profile.name, profileDesc: profile.desc, profileCompetencies: profile.competencies, strengths, opportunities, crossResults, aiText: fullReportText })} className="flex items-center gap-2 border border-border text-muted-foreground px-4 py-2 rounded-sm text-sm hover:border-primary hover:text-foreground transition-colors"><Download className="w-3.5 h-3.5" /> {fullReportText ? "Exportar relatório completo" : "Exportar PDF"}</button>
           <button onClick={onReset} className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm transition-colors"><RefreshCw className="w-4 h-4" /> Nova avaliação</button>
         </div>
       </nav>
@@ -1638,7 +1698,7 @@ function Results({ profileData, scores, answers, onReset }) {
         )}
         <div>
           <div className="flex items-center gap-3 mb-8"><div className="flex-1 border-t border-border" /><span className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest px-3">Próximo nível</span><div className="flex-1 border-t border-border" /></div>
-          <UpgradeSection profileData={profileData} scores={scores} answers={answers} generalScore={generalScore} generalLevel={generalLevel} profileName={profile.name} profileDesc={profile.desc} strengths={strengths} opportunities={opportunities} onAiReportGenerated={setFullReportText} />
+          <UpgradeSection profileData={profileData} scores={scores} answers={answers} generalScore={generalScore} generalLevel={generalLevel} profileName={profile.name} profileDesc={profile.desc} profileCompetencies={profile.competencies} strengths={strengths} opportunities={opportunities} payment={payment} setPayment={setPayment} initialAiText={fullReportText} onAiReportGenerated={setFullReportText} />
         </div>
         <div className="border-t border-border pt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="text-xs text-muted-foreground space-y-2">
@@ -1708,14 +1768,32 @@ function FreeReportPreviewPage() {
 export default function App() {
   const LegalRoute = typeof window !== "undefined" ? LEGAL_ROUTES[window.location.pathname] : null;
   const PreviewRoute = typeof window !== "undefined" && import.meta.env.DEV && window.location.pathname === "/preview/relatorio-gratuito" ? FreeReportPreviewPage : null;
-  const [view, setView] = useState("landing");
+  const [initialProgress] = useState(() => readSavedProgress());
+  const paymentReturn = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("payment") === "success";
+  const restoredView =
+    paymentReturn && initialProgress?.profileData && initialProgress?.scores?.length
+      ? "results"
+      : initialProgress?.view || "landing";
+  const [view, setView] = useState(() => (restoredView === "results" && !initialProgress?.profileData ? "landing" : restoredView));
   const [sessionId] = useState(() => getSessionId());
-  const [profileData, setProfileData] = useState(null);
-  const [answers, setAnswers] = useState({});
-  const [scores, setScores] = useState([]);
+  const [profileData, setProfileData] = useState(() => initialProgress?.profileData || null);
+  const [answers, setAnswers] = useState(() => initialProgress?.answers || {});
+  const [scores, setScores] = useState(() => initialProgress?.scores || []);
+  const [payment, setPayment] = useState(() => initialProgress?.payment || null);
+  const [fullReportText, setFullReportText] = useState(() => initialProgress?.fullReportText || "");
   useEffect(() => {
     initializeAnalytics(sessionId);
   }, [sessionId]);
+  useEffect(() => {
+    if (typeof window !== "undefined" && paymentReturn) {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [paymentReturn]);
+  useEffect(() => {
+    const hasProgress = profileData || Object.keys(answers).length > 0 || scores.length > 0 || payment || fullReportText || view !== "landing";
+    if (!hasProgress) return;
+    writeSavedProgress({ view, sessionId, profileData, answers, scores, payment, fullReportText });
+  }, [view, sessionId, profileData, answers, scores, payment, fullReportText]);
   const navigateTo = (nextView) => {
     setView(nextView);
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
@@ -1728,7 +1806,7 @@ export default function App() {
     navigateTo("assessment");
   };
   const handleComplete = () => { setScores(calculateScores(answers)); navigateTo("results"); };
-  const handleReset = () => { navigateTo("landing"); setProfileData(null); setAnswers({}); setScores([]); };
+  const handleReset = () => { clearSavedProgress(); navigateTo("landing"); setProfileData(null); setAnswers({}); setScores([]); setPayment(null); setFullReportText(""); };
   if (PreviewRoute) return <><PreviewRoute /><CookieConsentBanner sessionId={sessionId} /></>;
   if (LegalRoute) return <><LegalRoute /><CookieConsentBanner sessionId={sessionId} /></>;
   return (
@@ -1737,7 +1815,7 @@ export default function App() {
       {view === "about" && <AboutPage onBack={() => navigateTo("landing")} onStart={() => navigateTo("profile")} />}
       {view === "profile" && <ProfileForm onSubmit={handleProfileSubmit} onBack={() => navigateTo("landing")} />}
       {view === "assessment" && <AssessmentForm answers={answers} onAnswer={handleAnswer} onComplete={handleComplete} onBack={() => navigateTo("profile")} />}
-      {view === "results" && profileData && <Results profileData={profileData} scores={scores} answers={answers} onReset={handleReset} />}
+      {view === "results" && profileData && <Results profileData={profileData} scores={scores} answers={answers} fullReportText={fullReportText} setFullReportText={setFullReportText} payment={payment} setPayment={setPayment} onReset={handleReset} />}
       <CookieConsentBanner sessionId={sessionId} />
     </>
   );
