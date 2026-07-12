@@ -537,7 +537,7 @@ function PrivacyPolicyPage() {
           "Vercel: hospedagem da aplicação e execução das funções serverless.",
           "Supabase: armazenamento de leads, feedbacks e manifestações de interesse, quando configurado.",
           "OpenRouter: geração do relatório narrativo com IA.",
-          "Asaas: processamento do pagamento do diagnóstico completo.",
+          "Asaas: processamento do pagamento do diagnóstico completo, incluindo CPF/CNPJ quando exigido para emissão da cobrança.",
           "WhatsApp: canal externo usado para dúvidas, contato e mentoria.",
           "Google Analytics 4: existe código opcional, mas ele não está inicializado na aplicação atual; se for ativado no futuro, deverá depender de gestão de cookies/preferências.",
           "Webhooks de feedback/interesse: existem variáveis opcionais no backend, mas não foram confirmadas como ativas em produção.",
@@ -1370,14 +1370,15 @@ function PdiCard({ competencyId }) {
 // ─── UPGRADE SECTION ──────────────────────────────────────────────────────────
 function UpgradeSection({ profileData, scores, answers, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities, onAiReportGenerated }) {
   const [phase, setPhase] = useState("preview");
-  const [lead, setLead] = useState({ name: profileData?.name || "", email: profileData?.email || "", whatsapp: profileData?.whatsapp || "" });
+  const [lead, setLead] = useState({ name: profileData?.name || "", email: profileData?.email || "", whatsapp: profileData?.whatsapp || "", cpfCnpj: "" });
   const [payment, setPayment] = useState(null);
   const [aiText, setAiText] = useState("");
   const [aiError, setAiError] = useState(null);
   const inputCls = "w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors";
   const labelCls = "block text-xs text-muted-foreground font-mono uppercase tracking-wider mb-2";
   const whatsappDigits = lead.whatsapp.replace(/\D/g, "");
-  const canSubmit = lead.name.trim() && lead.email.includes("@") && whatsappDigits.length >= 10;
+  const cpfCnpjDigits = lead.cpfCnpj.replace(/\D/g, "");
+  const canSubmit = lead.name.trim() && lead.email.includes("@") && whatsappDigits.length >= 10 && [11, 14].includes(cpfCnpjDigits.length);
   async function generateFullReport() {
     setPhase("loading");
     setAiError(null);
@@ -1516,11 +1517,12 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
               <div><label className={labelCls}>Nome completo</label><input type="text" value={lead.name} onChange={(e) => setLead((l) => ({ ...l, name: e.target.value }))} placeholder="Seu nome" className={inputCls} /></div>
               <div><label className={labelCls}>E-mail</label><input type="email" value={lead.email} onChange={(e) => setLead((l) => ({ ...l, email: e.target.value }))} placeholder="seu@email.com" className={inputCls} /></div>
               <div><label className={labelCls}>WhatsApp (com DDD)</label><input type="tel" value={lead.whatsapp} onChange={(e) => setLead((l) => ({ ...l, whatsapp: e.target.value }))} placeholder="(49) 98436-1569" className={inputCls} /></div>
+              <div><label className={labelCls}>CPF ou CNPJ</label><input type="text" inputMode="numeric" value={lead.cpfCnpj} onChange={(e) => setLead((l) => ({ ...l, cpfCnpj: e.target.value }))} placeholder="Somente números" className={inputCls} /></div>
               <div className="flex gap-3 pt-2">
                 <button onClick={handleSubmit} disabled={!canSubmit} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"><Sparkles className="w-4 h-4" /> Pagar com Asaas</button>
                 <button onClick={() => setPhase("preview")} className="px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors">Cancelar</button>
               </div>
-              <p className="text-[10px] text-muted-foreground">Pagamento único de {PRODUCT_PRICE}. Você será levado para o ambiente seguro do Asaas.</p>
+              <p className="text-[10px] text-muted-foreground">Pagamento único de {PRODUCT_PRICE}. CPF/CNPJ é exigido pelo Asaas para gerar a cobrança e não é salvo pelo Raio-X do Designer.</p>
             </div>
           </div>
         )}

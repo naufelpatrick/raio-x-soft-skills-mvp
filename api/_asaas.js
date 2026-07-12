@@ -18,6 +18,10 @@ export function sanitizePhone(value = "") {
   return String(value).replace(/\D/g, "");
 }
 
+export function sanitizeCpfCnpj(value = "") {
+  return String(value).replace(/\D/g, "");
+}
+
 async function requestAsaas(path, { method = "GET", body } = {}) {
   if (!isAsaasConfigured()) {
     throw new Error("ASAAS_API_KEY não configurada.");
@@ -42,14 +46,16 @@ async function requestAsaas(path, { method = "GET", body } = {}) {
   return data;
 }
 
-export async function createAsaasCustomer({ name, email, whatsapp }) {
+export async function createAsaasCustomer({ name, email, whatsapp, cpfCnpj }) {
   const phone = sanitizePhone(whatsapp);
+  const document = sanitizeCpfCnpj(cpfCnpj);
 
   return requestAsaas("/customers", {
     method: "POST",
     body: {
       name,
       email,
+      cpfCnpj: document || undefined,
       mobilePhone: phone || undefined,
       notificationDisabled: false,
     },

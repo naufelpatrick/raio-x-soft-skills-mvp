@@ -7,7 +7,7 @@ import {
   requireJson,
   requirePost,
 } from "./_security.js";
-import { createAsaasCustomer, createAsaasPayment } from "./_asaas.js";
+import { createAsaasCustomer, createAsaasPayment, sanitizeCpfCnpj } from "./_asaas.js";
 import { updateSupabaseRecord } from "./_supabase.js";
 
 const PRODUCT_VALUE = 49.9;
@@ -55,12 +55,13 @@ export default async function handler(req, res) {
       packageRequestedAt: now,
       lastSeenAt: now,
     };
+    const cpfCnpj = sanitizeCpfCnpj(body.cpfCnpj);
 
-    if (!lead.sessionId || !lead.name || !emailPattern.test(lead.email) || !lead.contactConsent) {
+    if (!lead.sessionId || !lead.name || !emailPattern.test(lead.email) || !lead.contactConsent || ![11, 14].includes(cpfCnpj.length)) {
       return res.status(400).json({ error: "Dados incompletos para criar o pagamento." });
     }
 
-    const customer = await createAsaasCustomer(lead);
+    const customer = await createAsaasCustomer({ ...lead, cpfCnpj });
     const payment = await createAsaasPayment({
       customerId: customer.id,
       sessionId: lead.sessionId,
