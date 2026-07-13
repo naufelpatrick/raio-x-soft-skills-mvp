@@ -1094,7 +1094,7 @@ function Landing({ onStart }) {
               <div className="w-9 h-9 rounded-sm flex items-center justify-center mb-6" style={{ backgroundColor: "rgba(251,191,36,0.1)" }}><Calendar className="w-4 h-4" style={{ color: "#FBBF24" }} /></div>
               <p className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: "#FBBF24" }}>Entregável 03</p>
               <h3 className="text-base font-medium mb-3">1 Sessão de Mentoria ao Vivo</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed flex-1">30 minutos com Patrick ou Carlos — designers e mentores com mais de 20 anos de experiência combinada. Você traz o diagnóstico, eles ajudam a transformar em decisões reais sobre sua carreira.</p>
+              <p className="text-sm text-muted-foreground leading-relaxed flex-1">30 minutos com um de nossos mentores. Você traz o diagnóstico, eles orientam como transformar em decisões reais sobre sua carreira.</p>
               <ul className="mt-6 space-y-2">{["30 minutos ao vivo via Google Meet", "Com Patrick Naufel ou Carlos Alencar", "Agendamento flexível via WhatsApp"].map((item) => (<li key={item} className="flex items-start gap-2 text-xs text-muted-foreground"><Check className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: "#FBBF24" }} /> {item}</li>))}</ul>
             </div>
           </div>
