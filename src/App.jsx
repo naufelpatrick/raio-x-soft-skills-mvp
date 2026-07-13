@@ -1094,8 +1094,8 @@ function Landing({ onStart }) {
               <div className="w-9 h-9 rounded-sm flex items-center justify-center mb-6" style={{ backgroundColor: "rgba(251,191,36,0.1)" }}><Calendar className="w-4 h-4" style={{ color: "#FBBF24" }} /></div>
               <p className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: "#FBBF24" }}>Entregável 03</p>
               <h3 className="text-base font-medium mb-3">1 Sessão de Mentoria ao Vivo</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed flex-1">60 minutos com Patrick ou Carlos — designers e mentores com mais de 20 anos de experiência combinada. Você traz o diagnóstico, eles ajudam a transformar em decisões reais sobre sua carreira.</p>
-              <ul className="mt-6 space-y-2">{["60 minutos ao vivo via Google Meet", "Com Patrick Naufel ou Carlos Alencar", "Agendamento flexível via WhatsApp"].map((item) => (<li key={item} className="flex items-start gap-2 text-xs text-muted-foreground"><Check className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: "#FBBF24" }} /> {item}</li>))}</ul>
+              <p className="text-sm text-muted-foreground leading-relaxed flex-1">30 minutos com Patrick ou Carlos — designers e mentores com mais de 20 anos de experiência combinada. Você traz o diagnóstico, eles ajudam a transformar em decisões reais sobre sua carreira.</p>
+              <ul className="mt-6 space-y-2">{["30 minutos ao vivo via Google Meet", "Com Patrick Naufel ou Carlos Alencar", "Agendamento flexível via WhatsApp"].map((item) => (<li key={item} className="flex items-start gap-2 text-xs text-muted-foreground"><Check className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: "#FBBF24" }} /> {item}</li>))}</ul>
             </div>
           </div>
           <div className="mt-px bg-card grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-6 px-8 py-6 border border-t-0" style={{ borderColor: "var(--border)" }}>
@@ -1592,7 +1592,7 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
   const benefits = [
     { Icon: Brain, label: "Análise narrativa com IA", desc: "Diagnóstico aprofundado gerado pelo Claude com base no seu perfil completo." },
     { Icon: Target, label: "PDI 30 / 60 / 90 dias", desc: "Plano de Desenvolvimento Individual com ações concretas por competência." },
-    { Icon: Calendar, label: "1 sessão de mentoria", desc: "60 minutos ao vivo para transformar o diagnóstico em evolução real." },
+    { Icon: Calendar, label: "1 sessão de mentoria", desc: "30 minutos ao vivo para transformar o diagnóstico em evolução real." },
   ];
   if (["creating-payment", "checking-payment", "loading"].includes(phase)) {
     const loadingTitle =
@@ -1632,7 +1632,7 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
         <div className="rounded-sm border border-border bg-card p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-start gap-4">
             <div className="w-9 h-9 bg-primary/10 rounded-sm flex items-center justify-center shrink-0"><Calendar className="w-4 h-4 text-primary" /></div>
-            <div><p className="text-sm font-medium mb-1">1 sessão de mentoria ao vivo</p><p className="text-xs text-muted-foreground leading-relaxed max-w-sm">60 minutos com Patrick ou Carlos para aprofundar seu diagnóstico e definir os próximos passos com clareza.</p></div>
+            <div><p className="text-sm font-medium mb-1">1 sessão de mentoria ao vivo</p><p className="text-xs text-muted-foreground leading-relaxed max-w-sm">30 minutos com Patrick ou Carlos para aprofundar seu diagnóstico e definir os próximos passos com clareza.</p></div>
           </div>
           <a href={`https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent("Olá! Fiz o diagnóstico e gostaria de agendar minha sessão de mentoria.")}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity shrink-0"><MessageCircle className="w-4 h-4" /> Agendar mentoria</a>
         </div>
