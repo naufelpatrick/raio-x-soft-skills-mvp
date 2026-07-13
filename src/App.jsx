@@ -375,6 +375,49 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function renderPdfInlineMarkdown(value) {
+  return escapeHtml(value).replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+}
+
+function renderAiReportHtml(value) {
+  const lines = String(value || "").split("\n");
+  const html = [];
+  let listItems = [];
+
+  const flushList = () => {
+    if (listItems.length === 0) return;
+    html.push(`<ul>${listItems.map((item) => `<li>${renderPdfInlineMarkdown(item)}</li>`).join("")}</ul>`);
+    listItems = [];
+  };
+
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      flushList();
+      return;
+    }
+
+    const heading = trimmed.match(/^#{1,3}\s+(.+)$/);
+    if (heading) {
+      flushList();
+      html.push(`<h2>${renderPdfInlineMarkdown(heading[1])}</h2>`);
+      return;
+    }
+
+    const bullet = trimmed.match(/^[-*]\s+(.+)$/);
+    if (bullet) {
+      listItems.push(bullet[1]);
+      return;
+    }
+
+    flushList();
+    html.push(`<p>${renderPdfInlineMarkdown(trimmed)}</p>`);
+  });
+
+  flushList();
+  return html.join("");
+}
+
 function exportPDF({ profileData, scores, generalScore, generalLevel, profileName, profileDesc, profileCompetencies = [], strengths, opportunities, crossResults = [], aiText = "" }) {
   const sorted = [...scores].sort((a, b) => b.score - a.score);
   const year = new Date().getFullYear();
@@ -424,21 +467,19 @@ function exportPDF({ profileData, scores, generalScore, generalLevel, profileNam
     return `<div class="competency"><div><h3>${escapeHtml(s.name)}</h3><p>${escapeHtml(competency?.desc || "")}</p></div><div class="score" style="color:${color};">${s.score}<span>${escapeHtml(s.level)}</span></div></div>`;
   }).join("")}</div>`;
   const crossSection = crossResults.length > 0 ? `<div class="section"><p class="label">Padrões comportamentais</p><h2>Como suas competências se combinam</h2><div class="grid2">${crossResults.map((r) => `<div class="box"><h3>${escapeHtml(r.title)}</h3><p>${escapeHtml(r.interpretation)}</p></div>`).join("")}</div></div>` : "";
-  const aiHtml = escapeHtml(aiText)
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    .replace(/^## (.*)$/gm, "<h2>$1</h2>");
-  const aiSection = aiText ? `<div style="margin-top:32px;padding:20px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;"><p class="label">Análise com IA · Claude</p><div style="font-size:13px;color:#374151;line-height:1.7;white-space:pre-wrap;">${aiHtml}</div></div>` : "";
-  const pdiSection = aiText && opportunities.length > 0 ? `<div style="margin-top:32px;page-break-inside:avoid;"><p class="label">Plano de Desenvolvimento Individual</p><h2>PDI 30 / 60 / 90 dias</h2><p style="font-size:13px;color:#6b7280;line-height:1.6;margin:0 0 16px;">Ações concretas para as suas maiores oportunidades de crescimento.</p>${opportunities.map((s) => {
+  const aiSection = aiText ? `<div class="section ai-card"><p class="label">Análise com IA · Claude</p><div class="ai-content">${renderAiReportHtml(aiText)}</div></div>` : "";
+  const pdiSection = aiText && opportunities.length > 0 ? `<div class="section pdi-section"><p class="label">Plano de Desenvolvimento Individual</p><h2>PDI 30 / 60 / 90 dias</h2><p style="font-size:13px;color:#6b7280;line-height:1.6;margin:0 0 16px;">Ações concretas para as suas maiores oportunidades de crescimento.</p>${opportunities.map((s) => {
     const pdi = PDI_ACTIONS[s.id];
     if (!pdi) return "";
-    return `<div style="border:1px solid #e5e7eb;border-radius:6px;margin-bottom:14px;overflow:hidden;page-break-inside:avoid;"><div style="padding:14px 16px;background:#f9fafb;"><h3 style="font-size:14px;margin:0;color:#111827;">${escapeHtml(s.name)}</h3><p style="font-size:11px;color:#6b7280;margin:3px 0 0;">Plano de 90 dias</p></div>${[["30 dias", pdi.days30], ["60 dias", pdi.days60], ["90 dias", pdi.days90]].map(([label, items]) => `<div style="padding:14px 16px;border-top:1px solid #e5e7eb;"><p class="label" style="color:#6366f1;">${label}</p><ul style="margin:8px 0 0;padding-left:18px;">${items.map((item) => `<li style="font-size:12px;color:#374151;line-height:1.6;margin-bottom:4px;">${escapeHtml(item)}</li>`).join("")}</ul></div>`).join("")}</div>`;
+    return `<div class="pdi-card"><div class="pdi-card-header"><h3>${escapeHtml(s.name)}</h3><p>Plano de 90 dias</p></div>${[["30 dias", pdi.days30], ["60 dias", pdi.days60], ["90 dias", pdi.days90]].map(([label, items]) => `<div class="pdi-period"><p class="label" style="color:#6366f1;">${label}</p><ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>`).join("")}</div>`;
   }).join("")}</div>` : "";
-  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Raio-X de Soft Skills — ${escapeHtml(profileData.name)}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#111827;background:#fff;margin:0;padding:40px;}@media print{body{padding:20px;}@page{margin:18mm;}}h1{font-size:28px;font-weight:600;margin:0 0 4px;}h2{font-size:16px;font-weight:600;margin:22px 0 12px;color:#111827;}h3{font-size:14px;margin:0 0 6px}.label{font-family:monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:#6b7280;margin:0 0 8px;}.section{margin-top:30px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}.align-center{align-items:center}.box{border:1px solid #e5e7eb;background:#f9fafb;border-radius:6px;padding:16px;page-break-inside:avoid}.box p,.section p{font-size:13px;color:#4b5563;line-height:1.6;margin:0}.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}.tag{font-size:10px;color:#4f46e5;background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;padding:4px 8px}.competency{display:flex;justify-content:space-between;gap:18px;border-bottom:1px solid #e5e7eb;padding:12px 0;page-break-inside:avoid}.competency p{font-size:12px;color:#6b7280;line-height:1.5;margin:0}.score{font-family:monospace;font-size:22px;font-weight:700;text-align:right;min-width:70px}.score span{display:block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:10px;font-weight:500;margin-top:2px}.page-avoid{page-break-inside:avoid}</style></head><body><div style="border-bottom:2px solid #e5e7eb;padding-bottom:20px;margin-bottom:28px;"><p class="label">Raio-X de Soft Skills · ${isComplete ? "Diagnóstico Completo" : "Diagnóstico Gratuito"}</p><h1>${escapeHtml(profileData.name)}</h1><p style="color:#6b7280;font-size:14px;margin:4px 0 0;">${escapeHtml(profileData.currentRole || "")} · ${escapeHtml(profileData.professionalLevel || "")} · ${escapeHtml(profileData.mainArea || "")}</p></div><div style="display:flex;gap:40px;margin-bottom:28px;flex-wrap:wrap;"><div><p class="label">Índice Geral</p><p style="font-size:48px;font-family:monospace;font-weight:700;color:#6366f1;margin:0;">${generalScore}</p><p style="font-size:13px;color:#6b7280;margin:4px 0 0;">Nível ${escapeHtml(generalLevel)}</p></div><div><p class="label">Perfil Predominante</p><p style="font-size:18px;font-weight:600;margin:0;">${escapeHtml(profileName)}</p><p style="font-size:13px;color:#6b7280;margin:4px 0 0;max-width:360px;">${escapeHtml(profileDesc)}</p></div></div>${contextSection}${radarSection}<div class="section"><p class="label">Pontuação por competência</p>${barRows}</div><div class="grid2 section"><div><h2 style="margin-top:0;">Forças</h2>${makeList(strengths)}</div><div><h2 style="margin-top:0;">Oportunidades</h2>${makeList(opportunities)}</div></div>${crossSection}${competencyDetails}${aiSection}${pdiSection}<div style="margin-top:40px;border-top:1px solid #e5e7eb;padding-top:16px;"><p style="font-size:11px;color:#9ca3af;">Gerado por Raio-X do Designer · ${year} · www.raioxdodesigner.com</p></div></body></html>`;
+  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Raio-X de Soft Skills — ${escapeHtml(profileData.name)}</title><style>*{box-sizing:border-box;}html,body{overflow:visible!important;}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#111827;background:#fff;margin:0;padding:40px;}@page{margin:18mm;}@media print{body{padding:0;}a{color:inherit;text-decoration:none;}}h1{font-size:28px;font-weight:600;margin:0 0 4px;}h2{font-size:16px;font-weight:600;margin:22px 0 12px;color:#111827;}h3{font-size:14px;margin:0 0 6px}.label{font-family:monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:#6b7280;margin:0 0 8px;}.section{margin-top:30px;break-inside:auto;page-break-inside:auto;overflow:visible;}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}.align-center{align-items:center}.box{border:1px solid #e5e7eb;background:#f9fafb;border-radius:6px;padding:16px;break-inside:avoid;page-break-inside:avoid}.box p,.section p{font-size:13px;color:#4b5563;line-height:1.6;margin:0}.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}.tag{font-size:10px;color:#4f46e5;background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;padding:4px 8px}.competency{display:flex;justify-content:space-between;gap:18px;border-bottom:1px solid #e5e7eb;padding:12px 0;break-inside:avoid;page-break-inside:avoid}.competency p{font-size:12px;color:#6b7280;line-height:1.5;margin:0}.score{font-family:monospace;font-size:22px;font-weight:700;text-align:right;min-width:70px}.score span{display:block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:10px;font-weight:500;margin-top:2px}.page-avoid{break-inside:avoid;page-break-inside:avoid}.ai-card{padding:20px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;break-inside:auto;page-break-inside:auto;overflow:visible}.ai-content{font-size:13px;color:#374151;line-height:1.7;overflow:visible}.ai-content h2{break-after:avoid;page-break-after:avoid;margin-top:18px}.ai-content p{margin:0 0 10px;orphans:3;widows:3}.ai-content ul{margin:8px 0 14px;padding-left:18px}.ai-content li{font-size:13px;color:#374151;line-height:1.65;margin-bottom:5px;break-inside:avoid;page-break-inside:avoid}.pdi-section{break-inside:auto;page-break-inside:auto;overflow:visible}.pdi-card{border:1px solid #e5e7eb;border-radius:6px;margin-bottom:14px;overflow:visible;break-inside:auto;page-break-inside:auto}.pdi-card-header{padding:14px 16px;background:#f9fafb;break-after:avoid;page-break-after:avoid}.pdi-card-header h3{font-size:14px;margin:0;color:#111827}.pdi-card-header p{font-size:11px;color:#6b7280;margin:3px 0 0}.pdi-period{padding:14px 16px;border-top:1px solid #e5e7eb;break-inside:avoid;page-break-inside:avoid}.pdi-period ul{margin:8px 0 0;padding-left:18px}.pdi-period li{font-size:12px;color:#374151;line-height:1.6;margin-bottom:4px}.export-complete-marker{margin-top:40px;border-top:1px solid #e5e7eb;padding-top:16px;break-inside:avoid;page-break-inside:avoid}</style></head><body><div style="border-bottom:2px solid #e5e7eb;padding-bottom:20px;margin-bottom:28px;"><p class="label">Raio-X de Soft Skills · ${isComplete ? "Diagnóstico Completo" : "Diagnóstico Gratuito"}</p><h1>${escapeHtml(profileData.name)}</h1><p style="color:#6b7280;font-size:14px;margin:4px 0 0;">${escapeHtml(profileData.currentRole || "")} · ${escapeHtml(profileData.professionalLevel || "")} · ${escapeHtml(profileData.mainArea || "")}</p></div><div style="display:flex;gap:40px;margin-bottom:28px;flex-wrap:wrap;"><div><p class="label">Índice Geral</p><p style="font-size:48px;font-family:monospace;font-weight:700;color:#6366f1;margin:0;">${generalScore}</p><p style="font-size:13px;color:#6b7280;margin:4px 0 0;">Nível ${escapeHtml(generalLevel)}</p></div><div><p class="label">Perfil Predominante</p><p style="font-size:18px;font-weight:600;margin:0;">${escapeHtml(profileName)}</p><p style="font-size:13px;color:#6b7280;margin:4px 0 0;max-width:360px;">${escapeHtml(profileDesc)}</p></div></div>${contextSection}${radarSection}<div class="section"><p class="label">Pontuação por competência</p>${barRows}</div><div class="grid2 section"><div><h2 style="margin-top:0;">Forças</h2>${makeList(strengths)}</div><div><h2 style="margin-top:0;">Oportunidades</h2>${makeList(opportunities)}</div></div>${crossSection}${competencyDetails}${aiSection}${pdiSection}<div class="export-complete-marker"><p style="font-size:11px;color:#9ca3af;">Gerado por Raio-X do Designer · ${year} · www.raioxdodesigner.com</p><p style="font-size:10px;color:#c4c4c4;margin-top:6px;">Fim do ${isComplete ? "relatório completo" : "relatório gratuito"}</p></div></body></html>`;
   const w = window.open("", "_blank");
   if (!w) return;
   w.document.write(html);
   w.document.close();
-  setTimeout(() => w.print(), 400);
+  w.focus();
+  setTimeout(() => w.print(), 700);
 }
 
 // ─── SHARED NAV ───────────────────────────────────────────────────────────────
