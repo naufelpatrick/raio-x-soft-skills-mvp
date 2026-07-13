@@ -23,6 +23,20 @@ create table if not exists public.validation_interest (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.nps_responses (
+  id uuid primary key default gen_random_uuid(),
+  session_id text not null,
+  name text not null,
+  email text not null,
+  score integer not null check (score between 0 and 10),
+  category text not null check (category in ('detractor', 'neutral', 'promoter')),
+  comment text,
+  source text not null default 'paid_report',
+  report_type text not null default 'paid',
+  submitted_at timestamptz not null,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists public.leads (
   id uuid primary key default gen_random_uuid(),
   session_id text not null unique,
@@ -65,6 +79,7 @@ on public.leads (asaas_payment_id);
 
 alter table public.validation_feedback enable row level security;
 alter table public.validation_interest enable row level security;
+alter table public.nps_responses enable row level security;
 alter table public.leads enable row level security;
 
 create policy "Allow anonymous feedback insert"
@@ -75,6 +90,14 @@ with check (true);
 
 create policy "Allow anonymous interest insert"
 on public.validation_interest
+for insert
+to anon
+with check (true);
+
+drop policy if exists "Allow anonymous nps insert" on public.nps_responses;
+
+create policy "Allow anonymous nps insert"
+on public.nps_responses
 for insert
 to anon
 with check (true);

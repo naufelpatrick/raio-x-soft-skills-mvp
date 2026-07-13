@@ -203,6 +203,19 @@ async function checkPaymentStatus({ paymentId, sessionId }) {
   return result;
 }
 
+async function submitNpsResponse(npsData) {
+  const response = await fetch("/api/submit-nps", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(npsData),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || result.saved !== true) {
+    throw new Error(result.error || "Não foi possível enviar seu feedback.");
+  }
+  return result;
+}
+
 // ─── SIMPLE MARKDOWN RENDERER ────────────────────────────────────────────────
 function renderInlineMarkdown(text) {
   return String(text).split(/(\*\*.*?\*\*)/g).map((part, index) => {
@@ -1752,6 +1765,125 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
   );
 }
 
+function PaidReportNps({ profileData }) {
+  const storageKey = `raio_x_nps_paid_${profileData?.sessionId || "anonymous"}`;
+  const [score, setScore] = useState(null);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem(storageKey) === "submitted";
+  });
+  const [error, setError] = useState("");
+
+  async function handleSubmitNps() {
+    if (score === null || submitting || submitted) return;
+    setSubmitting(true);
+    setError("");
+
+    try {
+      if (!String(profileData?.sessionId || "").startsWith("preview-")) {
+        await submitNpsResponse({
+          sessionId: profileData?.sessionId,
+          name: profileData?.name,
+          email: profileData?.email,
+          score,
+          comment,
+          source: "paid_report",
+          reportType: "paid",
+        });
+      }
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(storageKey, "submitted");
+      }
+      setSubmitted(true);
+    } catch (submitError) {
+      setError(submitError.message || "Não foi possível enviar seu feedback agora.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (submitted) {
+    return (
+      <div className="rounded-sm border border-primary/40 bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.18)]">
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 rounded-sm flex items-center justify-center shrink-0" style={{ backgroundColor: "#FBBF24", color: "#0B1120" }}>
+            <Check className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold mb-1 text-slate-950">Obrigado pelo feedback.</p>
+            <p className="text-xs text-slate-600 leading-relaxed">Sua resposta ajuda a melhorar o Raio-X para outros designers.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-sm border border-primary/40 bg-white p-6 lg:p-7 text-slate-950 shadow-[0_24px_80px_rgba(0,0,0,0.18)]">
+      <div className="flex items-start justify-between gap-5 flex-wrap mb-5">
+        <div>
+          <p className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: "#B45309" }}>Feedback rápido</p>
+          <h3 className="text-xl mb-2" style={{ fontFamily: "var(--font-display)" }}>Como foi sua experiência?</h3>
+          <p className="text-sm text-slate-600 leading-relaxed">De 0 a 10, o quanto você recomendaria o Raio-X do Designer para outro designer?</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-11 gap-1.5 mb-5" role="radiogroup" aria-label="Nota NPS">
+        {Array.from({ length: 11 }, (_, value) => (
+          <button
+            key={value}
+            type="button"
+            role="radio"
+            aria-checked={score === value}
+            onClick={() => setScore(value)}
+            className={`h-9 rounded-sm border text-xs font-mono transition-all ${
+              score === value
+                ? "border-slate-950 bg-slate-950 text-white shadow-sm"
+                : "border-slate-300 text-slate-600 hover:border-slate-950 hover:text-slate-950 hover:bg-slate-50"
+            }`}
+          >
+            {value}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex justify-between text-[10px] text-slate-500 font-mono uppercase tracking-widest mb-5">
+        <span>Pouco provável</span>
+        <span>Muito provável</span>
+      </div>
+
+      {score !== null && (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs text-slate-500 font-mono uppercase tracking-wider mb-2">Conta pra gente o principal motivo da sua nota?</label>
+            <textarea
+              value={comment}
+              onChange={(event) => setComment(event.target.value)}
+              rows={4}
+              maxLength={1200}
+              placeholder="Opcional, mas ajuda muito."
+              className="w-full bg-slate-50 border border-slate-300 rounded-sm px-4 py-3 text-sm text-slate-950 placeholder:text-slate-400 focus:outline-none focus:border-slate-950 transition-colors resize-none"
+            />
+          </div>
+          {error && <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-sm text-xs text-red-400">{error}</div>}
+          <button
+            type="button"
+            onClick={handleSubmitNps}
+            disabled={submitting}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-sm text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: "#FBBF24", color: "#0B1120" }}
+          >
+            {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+            Enviar feedback
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── RESULTS ──────────────────────────────────────────────────────────────────
 function Results({ profileData, scores, answers, fullReportText = "", setFullReportText = () => {}, payment = null, setPayment = () => {}, onReset }) {
   const generalScore = Math.round(scores.reduce((s, c) => s + c.score, 0) / scores.length);
@@ -1835,6 +1967,7 @@ function Results({ profileData, scores, answers, fullReportText = "", setFullRep
           <div className="flex items-center gap-3 mb-8"><div className="flex-1 border-t border-border" /><span className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest px-3">Próximo nível</span><div className="flex-1 border-t border-border" /></div>
           <UpgradeSection profileData={profileData} scores={scores} answers={answers} generalScore={generalScore} generalLevel={generalLevel} profileName={profile.name} profileDesc={profile.desc} profileCompetencies={profile.competencies} strengths={strengths} opportunities={opportunities} payment={payment} setPayment={setPayment} initialAiText={fullReportText} onAiReportGenerated={setFullReportText} />
         </div>
+        {fullReportText && <PaidReportNps profileData={profileData} />}
         <div className="border-t border-border pt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="text-xs text-muted-foreground space-y-2">
             <p>Raio-X do Designer · {new Date().getFullYear()} · <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-foreground transition-colors">{CONTACT_EMAIL}</a></p>
@@ -1900,9 +2033,45 @@ function FreeReportPreviewPage() {
   return <Results profileData={profileData} scores={scores} answers={answers} onReset={() => { window.location.href = "/"; }} />;
 }
 
+function PaidReportPreviewPage() {
+  const { profileData, answers, scores } = createDemoFreeReportData();
+  const paidProfileData = {
+    ...profileData,
+    sessionId: "preview-relatorio-pago",
+    purchaseStatus: "purchased",
+    purchasedPackage: true,
+  };
+  const fullReportText = `## Síntese profissional
+Seu diagnóstico revela um perfil com boa capacidade analítica, repertório de comunicação e intenção clara de evoluir profissionalmente. O ponto mais importante agora é transformar essa clareza em prática contínua.
+
+## Recomendações prioritárias
+- Use seu PDI como guia semanal de evolução.
+- Escolha uma competência por vez para praticar com intenção.
+- Registre pequenas evidências de progresso ao longo dos próximos 30, 60 e 90 dias.
+
+## Conclusão
+O valor do diagnóstico aparece quando ele vira decisão. Use este relatório como um mapa para ganhar foco, confiança e consistência na sua evolução como designer.`;
+
+  return (
+    <Results
+      profileData={paidProfileData}
+      scores={scores}
+      answers={answers}
+      fullReportText={fullReportText}
+      payment={{ paymentId: "preview-payment", paid: true }}
+      onReset={() => { window.location.href = "/"; }}
+    />
+  );
+}
+
 export default function App() {
   const LegalRoute = typeof window !== "undefined" ? LEGAL_ROUTES[window.location.pathname] : null;
-  const PreviewRoute = typeof window !== "undefined" && import.meta.env.DEV && window.location.pathname === "/preview/relatorio-gratuito" ? FreeReportPreviewPage : null;
+  const PreviewRoute = typeof window !== "undefined" && import.meta.env.DEV
+    ? {
+      "/preview/relatorio-gratuito": FreeReportPreviewPage,
+      "/preview/relatorio-pago": PaidReportPreviewPage,
+    }[window.location.pathname]
+    : null;
   const [initialProgress] = useState(() => readSavedProgress());
   const paymentReturn = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("payment") === "success";
   const restoredView =
