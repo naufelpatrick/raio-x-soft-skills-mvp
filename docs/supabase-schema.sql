@@ -37,6 +37,15 @@ create table if not exists public.nps_responses (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.funnel_events (
+  id uuid primary key default gen_random_uuid(),
+  session_id text not null,
+  event_name text not null,
+  step text,
+  metadata jsonb,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists public.leads (
   id uuid primary key default gen_random_uuid(),
   session_id text not null unique,
@@ -80,6 +89,7 @@ on public.leads (asaas_payment_id);
 alter table public.validation_feedback enable row level security;
 alter table public.validation_interest enable row level security;
 alter table public.nps_responses enable row level security;
+alter table public.funnel_events enable row level security;
 alter table public.leads enable row level security;
 
 create policy "Allow anonymous feedback insert"
@@ -98,6 +108,14 @@ drop policy if exists "Allow anonymous nps insert" on public.nps_responses;
 
 create policy "Allow anonymous nps insert"
 on public.nps_responses
+for insert
+to anon
+with check (true);
+
+drop policy if exists "Allow anonymous funnel event insert" on public.funnel_events;
+
+create policy "Allow anonymous funnel event insert"
+on public.funnel_events
 for insert
 to anon
 with check (true);

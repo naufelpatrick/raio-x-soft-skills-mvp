@@ -159,6 +159,28 @@ function getSessionId() {
   return nextId;
 }
 
+function trackFunnelEvent({ sessionId, eventName, step = "", metadata = {} }) {
+  if (!sessionId || String(sessionId).startsWith("preview-")) return;
+
+  const payload = JSON.stringify({ sessionId, eventName, step, metadata });
+
+  try {
+    if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+      const blob = new Blob([payload], { type: "application/json" });
+      if (navigator.sendBeacon("/api/track-funnel-event", blob)) return;
+    }
+  } catch {
+    // Se o browser bloquear beacon, seguimos para fetch abaixo.
+  }
+
+  fetch("/api/track-funnel-event", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: payload,
+    keepalive: true,
+  }).catch(() => {});
+}
+
 async function submitLead(leadData) {
   try {
     const response = await fetch("/api/submit-lead", {
@@ -1414,10 +1436,22 @@ function AboutPage({ onBack, onStart }) {
 }
 
 // ─── PROFILE FORM ─────────────────────────────────────────────────────────────
-function ProfileForm({ onSubmit, onBack }) {
+function ProfileForm({ onSubmit, onBack, onFieldStart = () => {} }) {
   const [form, setForm] = useState({ name: "", email: "", whatsapp: "", contactConsent: false, marketingConsent: false, age: "", experience: "", currentRole: "", professionalLevel: "", mainArea: "", careerGoal: "", currentChallenge: "" });
-  const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
-  const updateChecked = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.checked }));
+  const [fieldStarted, setFieldStarted] = useState(false);
+  const markFieldStarted = (field) => {
+    if (fieldStarted) return;
+    setFieldStarted(true);
+    onFieldStart(field);
+  };
+  const update = (field) => (e) => {
+    markFieldStarted(field);
+    setForm((f) => ({ ...f, [field]: e.target.value }));
+  };
+  const updateChecked = (field) => (e) => {
+    markFieldStarted(field);
+    setForm((f) => ({ ...f, [field]: e.target.checked }));
+  };
   const requiredTextFields = ["name", "email", "age", "experience", "currentRole", "professionalLevel", "mainArea", "careerGoal", "currentChallenge"];
   const canSubmit = requiredTextFields.every((field) => form[field].trim().length > 0) && form.email.includes("@") && form.contactConsent;
   const inputCls = "w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors";
@@ -1602,7 +1636,17 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
     try {
       const res = await fetch("/api/generate-report", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ profileData, scores, answers, generalScore, generalLevel, profileName, profileDesc, strengths, opportunities }) });
       const data = await res.json();
-      if (data.text) { setAiText(data.text); onAiReportGenerated?.(data.text); setPhase("report"); }
+      if (data.text) {
+        setAiText(data.text);
+        onAiReportGenerated?.(data.text);
+        trackFunnelEvent({
+          sessionId: profileData?.sessionId,
+          eventName: "paid_report_generated",
+          step: "paid_report",
+          metadata: { profileName, generalScore, textLength: data.text.length },
+        });
+        setPhase("report");
+      }
       else { setAiError(data.error || "Erro ao gerar análise. Tente novamente."); setPhase("payment"); }
     } catch { setAiError("Erro de conexão. Verifique sua internet e tente novamente."); setPhase("payment"); }
   }
@@ -1610,6 +1654,12 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
     if (!canSubmit) return;
     setPhase("creating-payment");
     setAiError(null);
+    trackFunnelEvent({
+      sessionId: profileData?.sessionId,
+      eventName: "payment_started",
+      step: "checkout",
+      metadata: { price: PRODUCT_PRICE },
+    });
     try {
       const result = await createPayment({
         ...profileData,
@@ -1636,6 +1686,12 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
     try {
       const result = await checkPaymentStatus({ paymentId: payment.paymentId, sessionId: profileData?.sessionId });
       if (result.paid) {
+        trackFunnelEvent({
+          sessionId: profileData?.sessionId,
+          eventName: "payment_completed",
+          step: "checkout",
+          metadata: { paymentId: payment.paymentId },
+        });
         await generateFullReport();
         return;
       }
@@ -1796,6 +1852,12 @@ function PaidReportNps({ profileData }) {
       if (typeof window !== "undefined") {
         window.localStorage.setItem(storageKey, "submitted");
       }
+      trackFunnelEvent({
+        sessionId: profileData?.sessionId,
+        eventName: "nps_submitted",
+        step: "paid_report",
+        metadata: { score },
+      });
       setSubmitted(true);
     } catch (submitError) {
       setError(submitError.message || "Não foi possível enviar seu feedback agora.");
@@ -2107,21 +2169,62 @@ export default function App() {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   };
   const handleAnswer = (key, value) => setAnswers((a) => ({ ...a, [key]: value }));
+  const handleStartProfile = () => {
+    trackFunnelEvent({
+      sessionId,
+      eventName: "profile_started",
+      step: "profile",
+      metadata: { fromView: view },
+    });
+    navigateTo("profile");
+  };
   const handleProfileSubmit = (data) => {
     const leadProfile = { ...data, sessionId, purchaseStatus: "not_purchased" };
     setProfileData(leadProfile);
     submitLead(leadProfile).catch(() => {});
+    trackFunnelEvent({
+      sessionId,
+      eventName: "profile_submitted",
+      step: "profile",
+      metadata: {
+        professionalLevel: data.professionalLevel,
+        mainArea: data.mainArea,
+        marketingConsent: data.marketingConsent === true,
+      },
+    });
+    trackFunnelEvent({
+      sessionId,
+      eventName: "assessment_started",
+      step: "assessment",
+    });
     navigateTo("assessment");
   };
-  const handleComplete = () => { setScores(calculateScores(answers)); navigateTo("results"); };
+  const handleComplete = () => {
+    const calculatedScores = calculateScores(answers);
+    const generalScore = Math.round(calculatedScores.reduce((sum, item) => sum + item.score, 0) / calculatedScores.length);
+    setScores(calculatedScores);
+    trackFunnelEvent({
+      sessionId,
+      eventName: "assessment_completed",
+      step: "assessment",
+      metadata: { generalScore },
+    });
+    trackFunnelEvent({
+      sessionId,
+      eventName: "free_report_viewed",
+      step: "free_report",
+      metadata: { generalScore },
+    });
+    navigateTo("results");
+  };
   const handleReset = () => { clearSavedProgress(); navigateTo("landing"); setProfileData(null); setAnswers({}); setScores([]); setPayment(null); setFullReportText(""); };
   if (PreviewRoute) return <><PreviewRoute /><CookieConsentBanner sessionId={sessionId} /></>;
   if (LegalRoute) return <><LegalRoute /><CookieConsentBanner sessionId={sessionId} /></>;
   return (
     <>
-      {view === "landing" && <Landing onStart={() => navigateTo("profile")} />}
-      {view === "about" && <AboutPage onBack={() => navigateTo("landing")} onStart={() => navigateTo("profile")} />}
-      {view === "profile" && <ProfileForm onSubmit={handleProfileSubmit} onBack={() => navigateTo("landing")} />}
+      {view === "landing" && <Landing onStart={handleStartProfile} />}
+      {view === "about" && <AboutPage onBack={() => navigateTo("landing")} onStart={handleStartProfile} />}
+      {view === "profile" && <ProfileForm onSubmit={handleProfileSubmit} onBack={() => navigateTo("landing")} onFieldStart={(field) => trackFunnelEvent({ sessionId, eventName: "profile_field_started", step: "profile", metadata: { field } })} />}
       {view === "assessment" && <AssessmentForm answers={answers} onAnswer={handleAnswer} onComplete={handleComplete} onBack={() => navigateTo("profile")} />}
       {view === "results" && profileData && <Results profileData={profileData} scores={scores} answers={answers} fullReportText={fullReportText} setFullReportText={setFullReportText} payment={payment} setPayment={setPayment} onReset={handleReset} />}
       <CookieConsentBanner sessionId={sessionId} />
