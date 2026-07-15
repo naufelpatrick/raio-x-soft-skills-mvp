@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { AdminDashboardPage } from "./admin/pages/AdminDashboardPage";
 import { AdminLoginPage } from "./admin/pages/AdminLoginPage";
+import { AdminResetPasswordPage } from "./admin/pages/AdminResetPasswordPage";
 import { initializeAnalytics } from "./services/analyticsService";
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
@@ -2257,6 +2258,7 @@ export default function App() {
   const AdminRoute = typeof window !== "undefined"
     ? {
       "/admin/login": AdminLoginPage,
+      "/admin/reset-password": AdminResetPasswordPage,
       "/admin/dashboard": AdminDashboardPage,
     }[window.location.pathname]
     : null;

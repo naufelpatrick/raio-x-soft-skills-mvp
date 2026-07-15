@@ -26,6 +26,39 @@ export function clearAdminSession() {
   window.localStorage.removeItem(STORAGE_KEY);
 }
 
+export function getPasswordRecoveryToken() {
+  if (typeof window === "undefined") return "";
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  return hash.get("type") === "recovery" ? hash.get("access_token") || "" : "";
+}
+
+export async function updateAdminPassword(accessToken, password) {
+  if (!isAdminAuthConfigured()) {
+    throw new Error("Supabase Auth não está configurado no frontend.");
+  }
+  if (!accessToken) {
+    throw new Error("Link de recuperação inválido ou expirado. Solicite um novo e-mail.");
+  }
+
+  const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    method: "PUT",
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ password }),
+  });
+
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(result.msg || result.error_description || result.message || "Não foi possível atualizar a senha.");
+  }
+
+  clearAdminSession();
+  return result;
+}
+
 export async function signInAdmin(email, password) {
   if (!isAdminAuthConfigured()) {
     throw new Error("Supabase Auth não está configurado no frontend.");
