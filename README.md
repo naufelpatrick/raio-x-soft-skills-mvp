@@ -69,3 +69,98 @@ Nome, e-mail, respostas abertas, objetivo e desafio profissional não são envia
 - O limitador em memória reduz abuso básico por instância serverless. Para escala maior, use um rate limiter persistente.
 - Dados da avaliação só são enviados ao OpenRouter após ação explícita do participante no fluxo do relatório completo.
 - O produto é apresentado como autoavaliação profissional, não diagnóstico psicológico.
+
+## Dashboard administrativo
+
+O projeto possui um dashboard privado em:
+
+- `/admin/login`
+- `/admin/dashboard`
+
+O login usa Supabase Auth com e-mail e senha. A autorização administrativa não depende apenas do frontend: o endpoint `/api/admin-dashboard` valida o token do usuário, consulta a tabela `admin_users` e só retorna dados para usuários ativos com role `owner`, `admin` ou `viewer`.
+
+O dashboard MVP mostra dados reais disponíveis no Supabase:
+
+- visitantes/sessões rastreadas pelo funil;
+- leads;
+- diagnósticos iniciados e concluídos;
+- relatório gratuito visualizado;
+- pagamentos iniciados;
+- compras aprovadas;
+- receita estimada;
+- ticket médio;
+- funil de conversão;
+- leads recentes;
+- vendas recentes;
+- resumo de NPS;
+- estados pendentes para GA4, Clarity e competências agregadas.
+
+### Variáveis de ambiente do admin
+
+No frontend, use apenas variáveis públicas:
+
+```bash
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+VITE_CLARITY_PROJECT_URL=
+```
+
+No backend/Vercel, configure variáveis privadas:
+
+```bash
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+```
+
+Nunca use `SUPABASE_SERVICE_ROLE_KEY` com prefixo `VITE_`.
+
+### Migrations
+
+A base administrativa está em:
+
+```text
+supabase/migrations/202607141-admin-dashboard-foundation.sql
+```
+
+Essa migration cria:
+
+- `admin_users`
+- `product_events`
+- `payment_webhook_events`
+- `admin_audit_logs`
+- índices úteis;
+- RLS;
+- política pública apenas para insert em `product_events`.
+
+As tabelas administrativas não possuem política pública de leitura. As consultas do dashboard passam pelo backend.
+
+### Como criar o primeiro administrador
+
+1. No Supabase, acesse Authentication > Users.
+2. Crie um usuário com e-mail e senha.
+3. Copie o UUID do usuário criado.
+4. Rode no SQL Editor:
+
+```sql
+insert into public.admin_users (user_id, email, role, active)
+values (
+  'UUID_DO_USUARIO_AQUI',
+  'email-do-admin@exemplo.com',
+  'owner',
+  true
+);
+```
+
+5. Acesse `/admin/login`.
+6. Faça login com o usuário criado no Supabase Auth.
+7. Se o usuário estiver ativo em `admin_users`, ele será redirecionado para `/admin/dashboard`.
+
+Não existe senha padrão e nenhuma credencial real deve ser salva no repositório.
+
+### Integrações pendentes
+
+GA4 e Clarity aparecem no dashboard como integrações pendentes ou links externos. Para integrar GA4 de verdade no cockpit, será necessário configurar uma conta de serviço no Google Cloud, habilitar a Google Analytics Data API e criar um endpoint backend específico. Credenciais privadas do Google nunca devem ser expostas no frontend.
+
+### Observações de dados
+
+O bloco “Panorama das competências” aparece como indisponível porque as pontuações por competência ainda não são persistidas em uma tabela própria de diagnósticos. Para ativá-lo, será necessário salvar resultados agregáveis do diagnóstico sem expor respostas abertas completas na tela principal.

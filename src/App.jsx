@@ -4,6 +4,8 @@ import {
   Zap, Check, RefreshCw, Sparkles, Loader2, Lock,
   Brain, Calendar, MessageCircle, ExternalLink, ChevronDown, ChevronUp, Download,
 } from "lucide-react";
+import { AdminDashboardPage } from "./admin/pages/AdminDashboardPage";
+import { AdminLoginPage } from "./admin/pages/AdminLoginPage";
 import { initializeAnalytics } from "./services/analyticsService";
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
@@ -13,6 +15,8 @@ const PRODUCT_PRICE = "R$ 49,90";
 const LAST_LEGAL_UPDATE = "10 de julho de 2026";
 const COOKIE_PREFERENCES_KEY = "raio_x_cookie_preferences_v1";
 const PROGRESS_STORAGE_KEY = "raio_x_progress_v1";
+const TRAFFIC_ATTRIBUTION_KEY = "raio_x_traffic_attribution_v1";
+const PRODUCT_EVENT_DEDUPE_KEY = "raio_x_product_event_dedupe_v1";
 const SITE_URL = "https://www.raioxdodesigner.com";
 const SOCIAL_IMAGE_URL = `${SITE_URL}/raio-x-social-card.jpg`;
 const DEFAULT_SEO_DESCRIPTION = "Diagnóstico de competências comportamentais para profissionais de Design, com perfil profissional, radar de competências e plano de desenvolvimento.";
@@ -174,6 +178,77 @@ function trackFunnelEvent({ sessionId, eventName, step = "", metadata = {} }) {
   }
 
   fetch("/api/track-funnel-event", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: payload,
+    keepalive: true,
+  }).catch(() => {});
+}
+
+function readTrafficAttribution() {
+  if (typeof window === "undefined") return {};
+  try {
+    const stored = window.localStorage.getItem(TRAFFIC_ATTRIBUTION_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+}
+
+function captureTrafficAttribution() {
+  if (typeof window === "undefined") return {};
+  const params = new URLSearchParams(window.location.search);
+  const incoming = {
+    source: params.get("utm_source") || "",
+    medium: params.get("utm_medium") || "",
+    campaign: params.get("utm_campaign") || "",
+    content: params.get("utm_content") || "",
+    term: params.get("utm_term") || "",
+  };
+  const hasUtm = Object.values(incoming).some(Boolean);
+  const existing = readTrafficAttribution();
+  const next = {
+    firstTouch: existing.firstTouch || (hasUtm ? incoming : { source: "direct", medium: "none", campaign: "" }),
+    lastTouch: hasUtm ? incoming : existing.lastTouch || existing.firstTouch || { source: "direct", medium: "none", campaign: "" },
+  };
+  window.localStorage.setItem(TRAFFIC_ATTRIBUTION_KEY, JSON.stringify(next));
+  return next;
+}
+
+function shouldTrackProductEventOnce(key) {
+  if (typeof window === "undefined") return true;
+  try {
+    const stored = JSON.parse(window.sessionStorage.getItem(PRODUCT_EVENT_DEDUPE_KEY) || "{}");
+    if (stored[key]) return false;
+    stored[key] = true;
+    window.sessionStorage.setItem(PRODUCT_EVENT_DEDUPE_KEY, JSON.stringify(stored));
+    return true;
+  } catch {
+    return true;
+  }
+}
+
+function trackProductEvent({ sessionId, eventName, metadata = {}, onceKey = "" }) {
+  if (!sessionId || String(sessionId).startsWith("preview-")) return;
+  if (onceKey && !shouldTrackProductEventOnce(`${sessionId}:${onceKey}`)) return;
+  const attribution = readTrafficAttribution();
+  const touch = attribution.lastTouch || attribution.firstTouch || {};
+  const payload = JSON.stringify({
+    sessionId,
+    eventName,
+    anonymousUserId: sessionId,
+    source: touch.source,
+    medium: touch.medium,
+    campaign: touch.campaign,
+    pagePath: typeof window !== "undefined" ? window.location.pathname : "",
+    metadata: {
+      ...metadata,
+      utmContent: touch.content,
+      utmTerm: touch.term,
+    },
+  });
+
+  fetch("/api/track-product-event", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: payload,
@@ -1630,6 +1705,15 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
   const whatsappDigits = lead.whatsapp.replace(/\D/g, "");
   const cpfCnpjDigits = lead.cpfCnpj.replace(/\D/g, "");
   const canSubmit = lead.name.trim() && lead.email.includes("@") && whatsappDigits.length >= 10 && [11, 14].includes(cpfCnpjDigits.length);
+  useEffect(() => {
+    if (initialAiText) return;
+    trackProductEvent({
+      sessionId: profileData?.sessionId,
+      eventName: "premium_offer_viewed",
+      metadata: { profileName, generalScore },
+      onceKey: "premium_offer_viewed",
+    });
+  }, [generalScore, initialAiText, profileData?.sessionId, profileName]);
   async function generateFullReport() {
     setPhase("loading");
     setAiError(null);
@@ -1644,6 +1728,12 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
           eventName: "paid_report_generated",
           step: "paid_report",
           metadata: { profileName, generalScore, textLength: data.text.length },
+        });
+        trackProductEvent({
+          sessionId: profileData?.sessionId,
+          eventName: "payment_approved",
+          metadata: { profileName, generalScore },
+          onceKey: "payment_approved",
         });
         setPhase("report");
       }
@@ -1660,6 +1750,12 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
       step: "checkout",
       metadata: { price: PRODUCT_PRICE },
     });
+    trackProductEvent({
+      sessionId: profileData?.sessionId,
+      eventName: "checkout_started",
+      metadata: { price: PRODUCT_PRICE },
+      onceKey: "checkout_started",
+    });
     try {
       const result = await createPayment({
         ...profileData,
@@ -1668,10 +1764,21 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
         purchaseStatus: "requested",
       });
       setPayment(result);
+      trackProductEvent({
+        sessionId: profileData?.sessionId,
+        eventName: "payment_pending",
+        metadata: { paymentId: result.paymentId },
+        onceKey: `payment_pending_${result.paymentId}`,
+      });
       window.open(result.paymentUrl, "_blank", "noopener,noreferrer");
       setPhase("payment");
     } catch {
       setAiError("Não foi possível criar o pagamento agora. Tente novamente em instantes.");
+      trackProductEvent({
+        sessionId: profileData?.sessionId,
+        eventName: "payment_failed",
+        metadata: { reason: "create_payment_failed" },
+      });
       setPhase("form");
     }
   }
@@ -1781,7 +1888,7 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
         </div>
       </div>
       <div className="p-8 lg:p-10">
-        {phase === "preview" && (<button onClick={() => setPhase("form")} className="flex items-center gap-2 bg-primary text-primary-foreground px-7 py-3.5 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity"><Sparkles className="w-4 h-4" /> Quero o diagnóstico completo</button>)}
+        {phase === "preview" && (<button onClick={() => { trackProductEvent({ sessionId: profileData?.sessionId, eventName: "premium_cta_clicked", step: "premium_offer", onceKey: "premium_cta_clicked" }); setPhase("form"); }} className="flex items-center gap-2 bg-primary text-primary-foreground px-7 py-3.5 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity"><Sparkles className="w-4 h-4" /> Quero o diagnóstico completo</button>)}
         {phase === "form" && (
           <div className="max-w-md space-y-6">
             <p className="text-sm text-muted-foreground leading-relaxed">Confirme seus dados para gerar o link seguro de pagamento do Asaas. Após a confirmação, seu diagnóstico completo será liberado automaticamente.</p>
@@ -2127,6 +2234,12 @@ O valor do diagnóstico aparece quando ele vira decisão. Use este relatório co
 }
 
 export default function App() {
+  const AdminRoute = typeof window !== "undefined"
+    ? {
+      "/admin/login": AdminLoginPage,
+      "/admin/dashboard": AdminDashboardPage,
+    }[window.location.pathname]
+    : null;
   const LegalRoute = typeof window !== "undefined" ? LEGAL_ROUTES[window.location.pathname] : null;
   const PreviewRoute = typeof window !== "undefined" && import.meta.env.DEV
     ? {
@@ -2148,7 +2261,20 @@ export default function App() {
   const [payment, setPayment] = useState(() => initialProgress?.payment || null);
   const [fullReportText, setFullReportText] = useState(() => initialProgress?.fullReportText || "");
   useEffect(() => {
+    captureTrafficAttribution();
     initializeAnalytics(sessionId);
+    trackProductEvent({
+      sessionId,
+      eventName: "page_view",
+      onceKey: `page_view_${window.location.pathname}`,
+    });
+    if (window.location.pathname === "/") {
+      trackProductEvent({
+        sessionId,
+        eventName: "landing_page_view",
+        onceKey: "landing_page_view",
+      });
+    }
   }, [sessionId]);
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -2168,7 +2294,15 @@ export default function App() {
     setView(nextView);
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   };
-  const handleAnswer = (key, value) => setAnswers((a) => ({ ...a, [key]: value }));
+  const handleAnswer = (key, value) => {
+    setAnswers((a) => ({ ...a, [key]: value }));
+    trackProductEvent({
+      sessionId,
+      eventName: "assessment_progress",
+      metadata: { questionKey: key },
+      onceKey: `assessment_progress_${key}`,
+    });
+  };
   const handleStartProfile = () => {
     trackFunnelEvent({
       sessionId,
@@ -2197,6 +2331,11 @@ export default function App() {
       eventName: "assessment_started",
       step: "assessment",
     });
+    trackProductEvent({
+      sessionId,
+      eventName: "assessment_started",
+      onceKey: "assessment_started",
+    });
     navigateTo("assessment");
   };
   const handleComplete = () => {
@@ -2209,15 +2348,28 @@ export default function App() {
       step: "assessment",
       metadata: { generalScore },
     });
+    trackProductEvent({
+      sessionId,
+      eventName: "assessment_completed",
+      metadata: { generalScore },
+      onceKey: "assessment_completed",
+    });
     trackFunnelEvent({
       sessionId,
       eventName: "free_report_viewed",
       step: "free_report",
       metadata: { generalScore },
     });
+    trackProductEvent({
+      sessionId,
+      eventName: "free_report_viewed",
+      metadata: { generalScore },
+      onceKey: "free_report_viewed",
+    });
     navigateTo("results");
   };
   const handleReset = () => { clearSavedProgress(); navigateTo("landing"); setProfileData(null); setAnswers({}); setScores([]); setPayment(null); setFullReportText(""); };
+  if (AdminRoute) return <AdminRoute />;
   if (PreviewRoute) return <><PreviewRoute /><CookieConsentBanner sessionId={sessionId} /></>;
   if (LegalRoute) return <><LegalRoute /><CookieConsentBanner sessionId={sessionId} /></>;
   return (
