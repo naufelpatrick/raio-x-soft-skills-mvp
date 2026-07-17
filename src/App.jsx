@@ -1399,7 +1399,7 @@ function Landing({ onStart }) {
           </div>
           <div className="mt-6 rounded-sm border border-primary/20 bg-card p-6">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {["20+ anos combinados em Design", "Experiência com UX, UI e Produto", "Atuação em mentoria e desenvolvimento profissional"].map((item) => (
+              {["30+ anos combinados em Design", "Experiência com UX, UI e Produto", "Atuação em mentoria e desenvolvimento profissional"].map((item) => (
                 <span key={item} className="flex items-center gap-2 text-sm text-foreground/78"><Check className="w-4 h-4 text-primary shrink-0" /> {item}</span>
               ))}
             </div>
