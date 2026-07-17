@@ -1373,7 +1373,7 @@ function Landing({ onStart }) {
             <p className="text-[10px] text-primary font-mono uppercase tracking-widest mb-3">Metodologia</p>
             <p className="text-sm lg:text-base text-foreground/76 leading-relaxed max-w-4xl">Construída a partir da experiência em Design, ensino, pesquisa e desenvolvimento profissional — para transformar autoconhecimento em clareza de carreira, não em uma leitura genérica.</p>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {MENTORS.map((m, i) => (
               <div key={m.name} className="group overflow-hidden rounded-[1.25rem] border border-primary/20 bg-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/35" style={{ boxShadow: "0 26px 80px rgba(0,0,0,0.18)" }}>
                 <div className="relative aspect-[4/5] overflow-hidden bg-background" style={{ background: "linear-gradient(180deg, rgba(129,140,248,0.08), rgba(11,17,32,0.96))" }}>
@@ -1384,7 +1384,7 @@ function Landing({ onStart }) {
                       <span className="flex items-center gap-2 text-xs font-semibold text-foreground/90"><span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#FBBF24" }} /> {m.highlights[0]}</span>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-primary">{m.initials}</span>
                     </div>
-                    <div className="mt-2 h-1.5 rounded-full bg-secondary overflow-hidden"><div className="h-full rounded-full" style={{ width: i === 0 ? "92%" : "84%", backgroundColor: "#FBBF24" }} /></div>
+                    <div className="mt-2 h-1.5 rounded-full bg-secondary overflow-hidden"><div className="h-full rounded-full" style={{ width: `${92 - i * 4}%`, backgroundColor: "#FBBF24" }} /></div>
                   </div>
                 </div>
                 <div className="p-7 lg:p-8">
@@ -1474,8 +1474,9 @@ function Landing({ onStart }) {
 
 // ─── ABOUT PAGE ───────────────────────────────────────────────────────────────
 const MENTORS = [
-  { initials: "PN", image: "/raio-x-patrick.jpg", name: "Patrick A. G. Naufel", role: "Designer · Professor · Mentor", linkedin: "https://www.linkedin.com/in/naufelpatrick", bio: "Designer há 20 anos e especialista em UX e Produtos Digitais, Patrick une duas décadas de prática com o rigor de quem também ensina — é professor universitário há mais de 5 anos e mentor ativo na Fóton/Caixa. Sua convicção: o autoconhecimento é o primeiro movimento de qualquer evolução profissional real.", highlights: ["20 anos em design", "UX & Produtos Digitais", "Professor universitário", "Mentor na Fóton/Caixa"] },
   { initials: "CA", image: "/raio-x-carlos.jpg", name: "Carlos Guilherme Alencar", role: "Designer · Líder de Mentores", linkedin: "https://www.linkedin.com/in/ocarlosguilherme/", bio: "Designer de UI/UX há 8 anos com domínio profundo em interfaces, prototipagem e design systems, Carlos é Líder de Mentores na Fóton/Caixa. Para ele, design centrado no usuário começa pelo autoconhecimento de quem cria — e equipes excelentes são feitas de pessoas que sabem onde precisam crescer.", highlights: ["8 anos em UI/UX", "Design systems", "Prototipagem", "Líder de mentores na Fóton/Caixa"] },
+  { initials: "MF", image: "/raio-x-marcos.jpg", name: "Marcos França", role: "Gerente Executivo de UX · Mentor", linkedin: "https://www.linkedin.com/in/marcos-franca/", bio: "Gerente Executivo de UX na Fóton, com foco em DesignOps e desenvolvimento de pessoas. Lidera um time multidisciplinar de designers em projetos estratégicos na Caixa Econômica Federal. É apaixonado por transformar desafios complexos em soluções escaláveis que conectem Design, Produto e Negócio.", highlights: ["DesignOps", "Desenvolvimento de pessoas", "Design, Produto & Negócio", "Liderança multidisciplinar"] },
+  { initials: "PN", image: "/raio-x-patrick.jpg", name: "Patrick A. G. Naufel", role: "Designer · Professor · Mentor", linkedin: "https://www.linkedin.com/in/naufelpatrick", bio: "Designer há 20 anos e especialista em UX e Produtos Digitais, Patrick une duas décadas de prática com o rigor de quem também ensina — é professor universitário há mais de 5 anos e mentor ativo na Fóton/Caixa. Sua convicção: o autoconhecimento é o primeiro movimento de qualquer evolução profissional real.", highlights: ["20 anos em design", "UX & Produtos Digitais", "Professor universitário", "Mentor na Fóton/Caixa"] },
 ];
 
 function AboutPage({ onBack, onStart }) {
@@ -1485,12 +1486,12 @@ function AboutPage({ onBack, onStart }) {
       <section className="px-6 lg:px-16 py-24 border-b border-border">
         <div className="max-w-3xl">
           <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-6">Sobre nós</p>
-          <h1 className="leading-[1.1] mb-6" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.5rem, 5vw, 4rem)" }}>Dois designers que acreditam no poder do autoconhecimento.</h1>
+          <h1 className="leading-[1.1] mb-6" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2.5rem, 5vw, 4rem)" }}>Três mentores que acreditam no poder do autoconhecimento.</h1>
           <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl">O Raio-X do Designer nasceu da observação de um padrão recorrente: profissionais talentosos travando não por falta de técnica, mas por falta de consciência sobre suas próprias competências comportamentais. Construímos a ferramenta que gostaríamos de ter tido.</p>
         </div>
       </section>
       <section className="px-6 lg:px-16 py-20 border-b border-border">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-px bg-border">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-px bg-border">
           {MENTORS.map((m) => (
             <div key={m.name} className="bg-background p-10">
               <div className="flex items-end gap-5 mb-7">
@@ -1870,7 +1871,7 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
         <div className="rounded-sm border border-border bg-card p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-start gap-4">
             <div className="w-9 h-9 bg-primary/10 rounded-sm flex items-center justify-center shrink-0"><Calendar className="w-4 h-4 text-primary" /></div>
-            <div><p className="text-sm font-medium mb-1">1 sessão de mentoria ao vivo</p><p className="text-xs text-muted-foreground leading-relaxed max-w-sm">30 minutos com Patrick ou Carlos para aprofundar seu diagnóstico e definir os próximos passos com clareza.</p></div>
+            <div><p className="text-sm font-medium mb-1">1 sessão de mentoria ao vivo</p><p className="text-xs text-muted-foreground leading-relaxed max-w-sm">30 minutos com um de nossos mentores para aprofundar seu diagnóstico e definir os próximos passos com clareza.</p></div>
           </div>
           <a href={`https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent("Olá! Fiz o diagnóstico e gostaria de agendar minha sessão de mentoria.")}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity shrink-0"><MessageCircle className="w-4 h-4" /> Agendar mentoria</a>
         </div>
