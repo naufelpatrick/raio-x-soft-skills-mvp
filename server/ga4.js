@@ -7,11 +7,17 @@ function normalizePrivateKey(rawValue = "") {
   let value = String(rawValue).trim();
   if (!value) return "";
 
-  if (value.startsWith("{")) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
-      value = JSON.parse(value).private_key || value;
+      const parsed = JSON.parse(value);
+      if (typeof parsed === "string") {
+        value = parsed.trim();
+        continue;
+      }
+      if (parsed?.private_key) value = parsed.private_key;
+      break;
     } catch {
-      // Continue with the common copied-field formats below.
+      break;
     }
   }
 
@@ -31,7 +37,9 @@ function normalizePrivateKey(rawValue = "") {
     value = value.slice(1, -1);
   }
 
-  return value.replace(/\\n/g, "\n").replace(/\r\n/g, "\n").trim();
+  value = value.replace(/\\+n/g, "\n").replace(/\r\n/g, "\n").trim();
+  const pem = value.match(/-----BEGIN PRIVATE KEY-----[\s\S]*?-----END PRIVATE KEY-----/);
+  return (pem?.[0] || value).trim();
 }
 
 function config() {
