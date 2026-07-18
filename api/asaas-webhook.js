@@ -1,6 +1,6 @@
-import { applySecurityHeaders, parseBody, requirePost } from "./_security.js";
-import { extractWebhookToken, isPaidAsaasStatus } from "./_asaas.js";
-import { updateSupabaseRecord } from "./_supabase.js";
+import { applySecurityHeaders, parseBody, requirePost } from "../server/_security.js";
+import { extractWebhookToken, isPaidAsaasStatus } from "../server/_asaas.js";
+import { updateSupabaseRecord } from "../server/_supabase.js";
 
 const paidEvents = new Set(["PAYMENT_CONFIRMED", "PAYMENT_RECEIVED", "PAYMENT_RECEIVED_IN_CASH"]);
 

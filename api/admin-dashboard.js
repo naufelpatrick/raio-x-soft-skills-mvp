@@ -1,5 +1,5 @@
-import { applySecurityHeaders, requireAllowedOrigin } from "./_security.js";
-import { adminSelect, getAuthenticatedAdmin, insertAdminAuditLog } from "./_admin.js";
+import { applySecurityHeaders, requireAllowedOrigin } from "../server/_security.js";
+import { adminSelect, getAuthenticatedAdmin, insertAdminAuditLog } from "../server/_admin.js";
 
 const PRODUCT_PRICE = 49.9;
 
@@ -75,6 +75,13 @@ function eventCount(groups, eventName) {
   return groups[eventName]?.size || 0;
 }
 
+function publicProductEvents(events) {
+  return events.filter((event) => {
+    const path = String(event.page_path || "");
+    return !path.startsWith("/admin") && !path.startsWith("/preview");
+  });
+}
+
 function buildFunnel(events, leads) {
   const groups = groupEventsByName(events);
   const visitors = uniqueCount(events);
@@ -90,9 +97,9 @@ function buildFunnel(events, leads) {
     ["Diagnóstico iniciado", eventCount(groups, "assessment_started")],
     ["Diagnóstico concluído", eventCount(groups, "assessment_completed")],
     ["Relatório visualizado", eventCount(groups, "free_report_viewed")],
-    ["Clique no Premium", eventCount(groups, "payment_started")],
-    ["Pagamento iniciado", eventCount(groups, "payment_started")],
-    ["Pagamento aprovado", purchasedSessions.size || eventCount(groups, "payment_completed")],
+    ["Clique no Premium", eventCount(groups, "premium_cta_clicked")],
+    ["Pagamento iniciado", eventCount(groups, "checkout_started")],
+    ["Pagamento aprovado", purchasedSessions.size || eventCount(groups, "payment_approved")],
   ];
 
   let biggestDropIndex = -1;
@@ -137,7 +144,7 @@ function buildMetrics({ events, leads, previousEvents, previousLeads }) {
   const previousAssessmentCompleted = eventCount(previousGroups, "assessment_completed");
 
   return [
-    { key: "visitors", label: "Visitantes", value: visitors, change: variation(visitors, previousVisitors), help: "Sessões únicas registradas nos eventos do funil." },
+    { key: "visitors", label: "Visitantes", value: visitors, change: variation(visitors, previousVisitors), help: "Sessões únicas registradas nas visualizações e eventos do produto." },
     { key: "leads", label: "Leads", value: leadsCount, change: variation(leadsCount, previousLeadsCount), help: "Registros criados na tabela de leads." },
     { key: "assessmentStarted", label: "Diagnósticos iniciados", value: assessmentStarted, change: variation(assessmentStarted, previousAssessmentStarted), help: "Sessões que entraram na avaliação." },
     { key: "assessmentCompleted", label: "Diagnósticos concluídos", value: assessmentCompleted, change: variation(assessmentCompleted, previousAssessmentCompleted), help: "Sessões que finalizaram a avaliação." },
@@ -198,6 +205,9 @@ export default async function handler(req, res) {
   if (auth.error) {
     return res.status(auth.status || 401).json({ error: auth.error });
   }
+  if (req.query?.scope === "session") {
+    return res.status(200).json({ admin: { email: auth.user.email, role: auth.admin.role } });
+  }
 
   const query = req.query || {};
   const { start, end, previousStart, previousEnd } = getDateRange(query.range, query);
@@ -206,22 +216,24 @@ export default async function handler(req, res) {
 
   try {
     const [events, previousEvents, leads, previousLeads, nps] = await Promise.all([
-      adminSelect("funnel_events", { select: "session_id,event_name,step,metadata,created_at", filters: periodFilters, limit: 10000 }),
-      adminSelect("funnel_events", { select: "session_id,event_name,step,metadata,created_at", filters: previousFilters, limit: 10000 }),
+      adminSelect("product_events", { select: "session_id,event_name,page_path,metadata,created_at", filters: periodFilters, limit: 10000 }),
+      adminSelect("product_events", { select: "session_id,event_name,page_path,metadata,created_at", filters: previousFilters, limit: 10000 }),
       adminSelect("leads", { select: "session_id,name,email,main_area,professional_level,purchase_status,purchased_package,payment_status,payment_confirmed_at,package_purchased_at,last_seen_at,created_at", filters: periodFilters, order: "created_at.desc", limit: 1000 }),
       adminSelect("leads", { select: "session_id,purchase_status,purchased_package,created_at", filters: previousFilters, limit: 1000 }),
       adminSelect("nps_responses", { select: "score,category,created_at", filters: periodFilters, limit: 1000 }),
     ]);
 
-    const metrics = buildMetrics({ events, leads, previousEvents, previousLeads });
-    const funnel = buildFunnel(events, leads);
+    const publicEvents = publicProductEvents(events);
+    const previousPublicEvents = publicProductEvents(previousEvents);
+    const metrics = buildMetrics({ events: publicEvents, leads, previousEvents: previousPublicEvents, previousLeads });
+    const funnel = buildFunnel(publicEvents, leads);
     const recentLeads = leads.slice(0, 8).map((lead) => ({
       name: lead.name,
       email: lead.email,
       createdAt: lead.created_at,
       source: "site",
       status: leadStatus(lead),
-      assessmentCompleted: events.some((event) => event.session_id === lead.session_id && event.event_name === "assessment_completed"),
+      assessmentCompleted: publicEvents.some((event) => event.session_id === lead.session_id && event.event_name === "assessment_completed"),
       purchased: Boolean(lead.purchased_package || lead.purchase_status === "purchased"),
     }));
     const recentSales = leads

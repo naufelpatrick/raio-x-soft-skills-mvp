@@ -1,0 +1,3 @@
+import { NextResponse } from "next/server";
+export async function POST(request: Request) { const { accessToken } = await request.json(); if(!accessToken) return NextResponse.json({error:"Token ausente"},{status:400}); const response=NextResponse.json({ok:true}); response.cookies.set("raio_x_admin_token",accessToken,{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax",path:"/admin/brand",maxAge:60*60}); return response }
+export async function DELETE() { const response=NextResponse.json({ok:true}); response.cookies.set("raio_x_admin_token","",{httpOnly:true,path:"/admin/brand",maxAge:0}); return response }

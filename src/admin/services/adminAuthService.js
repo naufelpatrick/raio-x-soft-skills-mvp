@@ -126,3 +126,15 @@ export async function fetchAdminDashboard(rangeKey) {
 
   return result;
 }
+
+export async function fetchAdminSession() {
+  const session = getStoredAdminSession();
+  if (!session?.accessToken) throw new Error("Sessão administrativa não encontrada.");
+  const response = await fetch("/api/admin-dashboard?scope=session", {
+    headers: { Authorization: `Bearer ${session.accessToken}` },
+  });
+  const result = await response.json().catch(() => ({}));
+  if (response.status === 401 || response.status === 403) clearAdminSession();
+  if (!response.ok) throw new Error(result.error || "Acesso administrativo não autorizado.");
+  return result;
+}

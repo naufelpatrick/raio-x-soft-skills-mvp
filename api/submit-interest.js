@@ -6,8 +6,8 @@ import {
   requireAllowedOrigin,
   requireJson,
   requirePost,
-} from "./_security.js";
-import { insertSupabaseRecord } from "./_supabase.js";
+} from "../server/_security.js";
+import { insertSupabaseRecord } from "../server/_supabase.js";
 
 const allowedInterests = new Set([
   "individual_guidance",

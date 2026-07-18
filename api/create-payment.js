@@ -6,9 +6,9 @@ import {
   requireAllowedOrigin,
   requireJson,
   requirePost,
-} from "./_security.js";
-import { createAsaasCustomer, createAsaasPayment, sanitizeCpfCnpj } from "./_asaas.js";
-import { updateSupabaseRecord } from "./_supabase.js";
+} from "../server/_security.js";
+import { createAsaasCustomer, createAsaasPayment, sanitizeCpfCnpj } from "../server/_asaas.js";
+import { updateSupabaseRecord } from "../server/_supabase.js";
 
 const PRODUCT_VALUE = 49.9;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

@@ -18,6 +18,7 @@ async function supabaseFetch(path, { method = "GET", token = SUPABASE_SERVICE_RO
       apikey: SUPABASE_SERVICE_ROLE_KEY,
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
+      Prefer: "return=representation",
     },
     body: body ? JSON.stringify(body) : undefined,
   });
@@ -77,6 +78,32 @@ export async function adminSelect(table, { select = "*", filters = [], order, li
   if (limit) params.set("limit", String(limit));
 
   return supabaseFetch(`/rest/v1/${table}`, { query: `?${params.toString()}` });
+}
+
+export async function adminInsert(table, record) {
+  return supabaseFetch(`/rest/v1/${table}`, {
+    method: "POST",
+    body: record,
+    query: "?select=*",
+  });
+}
+
+export async function adminUpdate(table, id, record) {
+  return supabaseFetch(`/rest/v1/${table}`, {
+    method: "PATCH",
+    body: record,
+    query: `?id=eq.${encodeURIComponent(id)}&select=*`,
+  });
+}
+
+export async function adminDelete(table, id, filters = []) {
+  const params = new URLSearchParams();
+  if (id) params.set("id", `eq.${id}`);
+  filters.forEach(([column, operator, value]) => params.set(column, `${operator}.${value}`));
+  return supabaseFetch(`/rest/v1/${table}`, {
+    method: "DELETE",
+    query: `?${params.toString()}`,
+  });
 }
 
 export async function insertAdminAuditLog(record) {

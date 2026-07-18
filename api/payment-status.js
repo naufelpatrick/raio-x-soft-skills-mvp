@@ -6,9 +6,9 @@ import {
   requireAllowedOrigin,
   requireJson,
   requirePost,
-} from "./_security.js";
-import { getAsaasPayment, isPaidAsaasStatus } from "./_asaas.js";
-import { updateSupabaseRecord } from "./_supabase.js";
+} from "../server/_security.js";
+import { getAsaasPayment, isPaidAsaasStatus } from "../server/_asaas.js";
+import { updateSupabaseRecord } from "../server/_supabase.js";
 
 export default async function handler(req, res) {
   applySecurityHeaders(res);

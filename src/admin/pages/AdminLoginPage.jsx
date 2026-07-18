@@ -15,7 +15,8 @@ export function AdminLoginPage() {
 
     try {
       await signInAdmin(email, password);
-      window.location.href = "/admin/dashboard";
+      const nextPath = new URLSearchParams(window.location.search).get("next");
+      window.location.href = nextPath?.startsWith("/admin/") ? nextPath : "/admin/dashboard";
     } catch (loginError) {
       setError(loginError.message || "Não foi possível entrar.");
     } finally {

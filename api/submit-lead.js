@@ -6,8 +6,8 @@ import {
   requireAllowedOrigin,
   requireJson,
   requirePost,
-} from "./_security.js";
-import { insertSupabaseRecord, updateSupabaseRecord } from "./_supabase.js";
+} from "../server/_security.js";
+import { insertSupabaseRecord, updateSupabaseRecord } from "../server/_supabase.js";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const allowedPurchaseStatus = new Set(["not_purchased", "requested", "purchased"]);

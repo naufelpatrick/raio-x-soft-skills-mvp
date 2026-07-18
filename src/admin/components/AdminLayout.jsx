@@ -1,7 +1,7 @@
 import { BarChart2, LogOut, Settings, Users, LineChart, Target, Wallet, Megaphone } from "lucide-react";
 
 const navItems = [
-  { label: "Visão geral", Icon: BarChart2, active: true },
+  { label: "Visão geral", Icon: BarChart2, href: "/admin/dashboard" },
   { label: "Funil", Icon: Target },
   { label: "Diagnósticos", Icon: LineChart },
   { label: "Leads", Icon: Users },
@@ -10,7 +10,7 @@ const navItems = [
   { label: "Configurações", Icon: Settings },
 ];
 
-export function AdminLayout({ children, admin, rangeLabel, onRefresh, onLogout, loading }) {
+export function AdminLayout({ children, admin, rangeLabel, onRefresh, onLogout, loading, title = "Dashboard" }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-border bg-card/70 backdrop-blur-xl p-6 lg:block">
@@ -19,21 +19,21 @@ export function AdminLayout({ children, admin, rangeLabel, onRefresh, onLogout, 
           <p className="text-[10px] font-mono uppercase tracking-[0.24em] text-primary">Admin cockpit</p>
         </div>
         <nav className="space-y-1">
-          {navItems.map(({ label, Icon, active }) => (
-            <button
+          {navItems.map(({ label, Icon, href }) => {
+            const active = href && window.location.pathname === href;
+            return href ? <a
               key={label}
-              disabled={!active}
+              href={href}
               className={`w-full flex items-center gap-3 rounded-sm px-3 py-2.5 text-sm text-left transition-colors ${
                 active
                   ? "bg-primary/10 text-foreground border border-primary/20"
-                  : "text-muted-foreground/50 cursor-not-allowed"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Icon className="w-4 h-4" />
               {label}
-              {!active && <span className="ml-auto text-[9px] font-mono uppercase">Em breve</span>}
-            </button>
-          ))}
+            </a> : <button key={label} disabled className="w-full flex items-center gap-3 rounded-sm px-3 py-2.5 text-sm text-left text-muted-foreground/50 cursor-not-allowed"><Icon className="w-4 h-4" />{label}<span className="ml-auto text-[9px] font-mono uppercase">Em breve</span></button>
+          })}
         </nav>
       </aside>
       <main className="lg:pl-64">
@@ -41,7 +41,7 @@ export function AdminLayout({ children, admin, rangeLabel, onRefresh, onLogout, 
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-[10px] font-mono uppercase tracking-[0.24em] text-muted-foreground">Raio-X do Designer</p>
-              <h1 className="text-2xl font-semibold mt-1">Dashboard</h1>
+              <h1 className="text-2xl font-semibold mt-1">{title}</h1>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <div className="rounded-sm border border-border px-3 py-2 text-xs text-muted-foreground">

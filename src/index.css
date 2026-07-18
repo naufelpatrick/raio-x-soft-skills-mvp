@@ -52,3 +52,76 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
+
+.brand-prose > h1 { font-family: 'Sora', sans-serif; font-size: clamp(2.75rem, 7vw, 4.75rem); line-height: .98; letter-spacing: -.055em; font-weight: 500; margin: 0 0 1.5rem; }
+.brand-prose > h1 + p { font-size: 1.25rem; line-height: 1.65; color: #6c706f; padding-bottom: 3rem; border-bottom: 1px solid rgba(0,0,0,.1); margin-bottom: 3rem; }
+.dark .brand-prose > h1 + p { color: #a8adaa; border-color: rgba(255,255,255,.1); }
+.brand-prose h2 { font-family: 'Sora', sans-serif; font-size: 1.75rem; line-height: 1.25; letter-spacing: -.035em; font-weight: 500; margin: 4.5rem 0 1.25rem; }
+.brand-prose h3 { font-family: 'Sora', sans-serif; font-size: 1rem; font-weight: 600; margin: 2.25rem 0 .5rem; padding-top: 1.25rem; border-top: 1px solid rgba(0,0,0,.1); }
+.dark .brand-prose h3 { border-color: rgba(255,255,255,.1); }
+.brand-prose p, .brand-prose li { font-size: 1.0625rem; line-height: 1.8; }
+.brand-prose p { margin: 0 0 1.5rem; }
+.brand-prose ul { padding-left: 1.25rem; margin: 0 0 1.75rem; }
+.brand-prose li { padding-left: .4rem; margin-bottom: .5rem; }
+.brand-prose code { font-family: ui-monospace, monospace; font-size: .85em; color: #b88728; }
+.brand-book-page { min-height: min(78vw, 980px); background: #fff; color: #010c1b; border: 1px solid #edeef0; padding: clamp(2rem, 5vw, 4.75rem); display: flex; flex-direction: column; box-shadow: 0 24px 70px rgba(1,12,27,.08); }
+.dark .brand-book-page { background: #f8f9fa; color: #010c1b; }
+.brand-page-meta, .brand-page-footer { display: flex; justify-content: space-between; gap: 1rem; font: 500 .58rem/1.4 'Sora', sans-serif; letter-spacing: .18em; color: #9ca3af; text-transform: uppercase; }
+.brand-page-content { width: min(100%, 880px); margin-top: clamp(4rem, 10vw, 8rem); }
+.brand-book-page .brand-prose { max-width: none; }
+.brand-book-page h1 { font-family: 'Sora', sans-serif; font-size: clamp(3rem, 7vw, 6.5rem); line-height: .94; letter-spacing: -.06em; font-weight: 600; margin: 0 0 2rem; }
+.brand-book-page h1 + p { max-width: 620px; font-size: clamp(1rem, 2vw, 1.25rem); line-height: 1.65; color: #6b7280; }
+.brand-book-page h2 { font-family: 'Sora', sans-serif; font-size: clamp(1.6rem, 3vw, 2.4rem); line-height: 1.15; letter-spacing: -.035em; margin: 4rem 0 1.25rem; }
+.brand-book-page h3 { font-family: 'Sora', sans-serif; font-size: 1rem; margin: 2rem 0 .5rem; padding-top: 1.25rem; border-top: 1px solid #d1d5db; }
+.brand-book-page p, .brand-book-page li { font-size: 1rem; line-height: 1.75; }
+.brand-book-page ul { padding-left: 1.25rem; }
+.brand-page-footer { margin-top: auto; padding-top: 4rem; }
+.brand-sidebar-nav { overflow-y: auto; margin: 0 -8px 1rem; padding: 0 8px; }
+.brand-sidebar-nav > div { margin-bottom: 1.25rem; }
+.brand-sidebar-nav p { margin: 0 0 .35rem; font-size: .55rem; letter-spacing: .18em; color: #6b7280; text-transform: uppercase; }
+.brand-sidebar-nav button { display: block; width: 100%; padding: .38rem .5rem; border-radius: 3px; color: #9ca3af; font-size: .72rem; text-align: left; transition: .2s; }
+.brand-sidebar-nav button:hover, .brand-sidebar-nav button.active { background: rgba(255,255,255,.08); color: white; }
+.brand-visual-panel h2, .brand-type-panel + h2 { margin-top: 5rem; }
+.brand-logo-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 1px; background: #d1d5db; border: 1px solid #d1d5db; }
+.brand-logo-card { min-height: 210px; padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; }
+.brand-logo-card img { width: min(100%, 230px); margin: auto; }
+.brand-logo-card span { color: rgba(255,255,255,.62); font-size: .6rem; letter-spacing: .16em; text-transform: uppercase; }
+.brand-logo-card.logo-2 img { filter: grayscale(1) brightness(4); }
+.brand-logo-card.logo-3 img { filter: grayscale(1) brightness(0) invert(1); }
+.brand-palette-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 1rem; }
+.brand-swatch { display: grid; grid-template-columns: 1fr auto; gap: .18rem .75rem; font-size: .7rem; }
+.brand-swatch > div { grid-column: 1/-1; height: 150px; border: 1px solid #d1d5db; }
+.brand-swatch strong { font-size: .75rem; }
+.brand-swatch code { color: #6b7280; }
+.brand-swatch span { grid-column: 1/-1; color: #9ca3af; font-size: .62rem; text-transform: uppercase; letter-spacing: .1em; }
+.brand-type-hero { margin-top: 4rem; padding: 3rem 0; border-block: 1px solid #d1d5db; display: flex; align-items: flex-end; justify-content: space-between; }
+.brand-type-hero span { font-size: clamp(4rem,10vw,8rem); font-weight: 800; letter-spacing: -.08em; line-height: .8; }
+.brand-type-hero p { margin: 0; color: #d4a139; font-size: clamp(3rem,8vw,6rem); line-height: .8; }
+.brand-weight-row { display: flex; justify-content: space-between; gap: 1rem; padding: 1.4rem 0; border-bottom: 1px solid #d1d5db; color: #6b7280; }
+.brand-type-scale { margin-top: 4rem; }
+.brand-type-scale > div { display: grid; grid-template-columns: 120px 1fr; gap: 2rem; align-items: baseline; padding: 1.4rem 0; border-top: 1px solid #d1d5db; }
+.brand-type-scale small { color: #9ca3af; font-size: .6rem; line-height: 1.7; text-transform: uppercase; }
+.brand-type-scale p { margin: 0; letter-spacing: -.04em; line-height: 1.1; }
+.brand-format-grid { margin-top: 3rem; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 1px; background: #d1d5db; border: 1px solid #d1d5db; }
+.brand-format-grid > div { min-height: 145px; padding: 1.25rem; background: #f8f9fa; display: flex; flex-direction: column; }
+.brand-format-grid strong { font-size: .8rem; }.brand-format-grid span { margin-top: auto; font-size: .7rem; color: #6b7280; }.brand-format-grid small { color: #d4a139; }
+.brand-application-grid { margin-top: 4rem; display: grid; grid-template-columns: 1fr .72fr 1.35fr; align-items: end; gap: 1.5rem; }
+.brand-application-grid > div { overflow: hidden; display: flex; flex-direction: column; padding: 1.4rem; box-shadow: 0 16px 35px rgba(1,12,27,.14); }
+.brand-application-grid img { width: 90px; }
+.app-feed { aspect-ratio: 1; background: #010c1b; color: white; }.app-feed span { margin-top: auto; color: #d4a139; font-size: .55rem; letter-spacing: .2em; }.app-feed strong { margin-top: .5rem; font-size: clamp(1.2rem,2.3vw,2rem); line-height: 1.05; }
+.app-story { aspect-ratio: 9/16; background: #223145; color: white; }.app-story strong { margin: auto 0; font-size: clamp(1.2rem,2.4vw,2.25rem); line-height: .95; }.app-story span { color: #9ca3af; font-size: .5rem; letter-spacing: .16em; }
+.app-thumb { aspect-ratio: 16/9; background: #edeef0; }.app-thumb > span { align-self: flex-start; padding: .3rem .55rem; background: #d4a139; color: white; font-size: .52rem; font-weight: 700; letter-spacing: .14em; }.app-thumb strong { margin: auto 0; max-width: 85%; font-size: clamp(1.25rem,2.5vw,2.35rem); line-height: .98; letter-spacing: -.05em; }.app-thumb small { font-size: .5rem; letter-spacing: .18em; }
+.brand-book-page blockquote { margin: 3rem 0 0; padding: 2rem; border-left: 3px solid #d4a139; background: #010c1b; color: white; }.brand-book-page blockquote p { margin: 0; }
+.brand-cover { background: #010c1b !important; color: #fff !important; border-color: #0f1f31; position: relative; overflow: hidden; }
+.brand-cover::after { content: 'R'; position: absolute; right: -2%; top: 18%; font: 700 clamp(20rem, 45vw, 38rem)/.8 'Sora', sans-serif; color: #071426; z-index: 0; }
+.brand-cover .brand-page-meta, .brand-cover .brand-page-footer { color: #4b5563; position: relative; z-index: 1; }
+.brand-cover .brand-page-content { position: relative; z-index: 1; }
+.brand-cover .brand-page-content::before { content: 'IDENTIDADE DE MARCA'; display: block; color: #d4a139; font: 600 .65rem 'Sora', sans-serif; letter-spacing: .28em; margin-bottom: 2rem; }
+.brand-cover h1 { max-width: 760px; font-size: clamp(4rem, 10vw, 8.5rem); }
+.brand-cover h1::first-line { color: #fff; }
+.brand-cover h1 + p { color: #d4a139; font-family: 'Sora', sans-serif; font-size: clamp(4rem, 10vw, 8.5rem); font-weight: 600; letter-spacing: -.06em; line-height: .82; margin: -1rem 0 4rem; max-width: none; }
+.brand-cover h1 + p + p { color: #6b7280; max-width: 360px; line-height: 1.7; }
+.brand-cover strong { color: #d4a139; }
+.brand-cover h2, .brand-cover h3, .brand-cover ul, .brand-cover .brand-page-content > p:nth-of-type(n+3) { display: none; }
+@media print { .brand-prose { max-width: none; } }
+@media (max-width: 680px) { .brand-book-page { min-height: calc(100vh - 7rem); padding: 1.5rem; } .brand-page-meta span:last-child { display: none; } .brand-page-content { margin-top: 4rem; } .brand-page-footer { flex-direction: column; } .brand-logo-grid, .brand-palette-grid { grid-template-columns: 1fr; } .brand-format-grid { grid-template-columns: repeat(2,1fr); } .brand-application-grid { grid-template-columns: 1fr; } .brand-application-grid > div { max-width: 420px; width: 100%; } .brand-type-scale > div { grid-template-columns: 1fr; gap: .6rem; } }

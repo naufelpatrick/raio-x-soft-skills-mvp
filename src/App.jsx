@@ -7,6 +7,7 @@ import {
 import { AdminDashboardPage } from "./admin/pages/AdminDashboardPage";
 import { AdminLoginPage } from "./admin/pages/AdminLoginPage";
 import { AdminResetPasswordPage } from "./admin/pages/AdminResetPasswordPage";
+import { BrandCenterPage } from "./admin/pages/BrandCenterPage";
 import { initializeAnalytics } from "./services/analyticsService";
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
@@ -2256,19 +2257,23 @@ O valor do diagnóstico aparece quando ele vira decisão. Use este relatório co
 }
 
 export default function App() {
+  const currentPath = typeof window !== "undefined"
+    ? window.location.pathname.replace(/\/+$/, "") || "/"
+    : "/";
   const AdminRoute = typeof window !== "undefined"
     ? {
       "/admin/login": AdminLoginPage,
       "/admin/reset-password": AdminResetPasswordPage,
       "/admin/dashboard": AdminDashboardPage,
-    }[window.location.pathname]
+      "/admin/brand": BrandCenterPage,
+    }[currentPath]
     : null;
-  const LegalRoute = typeof window !== "undefined" ? LEGAL_ROUTES[window.location.pathname] : null;
+  const LegalRoute = typeof window !== "undefined" ? LEGAL_ROUTES[currentPath] : null;
   const PreviewRoute = typeof window !== "undefined" && import.meta.env.DEV
     ? {
       "/preview/relatorio-gratuito": FreeReportPreviewPage,
       "/preview/relatorio-pago": PaidReportPreviewPage,
-    }[window.location.pathname]
+    }[currentPath]
     : null;
   const [initialProgress] = useState(() => readSavedProgress());
   const paymentReturn = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("payment") === "success";

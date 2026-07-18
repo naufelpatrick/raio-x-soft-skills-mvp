@@ -1,0 +1,3 @@
+import { NextRequest, NextResponse } from "next/server";
+export function middleware(request:NextRequest){if(request.nextUrl.pathname.startsWith("/admin/brand")&&!request.nextUrl.pathname.startsWith("/admin/brand/login")&&!request.nextUrl.pathname.startsWith("/admin/brand/api/session")&&!request.cookies.has("raio_x_admin_token")){return NextResponse.redirect(new URL("/admin/brand/login",request.url))}const response=NextResponse.next();response.headers.set("X-Robots-Tag","noindex, nofollow, noarchive");response.headers.set("Cache-Control","private, no-store");return response}
+export const config={matcher:["/admin/brand/:path*"]};
