@@ -3,10 +3,41 @@ import { BetaAnalyticsDataClient } from "@google-analytics/data";
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const cache = new Map();
 
+function normalizePrivateKey(rawValue = "") {
+  let value = String(rawValue).trim();
+  if (!value) return "";
+
+  if (value.startsWith("{")) {
+    try {
+      value = JSON.parse(value).private_key || value;
+    } catch {
+      // Continue with the common copied-field formats below.
+    }
+  }
+
+  value = value
+    .replace(/^GA4_PRIVATE_KEY\s*=\s*/i, "")
+    .replace(/^['"]?private_key['"]?\s*:\s*/i, "")
+    .replace(/,$/, "")
+    .trim();
+
+  if (value.startsWith('"') && value.endsWith('"')) {
+    try {
+      value = JSON.parse(value);
+    } catch {
+      value = value.slice(1, -1);
+    }
+  } else if (value.startsWith("'") && value.endsWith("'")) {
+    value = value.slice(1, -1);
+  }
+
+  return value.replace(/\\n/g, "\n").replace(/\r\n/g, "\n").trim();
+}
+
 function config() {
   const propertyId = process.env.GA4_PROPERTY_ID;
   const clientEmail = process.env.GA4_CLIENT_EMAIL;
-  const privateKey = process.env.GA4_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  const privateKey = normalizePrivateKey(process.env.GA4_PRIVATE_KEY);
   return { propertyId, clientEmail, privateKey, ready: Boolean(propertyId && clientEmail && privateKey) };
 }
 
