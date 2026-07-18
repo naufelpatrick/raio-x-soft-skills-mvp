@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { AdminLayout } from "../components/AdminLayout";
 import { ConversionFunnel } from "../components/ConversionFunnel";
-import { DashboardAlerts, EmptyIntegrationState, NpsSummary, RevenueChart } from "../components/DashboardBlocks";
+import { DashboardAlerts, EmptyIntegrationState, Ga4Summary, NpsSummary, RevenueChart } from "../components/DashboardBlocks";
 import { DateRangeFilter } from "../components/DateRangeFilter";
 import { RecentLeadsTable, RecentSalesTable } from "../components/DashboardTables";
 import { MetricCard } from "../components/MetricCard";
@@ -94,7 +94,7 @@ export function AdminDashboardPage() {
         <div>
           <p className="text-[10px] font-mono uppercase tracking-[0.24em] text-primary">Visão geral</p>
           <h2 className="mt-2 text-2xl font-semibold">Cockpit do negócio</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Dados reais vindos do Supabase. Integrações externas aparecem como pendentes quando não configuradas.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Funil e vendas no Supabase, aquisição e engajamento no Google Analytics 4.</p>
         </div>
         <DateRangeFilter value={range} onChange={handleRangeChange} />
       </div>
@@ -127,7 +127,7 @@ export function AdminDashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-            <EmptyIntegrationState title="Google Analytics 4" message={data.integrations.ga4.message} />
+            <Ga4Summary ga4={data.integrations.ga4} />
             <EmptyIntegrationState title="Microsoft Clarity" message={data.integrations.clarity.connected ? "Integração configurada. Mapas de calor e gravações devem ser consultados diretamente no Clarity." : "Microsoft Clarity ainda não possui URL pública configurada para o dashboard."} href={data.integrations.clarity.url} actionLabel="Abrir Microsoft Clarity" />
           </div>
         </div>

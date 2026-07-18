@@ -1,5 +1,6 @@
 import { applySecurityHeaders, requireAllowedOrigin } from "../server/_security.js";
 import { adminSelect, getAuthenticatedAdmin, insertAdminAuditLog } from "../server/_admin.js";
+import { fetchGa4Report } from "../server/ga4.js";
 
 const PRODUCT_PRICE = 49.9;
 
@@ -215,12 +216,16 @@ export default async function handler(req, res) {
   const previousFilters = [["created_at", "gte", previousStart.toISOString()], ["created_at", "lt", previousEnd.toISOString()]];
 
   try {
-    const [events, previousEvents, leads, previousLeads, nps] = await Promise.all([
+    const [events, previousEvents, leads, previousLeads, nps, ga4] = await Promise.all([
       adminSelect("product_events", { select: "session_id,event_name,page_path,metadata,created_at", filters: periodFilters, limit: 10000 }),
       adminSelect("product_events", { select: "session_id,event_name,page_path,metadata,created_at", filters: previousFilters, limit: 10000 }),
       adminSelect("leads", { select: "session_id,name,email,main_area,professional_level,purchase_status,purchased_package,payment_status,payment_confirmed_at,package_purchased_at,last_seen_at,created_at", filters: periodFilters, order: "created_at.desc", limit: 1000 }),
       adminSelect("leads", { select: "session_id,purchase_status,purchased_package,created_at", filters: previousFilters, limit: 1000 }),
       adminSelect("nps_responses", { select: "score,category,created_at", filters: periodFilters, limit: 1000 }),
+      fetchGa4Report({ start, end }).catch((error) => {
+        console.error("GA4 report error", error);
+        return { connected: false, message: "Não foi possível consultar o GA4. Verifique a permissão da conta de serviço e as credenciais." };
+      }),
     ]);
 
     const publicEvents = publicProductEvents(events);
@@ -281,7 +286,7 @@ export default async function handler(req, res) {
         message: "As pontuações por competência ainda não são persistidas em tabela de diagnósticos. Este bloco será ativado quando o armazenamento agregado for implementado.",
       },
       integrations: {
-        ga4: { connected: false, message: "Google Analytics Data API ainda não conectada." },
+        ga4,
         clarity: { connected: Boolean(process.env.VITE_CLARITY_PROJECT_URL), url: process.env.VITE_CLARITY_PROJECT_URL || "" },
       },
       alerts: buildAlerts({ metrics, funnel, leads }),
