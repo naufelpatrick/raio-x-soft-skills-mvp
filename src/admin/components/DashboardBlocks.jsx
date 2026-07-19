@@ -112,6 +112,45 @@ export function Ga4Summary({ ga4 }) {
   );
 }
 
+export function ClaritySummary({ clarity }) {
+  if (!clarity?.connected) {
+    return <EmptyIntegrationState title="Microsoft Clarity" message={clarity?.message || "Integração indisponível."} />;
+  }
+
+  const summary = clarity.summary || {};
+  const cards = [
+    ["Sessões", summary.sessions],
+    ["Usuários distintos", summary.distinctUsers],
+    ["Páginas por sessão", Number(summary.pagesPerSession || 0).toFixed(1)],
+    ["Rolagem média", `${Number(summary.scrollDepth || 0).toFixed(1)}%`],
+    ["Cliques mortos", summary.deadClicks],
+    ["Cliques de raiva", summary.rageClicks],
+    ["Retornos rápidos", summary.quickbacks],
+    ["Erros de script", summary.scriptErrors],
+  ];
+
+  return (
+    <div className="rounded-sm border border-border bg-card p-6 xl:col-span-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-primary">Microsoft Clarity</p>
+          <h2 className="mt-1 text-lg font-semibold">Comportamento e fricção</h2>
+        </div>
+        <p className="text-xs text-muted-foreground">Últimas {clarity.periodDays || 3} dias · cache de 12h</p>
+      </div>
+      <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+        {cards.map(([label, value]) => (
+          <div key={label} className="rounded-sm border border-border bg-background/40 p-4">
+            <p className="text-xs text-muted-foreground">{label}</p>
+            <p className="mt-2 text-2xl font-semibold">{typeof value === "number" ? formatNumber(value) : value}</p>
+          </div>
+        ))}
+      </div>
+      <p className="mt-4 text-xs text-muted-foreground">A API do Clarity disponibiliza métricas agregadas; gravações e mapas de calor permanecem no painel da Microsoft.</p>
+    </div>
+  );
+}
+
 export function NpsSummary({ nps }) {
   return (
     <div className="rounded-sm border border-border bg-card p-6">

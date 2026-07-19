@@ -1,6 +1,7 @@
 import { applySecurityHeaders, requireAllowedOrigin } from "../server/_security.js";
 import { adminSelect, getAuthenticatedAdmin, insertAdminAuditLog } from "../server/_admin.js";
 import { fetchGa4Report } from "../server/ga4.js";
+import { fetchClarityReport } from "../server/clarity.js";
 
 const PRODUCT_PRICE = 49.9;
 
@@ -216,7 +217,7 @@ export default async function handler(req, res) {
   const previousFilters = [["created_at", "gte", previousStart.toISOString()], ["created_at", "lt", previousEnd.toISOString()]];
 
   try {
-    const [events, previousEvents, leads, previousLeads, nps, ga4] = await Promise.all([
+    const [events, previousEvents, leads, previousLeads, nps, ga4, clarity] = await Promise.all([
       adminSelect("product_events", { select: "session_id,event_name,page_path,metadata,created_at", filters: periodFilters, limit: 10000 }),
       adminSelect("product_events", { select: "session_id,event_name,page_path,metadata,created_at", filters: previousFilters, limit: 10000 }),
       adminSelect("leads", { select: "session_id,name,email,main_area,professional_level,purchase_status,purchased_package,payment_status,payment_confirmed_at,package_purchased_at,last_seen_at,created_at", filters: periodFilters, order: "created_at.desc", limit: 1000 }),
@@ -225,6 +226,10 @@ export default async function handler(req, res) {
       fetchGa4Report({ start, end }).catch((error) => {
         console.error("GA4 report error", error);
         return { connected: false, message: "Não foi possível consultar o GA4. Verifique a permissão da conta de serviço e as credenciais." };
+      }),
+      fetchClarityReport().catch((error) => {
+        console.error("Clarity report error", error);
+        return { connected: false, message: "Não foi possível consultar o Microsoft Clarity." };
       }),
     ]);
 
@@ -287,6 +292,7 @@ export default async function handler(req, res) {
       },
       integrations: {
         ga4,
+        clarity,
       },
       alerts: buildAlerts({ metrics, funnel, leads }),
     });

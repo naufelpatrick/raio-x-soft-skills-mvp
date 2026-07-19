@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { AdminLayout } from "../components/AdminLayout";
 import { ConversionFunnel } from "../components/ConversionFunnel";
-import { DashboardAlerts, EmptyIntegrationState, Ga4Summary, NpsSummary, RevenueChart } from "../components/DashboardBlocks";
+import { ClaritySummary, DashboardAlerts, EmptyIntegrationState, Ga4Summary, NpsSummary, RevenueChart } from "../components/DashboardBlocks";
 import { DateRangeFilter } from "../components/DateRangeFilter";
 import { RecentLeadsTable, RecentSalesTable } from "../components/DashboardTables";
 import { MetricCard } from "../components/MetricCard";
@@ -128,6 +128,7 @@ export function AdminDashboardPage() {
 
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
             <Ga4Summary ga4={data.integrations.ga4} />
+            <ClaritySummary clarity={data.integrations.clarity} />
           </div>
         </div>
       )}
