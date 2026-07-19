@@ -287,7 +287,6 @@ export default async function handler(req, res) {
       },
       integrations: {
         ga4,
-        clarity: { connected: Boolean(process.env.VITE_CLARITY_PROJECT_URL), url: process.env.VITE_CLARITY_PROJECT_URL || "" },
       },
       alerts: buildAlerts({ metrics, funnel, leads }),
     });

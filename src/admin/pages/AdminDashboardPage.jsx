@@ -128,7 +128,6 @@ export function AdminDashboardPage() {
 
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
             <Ga4Summary ga4={data.integrations.ga4} />
-            <EmptyIntegrationState title="Microsoft Clarity" message={data.integrations.clarity.connected ? "Integração configurada. Mapas de calor e gravações devem ser consultados diretamente no Clarity." : "Microsoft Clarity ainda não possui URL pública configurada para o dashboard."} href={data.integrations.clarity.url} actionLabel="Abrir Microsoft Clarity" />
           </div>
         </div>
       )}
