@@ -20,7 +20,7 @@ const PROGRESS_STORAGE_KEY = "raio_x_progress_v1";
 const TRAFFIC_ATTRIBUTION_KEY = "raio_x_traffic_attribution_v1";
 const PRODUCT_EVENT_DEDUPE_KEY = "raio_x_product_event_dedupe_v1";
 const SITE_URL = "https://www.raioxdodesigner.com";
-const SOCIAL_IMAGE_URL = `${SITE_URL}/raio-x-social-card-v2.png`;
+const SOCIAL_IMAGE_URL = `${SITE_URL}/raio-x-social-card-v3.jpg`;
 const DEFAULT_SEO_DESCRIPTION = "Diagnóstico de competências comportamentais para profissionais de Design, com perfil profissional, radar de competências e plano de desenvolvimento.";
 
 const SEO_ROUTES = {
