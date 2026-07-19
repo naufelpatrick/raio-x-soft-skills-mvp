@@ -112,11 +112,6 @@ export async function fetchClarityReport() {
   const payload = await response.json();
   if (!Array.isArray(payload)) throw new Error("Clarity API retornou um formato inesperado.");
 
-  console.info("Clarity response shape", payload.map((item) => ({
-    metricName: item?.metricName,
-    keys: Object.keys(item?.information?.[0] || {}),
-  })));
-
   const snapshot = normalizeClarityPayload(payload);
   await saveSnapshot(snapshot);
   return snapshot;
