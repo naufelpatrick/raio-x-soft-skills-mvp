@@ -1,4 +1,5 @@
 import { BetaAnalyticsDataClient } from "@google-analytics/data";
+import { createPrivateKey } from "node:crypto";
 
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const cache = new Map();
@@ -49,6 +50,28 @@ function config() {
   return { propertyId, clientEmail, privateKey, ready: Boolean(propertyId && clientEmail && privateKey) };
 }
 
+function privateKeyShape(value) {
+  return {
+    length: value.length,
+    beginsWithPemHeader: value.startsWith("-----BEGIN PRIVATE KEY-----"),
+    endsWithPemFooter: value.endsWith("-----END PRIVATE KEY-----"),
+    lineCount: value ? value.split("\n").length : 0,
+    containsEscapedNewlines: value.includes("\\n"),
+  };
+}
+
+function assertValidPrivateKey(value) {
+  try {
+    createPrivateKey(value);
+  } catch (error) {
+    const diagnostic = privateKeyShape(value);
+    console.error("GA4 private key validation failed", diagnostic);
+    const invalidKeyError = new Error(`GA4_PRIVATE_KEY_INVALID ${JSON.stringify(diagnostic)}`);
+    invalidKeyError.cause = error;
+    throw invalidKeyError;
+  }
+}
+
 function gaDate(date) {
   return date.toISOString().slice(0, 10);
 }
@@ -93,6 +116,8 @@ export async function fetchGa4Report({ start, end }) {
   if (!credentials.ready) {
     return { connected: false, message: "Credenciais do Google Analytics Data API não configuradas." };
   }
+
+  assertValidPrivateKey(credentials.privateKey);
 
   const startDate = gaDate(start);
   const endDate = gaDate(inclusiveEnd(end));
