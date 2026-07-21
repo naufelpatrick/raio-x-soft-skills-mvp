@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import {
   ChevronLeft, ArrowRight, BarChart2, BookOpen, Target,
   Zap, Check, RefreshCw, Sparkles, Loader2, Lock,
-  Brain, Calendar, MessageCircle, ExternalLink, ChevronDown, ChevronUp, Download,
+  Brain, Calendar, Clock3, MessageCircle, ExternalLink, ChevronDown, ChevronUp, Download,
 } from "lucide-react";
 import { AdminDashboardPage } from "./admin/pages/AdminDashboardPage";
 import { AdminLoginPage } from "./admin/pages/AdminLoginPage";
 import { AdminResetPasswordPage } from "./admin/pages/AdminResetPasswordPage";
 import { BrandCenterPage } from "./admin/pages/BrandCenterPage";
 import { initializeAnalytics } from "./services/analyticsService";
+import { HeroReportPreview, LandingV2Content } from "./components/landing/LandingV2";
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const OWNER_WHATSAPP = "5549984361569";
@@ -1051,7 +1052,9 @@ const FAQS = [
   { q: "Preciso pagar antes de ver qualquer resultado?", a: "Não. O diagnóstico inicial é gratuito. Você só decide pelo plano completo depois de ver seu primeiro resultado." },
 ];
 
-function Landing({ onStart }) {
+// Mantida temporariamente como referência da versão anterior durante a validação da landing-v2.
+// eslint-disable-next-line no-unused-vars
+function LegacyLanding({ onStart }) {
   const scrollToReportExample = () => document.getElementById("exemplo-relatorio")?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   return (
@@ -1468,6 +1471,49 @@ function Landing({ onStart }) {
           </div>
         </div>
       </section>
+      <PageFooter />
+    </div>
+  );
+}
+
+function Landing({ onStart }) {
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <TopNav onStart={onStart} />
+      <main>
+        <section className="relative overflow-hidden border-b border-border px-6 py-20 lg:px-16 lg:py-28">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -left-40 -top-48 size-[42rem] rounded-full bg-amber-300/[.07] blur-3xl" />
+            <div className="absolute -bottom-48 right-0 size-[38rem] rounded-full bg-indigo-500/[.12] blur-3xl" />
+          </div>
+          <div className="relative mx-auto grid max-w-7xl gap-16 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/25 bg-amber-300/[.08] px-3 py-1.5 text-xs font-semibold text-amber-200">
+                <Zap className="size-3" /> Diagnóstico comportamental para designers
+              </div>
+              <h1 className="mt-8 max-w-4xl break-words text-[clamp(2.15rem,5.6vw,5.5rem)] font-bold leading-[1.04] tracking-[-.05em] sm:text-[clamp(2.7rem,5.6vw,5.5rem)] sm:leading-[1.02] sm:tracking-[-.055em]">
+                Descubra quais competências comportamentais estão <span className="text-amber-300">acelerando</span> — ou <span className="text-primary">limitando</span> — sua carreira como designer.
+              </h1>
+              <p className="mt-7 max-w-2xl text-lg leading-relaxed text-foreground/70">
+                Um diagnóstico online que revela seus pontos fortes, oportunidades de desenvolvimento e competências mais importantes para sua evolução profissional.
+              </p>
+              <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm text-foreground/72">
+                <span className="flex items-center gap-2"><Check className="size-4 text-amber-300" /> Resultado imediato</span>
+                <span className="flex items-center gap-2"><Clock3 className="size-4 text-amber-300" /> Aproximadamente 15 minutos</span>
+                <span className="flex items-center gap-2"><Brain className="size-4 text-amber-300" /> Desenvolvido exclusivamente para designers</span>
+              </div>
+              <button onClick={onStart} className="mt-9 inline-flex items-center gap-2.5 rounded-sm bg-amber-300 px-8 py-4 text-sm font-bold text-slate-950 shadow-[0_0_35px_rgba(251,191,36,.25)] transition hover:-translate-y-0.5 hover:bg-amber-200 active:scale-[.98]">
+                Começar diagnóstico gratuito <ArrowRight className="size-4" />
+              </button>
+              <button type="button" onClick={() => document.getElementById("resultado")?.scrollIntoView({ behavior: "smooth" })} className="ml-0 mt-4 inline-flex items-center gap-2 px-5 py-4 text-sm font-semibold text-foreground/65 transition hover:text-white sm:ml-3">
+                Ver o relatório <ChevronDown className="size-4" />
+              </button>
+            </div>
+            <HeroReportPreview />
+          </div>
+        </section>
+        <LandingV2Content onStart={onStart} mentors={MENTORS} />
+      </main>
       <PageFooter />
     </div>
   );
