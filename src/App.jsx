@@ -1495,7 +1495,7 @@ function Landing({ onStart }) {
                 Descubra quais competências comportamentais estão <span className="text-amber-300">acelerando</span> — ou <span className="text-primary">limitando</span> — sua carreira como designer.
               </h1>
               <p className="mt-7 max-w-2xl text-lg leading-relaxed text-foreground/70">
-                Um diagnóstico online que revela seus pontos fortes, oportunidades de desenvolvimento e competências mais importantes para sua evolução profissional.
+                Receba um relatório profissional com seus pontos comportamentais fortes, oportunidades de desenvolvimento e um plano claro para evoluir como designer.
               </p>
               <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm text-foreground/72">
                 <span className="flex items-center gap-2"><Check className="size-4 text-amber-300" /> Resultado imediato</span>
