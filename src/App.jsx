@@ -22,11 +22,11 @@ const TRAFFIC_ATTRIBUTION_KEY = "raio_x_traffic_attribution_v1";
 const PRODUCT_EVENT_DEDUPE_KEY = "raio_x_product_event_dedupe_v1";
 const SITE_URL = "https://www.raioxdodesigner.com";
 const SOCIAL_IMAGE_URL = `${SITE_URL}/raio-x-social-card-v3.jpg`;
-const DEFAULT_SEO_DESCRIPTION = "Diagnóstico de competências comportamentais para profissionais de Design, com perfil profissional, radar de competências e plano de desenvolvimento.";
+const DEFAULT_SEO_DESCRIPTION = "Diagnóstico para designers que ajuda a identificar competências comportamentais que podem estar limitando a evolução profissional e indica prioridades de desenvolvimento.";
 
 const SEO_ROUTES = {
   "/": {
-    title: "Raio-X do Designer | Diagnóstico de competências comportamentais para designers",
+    title: "Raio-X do Designer | Descubra o que pode estar travando sua carreira",
     description: DEFAULT_SEO_DESCRIPTION,
     robots: "index, follow",
   },
@@ -257,6 +257,15 @@ function trackProductEvent({ sessionId, eventName, metadata = {}, onceKey = "" }
     body: payload,
     keepalive: true,
   }).catch(() => {});
+}
+
+function trackLandingEvent({ sessionId, eventName, metadata = {}, onceKey = "" }) {
+  const landingMetadata = { landing_version: "v3", ...metadata };
+  trackProductEvent({ sessionId, eventName, metadata: landingMetadata, onceKey });
+  const preferences = readCookiePreferences();
+  if (preferences?.analytics && typeof window !== "undefined" && window.gtag) {
+    window.gtag("event", eventName, { session_id: sessionId, ...landingMetadata });
+  }
 }
 
 async function submitLead(leadData) {
@@ -606,9 +615,11 @@ function TopNav({ onStart, rightSlot }) {
       <div className="flex items-center gap-4">
         {rightSlot || (onStart && (
           <button onClick={onStart}
-            className="flex items-center gap-2 px-5 py-2 rounded-sm text-sm font-semibold hover:opacity-90 transition-opacity"
+            className="flex items-center gap-2 rounded-sm px-3 py-2 text-xs font-semibold transition-opacity hover:opacity-90 sm:px-5 sm:text-sm"
             style={{ backgroundColor: "#FBBF24", color: "#0B1120" }}>
-            Quero descobrir meu perfil <ArrowRight className="w-4 h-4" />
+            <span className="sm:hidden">Descobrir o que me trava</span>
+            <span className="hidden sm:inline">Descobrir o que está travando minha carreira</span>
+            <ArrowRight className="w-4 h-4 shrink-0" />
           </button>
         ))}
       </div>
@@ -1476,34 +1487,35 @@ function LegacyLanding({ onStart }) {
   );
 }
 
-function Landing({ onStart }) {
+function Landing({ onStart, sessionId }) {
+  const onTrack = (eventName, metadata, onceKey) => trackLandingEvent({ sessionId, eventName, metadata, onceKey });
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <TopNav onStart={onStart} />
+      <TopNav onStart={() => { onTrack("hero_cta_clicked", { cta_location: "header", cta_text: "Descobrir o que está travando minha carreira" }, "header_cta"); onStart(); }} />
       <main>
-        <section className="relative overflow-hidden border-b border-border px-6 py-20 lg:px-16 lg:py-28">
+        <section className="relative overflow-hidden border-b border-border px-6 pb-16 pt-8 sm:pt-14 lg:px-16 lg:pb-20 lg:pt-16">
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute -left-40 -top-48 size-[42rem] rounded-full bg-amber-300/[.07] blur-3xl" />
             <div className="absolute -bottom-48 right-0 size-[38rem] rounded-full bg-indigo-500/[.12] blur-3xl" />
           </div>
-          <div className="relative mx-auto grid max-w-7xl gap-16 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
+          <div className="relative mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/25 bg-amber-300/[.08] px-3 py-1.5 text-xs font-semibold text-amber-200">
-                <Zap className="size-3" /> Diagnóstico comportamental para designers
+                <Zap className="size-3" /> Clareza para o próximo passo da sua carreira
               </div>
-              <h1 className="mt-8 max-w-4xl break-words text-[clamp(2.15rem,5.6vw,5.5rem)] font-bold leading-[1.04] tracking-[-.05em] sm:text-[clamp(2.7rem,5.6vw,5.5rem)] sm:leading-[1.02] sm:tracking-[-.055em]">
-                Descubra quais competências comportamentais estão <span className="text-amber-300">acelerando</span> — ou <span className="text-primary">limitando</span> — sua carreira como designer.
+              <h1 className="mt-6 max-w-4xl break-words text-[clamp(2.15rem,5.6vw,5.5rem)] font-bold leading-[1.04] tracking-[-.05em] sm:mt-8 sm:text-[clamp(2.7rem,5.6vw,5.5rem)] sm:leading-[1.02] sm:tracking-[-.055em]">
+                Descubra por que sua carreira parece <span className="text-amber-300">estagnada.</span>
               </h1>
               <p className="mt-7 max-w-2xl text-lg leading-relaxed text-foreground/70">
-                Um diagnóstico online que revela seus pontos fortes, oportunidades de desenvolvimento e competências mais importantes para sua evolução profissional.
+                Receba um diagnóstico que identifica as competências que mais podem estar limitando sua evolução profissional e mostra onde concentrar seu desenvolvimento primeiro.
               </p>
               <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm text-foreground/72">
-                <span className="flex items-center gap-2"><Check className="size-4 text-amber-300" /> Resultado imediato</span>
-                <span className="flex items-center gap-2"><Clock3 className="size-4 text-amber-300" /> Aproximadamente 15 minutos</span>
-                <span className="flex items-center gap-2"><Brain className="size-4 text-amber-300" /> Desenvolvido exclusivamente para designers</span>
+                <span className="flex items-center gap-2"><Check className="size-4 text-amber-300" /> Resultado gratuito imediato</span>
+                <span className="flex items-center gap-2"><Clock3 className="size-4 text-amber-300" /> Cerca de 10 minutos</span>
+                <span className="flex items-center gap-2"><Brain className="size-4 text-amber-300" /> Especialistas em Design, UX e desenvolvimento profissional</span>
               </div>
-              <button onClick={onStart} className="mt-9 inline-flex items-center gap-2.5 rounded-sm bg-amber-300 px-8 py-4 text-sm font-bold text-slate-950 shadow-[0_0_35px_rgba(251,191,36,.25)] transition hover:-translate-y-0.5 hover:bg-amber-200 active:scale-[.98]">
-                Começar diagnóstico gratuito <ArrowRight className="size-4" />
+              <button onClick={() => { onTrack("hero_cta_clicked", { cta_location: "hero", cta_text: "Descobrir o que está travando minha carreira" }, "hero_cta"); onStart(); }} className="mt-6 inline-flex items-center gap-2.5 rounded-sm bg-amber-300 px-7 py-4 text-sm font-bold text-slate-950 shadow-[0_0_35px_rgba(251,191,36,.25)] transition hover:-translate-y-0.5 hover:bg-amber-200 active:scale-[.98] sm:mt-8">
+                Descobrir o que está travando minha carreira <ArrowRight className="size-4" />
               </button>
               <button type="button" onClick={() => document.getElementById("resultado")?.scrollIntoView({ behavior: "smooth" })} className="ml-0 mt-4 inline-flex items-center gap-2 px-5 py-4 text-sm font-semibold text-foreground/65 transition hover:text-white sm:ml-3">
                 Ver o relatório <ChevronDown className="size-4" />
@@ -1512,7 +1524,7 @@ function Landing({ onStart }) {
             <HeroReportPreview />
           </div>
         </section>
-        <LandingV2Content onStart={onStart} mentors={MENTORS} />
+        <LandingV2Content onStart={onStart} mentors={MENTORS} onTrack={onTrack} />
       </main>
       <PageFooter />
     </div>
@@ -2348,8 +2360,22 @@ export default function App() {
         eventName: "landing_page_view",
         onceKey: "landing_page_view",
       });
+      trackLandingEvent({
+        sessionId,
+        eventName: "landing_viewed",
+        onceKey: "landing_viewed_v3",
+      });
     }
   }, [sessionId]);
+  useEffect(() => {
+    if (view !== "profile") return;
+    trackLandingEvent({
+      sessionId,
+      eventName: "assessment_entry_viewed",
+      metadata: { section_name: "profile_entry" },
+      onceKey: "assessment_entry_viewed",
+    });
+  }, [sessionId, view]);
   useEffect(() => {
     if (typeof window === "undefined") return;
     applySeoForPath(window.location.pathname, Boolean(window.location.search));
@@ -2448,7 +2474,7 @@ export default function App() {
   if (LegalRoute) return <><LegalRoute /><CookieConsentBanner sessionId={sessionId} /></>;
   return (
     <>
-      {view === "landing" && <Landing onStart={handleStartProfile} />}
+      {view === "landing" && <Landing onStart={handleStartProfile} sessionId={sessionId} />}
       {view === "about" && <AboutPage onBack={() => navigateTo("landing")} onStart={handleStartProfile} />}
       {view === "profile" && <ProfileForm onSubmit={handleProfileSubmit} onBack={() => navigateTo("landing")} onFieldStart={(field) => trackFunnelEvent({ sessionId, eventName: "profile_field_started", step: "profile", metadata: { field } })} />}
       {view === "assessment" && <AssessmentForm answers={answers} onAnswer={handleAnswer} onComplete={handleComplete} onBack={() => navigateTo("profile")} />}
