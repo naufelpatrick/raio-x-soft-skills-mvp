@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   Check,
@@ -8,6 +8,7 @@ import {
   Flag,
   Lightbulb,
   LockKeyhole,
+  MessageCircle,
   Sparkles,
   Target,
 } from "lucide-react";
@@ -95,6 +96,8 @@ function CTAButton({ children, onClick, className = "" }) {
 }
 
 export function LandingV3Content({ onStart, mentors, onTrack }) {
+  const [showWhatsApp, setShowWhatsApp] = useState(false);
+
   useEffect(() => {
     const sections = document.querySelectorAll("[data-track-section]");
     const observer = new IntersectionObserver((entries) => {
@@ -122,6 +125,17 @@ export function LandingV3Content({ onStart, mentors, onTrack }) {
       window.removeEventListener("scroll", handleScroll);
     };
   }, [onTrack]);
+
+  useEffect(() => {
+    const updateVisibility = () => {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = scrollable > 0 ? window.scrollY / scrollable : 0;
+      setShowWhatsApp(progress >= 0.3);
+    };
+    window.addEventListener("scroll", updateVisibility, { passive: true });
+    updateVisibility();
+    return () => window.removeEventListener("scroll", updateVisibility);
+  }, []);
 
   const start = (location, text, eventName) => {
     onTrack(eventName, { cta_location: location, cta_text: text, landing_version: "v3" }, `${eventName}_${location}`);
@@ -219,6 +233,23 @@ export function LandingV3Content({ onStart, mentors, onTrack }) {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_100%,rgba(251,191,36,.13),transparent_45%),radial-gradient(circle_at_15%_10%,rgba(129,140,248,.12),transparent_35%)]" />
         <div className="relative mx-auto max-w-5xl"><Flag className="mx-auto size-8 text-amber-300" /><h2 className="mx-auto mt-6 max-w-4xl text-3xl font-bold leading-tight tracking-tight sm:text-5xl">Você não precisa continuar tentando evoluir sem saber onde concentrar seus esforços.</h2><CTAButton className="mt-9" onClick={() => start("final", "Descobrir o que está travando minha carreira", "midpage_cta_clicked")}>Descobrir o que está travando minha carreira</CTAButton><p className="mt-4 text-sm text-foreground/55">Comece gratuitamente. O relatório completo é opcional.</p></div>
       </section>
+
+      <a
+        href="https://wa.me/5549991106400?text=Ol%C3%A1!%20Tenho%20uma%20d%C3%BAvida%20sobre%20o%20Raio-X%20do%20Designer."
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Tirar uma dúvida sobre o Raio-X do Designer pelo WhatsApp"
+        onClick={() => onTrack("whatsapp_clicked", { location: "floating", landing_version: "v3" })}
+        className={`fixed bottom-5 right-5 z-40 flex items-center gap-3 rounded-full border border-amber-300/35 bg-[#0B1120]/95 p-2.5 text-white shadow-[0_18px_60px_rgba(0,0,0,.48),0_0_32px_rgba(251,191,36,.12)] backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:border-amber-300 hover:bg-[#111827] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 sm:bottom-7 sm:right-7 sm:rounded-2xl sm:px-4 sm:py-3 ${showWhatsApp ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"}`}
+      >
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-amber-300 text-[#0B1120] shadow-[0_0_22px_rgba(251,191,36,.25)]">
+          <MessageCircle className="size-5" />
+        </span>
+        <span className="hidden pr-1 text-left sm:block">
+          <strong className="block text-xs font-bold">Ficou com alguma dúvida?</strong>
+          <span className="mt-0.5 block text-[10px] text-white/55">Fale com a equipe do Raio-X</span>
+        </span>
+      </a>
     </>
   );
 }
