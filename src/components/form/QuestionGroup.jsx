@@ -24,22 +24,21 @@ export default function QuestionGroup({
 
       <div className="space-y-5">
         {questions.map((question, index) => {
-          const questionKey = `${competency.id}_${index + 1}`;
-
           return (
-            <div
-              key={questionKey}
+            <fieldset
+              key={question.id}
               className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm"
             >
-              <p className="font-medium text-slate-800">
-                {index + 1}. {question}
-              </p>
+              <legend className="font-medium text-slate-800">
+                {index + 1}. {question.text}
+              </legend>
 
               <LikertScale
-                value={answers[questionKey]}
-                onChange={(value) => onAnswerChange(questionKey, value)}
+                name={question.id}
+                value={answers[question.id]}
+                onChange={(value) => onAnswerChange(question.id, value)}
               />
-            </div>
+            </fieldset>
           );
         })}
       </div>

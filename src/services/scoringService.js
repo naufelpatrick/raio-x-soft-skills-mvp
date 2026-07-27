@@ -1,7 +1,16 @@
-import { competencies } from "../data/competencies";
-import { calculateProfile } from "./profileService";
-import { calculateCrossAnalysis } from "./crossAnalysisService";
-import { generatePDI } from "./pdiService";
+import { competencies } from "../data/competencies.js";
+import {
+  INSTRUMENT_VERSION,
+  getStatementsForCompetency,
+  statements,
+} from "../data/questions.js";
+
+export function getAdjustedScore(answer, isReverseScored) {
+  if (!Number.isInteger(answer) || answer < 1 || answer > 5) {
+    throw new Error("Resposta inválida: o valor deve estar entre 1 e 5.");
+  }
+  return isReverseScored ? 6 - answer : answer;
+}
 
 export function getMaturityLevel(score) {
   if (score <= 20) return "Inicial";
@@ -12,58 +21,64 @@ export function getMaturityLevel(score) {
 }
 
 export function calculateCompetencyScore(answers, competencyId) {
-  let rawScore = 0;
-
-  for (let index = 1; index <= 5; index++) {
-    rawScore += Number(answers[`${competencyId}_${index}`] || 0);
+  const competencyStatements = getStatementsForCompetency(competencyId);
+  if (competencyStatements.length !== 5) {
+    throw new Error(`Competência inválida ou incompleta: ${competencyId}.`);
   }
 
+  const rawScore = competencyStatements.reduce((sum, statement) => {
+    const answer = answers[statement.id];
+    return sum + getAdjustedScore(answer, statement.isReverseScored);
+  }, 0);
   const score = Math.round(((rawScore - 5) / 20) * 100);
 
-  return {
-    rawScore,
-    score,
-    level: getMaturityLevel(score),
-  };
+  return { rawScore, score, level: getMaturityLevel(score) };
 }
 
-export function calculateAssessmentResults(answers) {
-  const competencyResults = competencies.map((competency) => {
-    const result = calculateCompetencyScore(answers, competency.id);
+export function calculateScores(answers) {
+  return competencies.map((competency) => ({
+    id: competency.id,
+    name: competency.name,
+    ...calculateCompetencyScore(answers, competency.id),
+  }));
+}
 
+export function calculateGeneralScore(answers) {
+  const scores = calculateScores(answers);
+  return Math.round(
+    scores.reduce((sum, competency) => sum + competency.score, 0) /
+      scores.length
+  );
+}
+
+export function buildStoredAnswers(answers) {
+  return statements.map((statement) => {
+    const value = answers[statement.id];
     return {
-      ...competency,
-      ...result,
+      statementId: statement.id,
+      competencyId: statement.competencyId,
+      order: statement.order,
+      isReverseScored: statement.isReverseScored,
+      value,
+      adjustedValue: getAdjustedScore(value, statement.isReverseScored),
     };
   });
+}
 
+export function calculateVersionedAssessment(answers, instrumentVersion) {
+  if (instrumentVersion !== INSTRUMENT_VERSION) {
+    throw new Error(
+      `A avaliação ${instrumentVersion || "1.0"} não pode ser recalculada com o instrumento ${INSTRUMENT_VERSION}.`
+    );
+  }
+  const scores = calculateScores(answers);
   const generalScore = Math.round(
-    competencyResults.reduce((sum, item) => sum + item.score, 0) /
-      competencyResults.length
+    scores.reduce((sum, item) => sum + item.score, 0) / scores.length
   );
-
-  const generalLevel = getMaturityLevel(generalScore);
-
-  const sortedByScore = [...competencyResults].sort(
-    (a, b) => b.score - a.score
-  );
-
-  const profile = calculateProfile(competencyResults);
-
-const crossAnalysis = calculateCrossAnalysis(competencyResults);
-
-const pdi = generatePDI(
-  sortedByScore.slice(-3).reverse()
-);
-
   return {
+    instrumentVersion,
+    answers: buildStoredAnswers(answers),
+    scores,
     generalScore,
-    generalLevel,
-    profile,
-    crossAnalysis,
-    pdi,
-    competencies: competencyResults,
-    strengths: sortedByScore.slice(0, 3),
-    opportunities: sortedByScore.slice(-3).reverse(),
   };
 }

@@ -42,10 +42,7 @@ export default function AssessmentForm({ initialDraft, onProgress, onStepComplet
       });
     }
 
-    return currentQuestions.items.every((_, index) => {
-      const questionKey = `${currentCompetency.id}_${index + 1}`;
-      return answers[questionKey];
-    });
+    return currentQuestions.items.every((question) => answers[question.id]);
   }
 
   function handleNext() {

@@ -48,7 +48,7 @@ export const competencies = [
       "Capacidade de influenciar positivamente, assumir responsabilidade e criar ambientes de confiança.",
   },
   {
-    id: "aprendizado_continuo",
+    id: "aprendizado",
     name: "Aprendizado Contínuo",
     description:
       "Capacidade de permanecer curioso, aprender constantemente e transformar conhecimento em prática.",

@@ -10,6 +10,16 @@ import { AdminResetPasswordPage } from "./admin/pages/AdminResetPasswordPage";
 import { BrandCenterPage } from "./admin/pages/BrandCenterPage";
 import { initializeAnalytics, trackPurchase } from "./services/analyticsService";
 import { HeroReportPreview, LandingV2Content } from "./components/landing/LandingV2";
+import {
+  INSTRUMENT_VERSION,
+  getStatementsForCompetency,
+  likertOptions,
+  openQuestions as OPEN_QUESTIONS,
+} from "./data/questions";
+import {
+  calculateScores,
+  calculateVersionedAssessment,
+} from "./services/scoringService";
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const OWNER_WHATSAPP = "5549984361569";
@@ -18,7 +28,7 @@ const PRODUCT_PRICE = "R$ 49,90";
 const PRODUCT_VALUE = 49.9;
 const LAST_LEGAL_UPDATE = "10 de julho de 2026";
 const COOKIE_PREFERENCES_KEY = "raio_x_cookie_preferences_v1";
-const PROGRESS_STORAGE_KEY = "raio_x_progress_v1";
+const PROGRESS_STORAGE_KEY = "raio_x_progress_v2";
 const TRAFFIC_ATTRIBUTION_KEY = "raio_x_traffic_attribution_v1";
 const PRODUCT_EVENT_DEDUPE_KEY = "raio_x_product_event_dedupe_v1";
 const SITE_URL = "https://www.raioxdodesigner.com";
@@ -78,7 +88,8 @@ function readSavedProgress() {
   if (typeof window === "undefined") return null;
   try {
     const stored = window.localStorage.getItem(PROGRESS_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : null;
+    const progress = stored ? JSON.parse(stored) : null;
+    return progress?.instrumentVersion === INSTRUMENT_VERSION ? progress : null;
   } catch {
     return null;
   }
@@ -87,7 +98,11 @@ function readSavedProgress() {
 function writeSavedProgress(progress) {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify({ ...progress, savedAt: new Date().toISOString() }));
+    window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify({
+      ...progress,
+      instrumentVersion: INSTRUMENT_VERSION,
+      savedAt: new Date().toISOString(),
+    }));
   } catch {
     // Se o navegador bloquear storage, a experiência continua sem recuperação.
   }
@@ -287,6 +302,19 @@ async function submitLead(leadData) {
   }
 }
 
+async function submitAssessment(assessment) {
+  const response = await fetch("/api/submit-assessment", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(assessment),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || result.saved !== true) {
+    throw new Error(result.error || "Não foi possível registrar a avaliação.");
+  }
+  return result;
+}
+
 async function createPayment(leadData) {
   const response = await fetch("/api/create-payment", {
     method: "POST",
@@ -398,27 +426,6 @@ const COMPETENCIES = [
   { id: "proposito", name: "Propósito", icon: "🎯", desc: "Encontrar significado e impacto no trabalho realizado." },
 ];
 
-const QUESTIONS = {
-  comunicacao: ["Procuro confirmar se a outra pessoa realmente compreendeu minha mensagem.", "Adapto minha linguagem de acordo com o público com quem estou falando.", "Costumo simplificar assuntos complexos para facilitar o entendimento.", "Escuto atentamente antes de responder.", "Solicito feedback sobre a clareza da minha comunicação."],
-  empatia: ["Busco compreender o contexto antes de tirar conclusões sobre alguém.", "Faço perguntas para entender melhor diferentes perspectivas.", "Consigo reconhecer emoções mesmo quando elas não são verbalizadas.", "Evito julgar rapidamente comportamentos ou decisões de outras pessoas.", "Consigo discordar mantendo respeito e abertura ao diálogo."],
-  inteligencia_emocional: ["Consigo perceber minhas emoções antes de reagir impulsivamente.", "Mantenho a calma em situações de pressão ou conflito.", "Consigo separar críticas ao meu trabalho de críticas à minha pessoa.", "Faço pausas para refletir antes de responder em momentos difíceis.", "Reconheço quando minhas emoções estão influenciando minhas decisões."],
-  pensamento_critico: ["Procuro evidências antes de defender uma opinião.", "Questiono premissas e soluções antes de aceitá-las.", "Consigo diferenciar fatos, opiniões e interpretações.", "Avalio diferentes perspectivas antes de tomar decisões importantes.", "Reviso minhas próprias crenças quando encontro novas informações."],
-  colaboracao: ["Compartilho conhecimento e experiências com outras pessoas.", "Consigo construir soluções em conjunto sem necessidade de impor minhas ideias.", "Dou crédito às contribuições de colegas e parceiros.", "Vejo divergências como oportunidades de melhorar soluções.", "Busco alinhamento antes de acelerar decisões importantes."],
-  adaptabilidade: ["Consigo me ajustar rapidamente a mudanças de cenário ou prioridades.", "Estou aberto a aprender novas ferramentas e métodos.", "Reavalio processos quando percebo que já não funcionam bem.", "Vejo mudanças como oportunidades de crescimento.", "Consigo manter produtividade mesmo diante de incertezas."],
-  escuta_ativa: ["Evito interromper enquanto outra pessoa está falando.", "Demonstro interesse genuíno durante conversas.", "Faço perguntas para aprofundar minha compreensão.", "Observo sinais não verbais durante interações.", "Confirmo se compreendi corretamente o que a outra pessoa quis dizer."],
-  lideranca: ["Assumo responsabilidade pelos resultados das minhas decisões.", "Procuro dar exemplo por meio das minhas atitudes.", "Incentivo a participação de outras pessoas nas decisões.", "Crio um ambiente seguro para opiniões diferentes.", "Ofereço feedbacks respeitosos e construtivos."],
-  aprendizado: ["Reservo tempo regularmente para aprender algo novo.", "Busco conteúdos fora da minha área principal de atuação.", "Transformo aprendizado em prática.", "Mantenho curiosidade mesmo em assuntos que já domino.", "Estou aberto a rever conhecimentos e opiniões."],
-  proposito: ["Consigo enxergar significado no trabalho que realizo.", "Meus valores influenciam minhas decisões profissionais.", "Percebo como meu trabalho impacta outras pessoas.", "Reflito regularmente sobre minha direção profissional.", "Sinto que minhas atividades estão alinhadas ao que considero importante."],
-};
-
-const OPEN_QUESTIONS = [
-  "Qual é hoje o maior desafio comportamental da sua vida profissional?",
-  "Qual competência você acredita precisar desenvolver com mais urgência?",
-  "Existe alguma situação recorrente no trabalho que gera desconforto, insegurança ou dificuldade para você?",
-];
-
-const LIKERT_LABELS = ["Nunca", "Raramente", "Às vezes", "Frequentemente", "Sempre"];
-
 const PROFILES = [
   { id: "comunicador", name: "Comunicador Estratégico", competencies: ["comunicacao", "escuta_ativa", "empatia"], desc: "Você cria entendimento entre pessoas, traduz ideias complexas e alinha expectativas com clareza." },
   { id: "facilitador", name: "Facilitador Humano", competencies: ["empatia", "colaboracao", "lideranca"], desc: "Você fortalece relações, reduz conflitos e constrói ambientes de confiança." },
@@ -464,14 +471,6 @@ function getLevel(score) {
 }
 
 const LEVEL_COLORS = { Inicial: "#f87171", Emergente: "#fb923c", Consistente: "#facc15", Avançado: "#818cf8", Referência: "#34d399" };
-
-function calculateScores(answers) {
-  return COMPETENCIES.map((c) => {
-    const raw = [1, 2, 3, 4, 5].reduce((sum, i) => sum + ((answers[`${c.id}_${i}`]) || 0), 0);
-    const score = Math.round(((raw - 5) / 20) * 100);
-    return { id: c.id, name: c.name, score, level: getLevel(score) };
-  });
-}
 
 function getProfileResult(scores) {
   const map = Object.fromEntries(scores.map((s) => [s.id, s.score]));
@@ -1673,8 +1672,9 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
   const TOTAL = 11;
   const competency = COMPETENCIES[step];
   const isOpen = step === 10;
+  const competencyStatements = isOpen ? [] : getStatementsForCompetency(competency?.id);
   const stepAnswered = () => {
-    if (!isOpen) return [1, 2, 3, 4, 5].every((i) => answers[`${competency.id}_${i}`]);
+    if (!isOpen) return competencyStatements.every((statement) => answers[statement.id]);
     return OPEN_QUESTIONS.every((_, i) => ((answers[`open_${i + 1}`]) || "").trim().length > 0);
   };
   const progress = Math.round((step / TOTAL) * 100);
@@ -1692,6 +1692,18 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
       <div className="max-w-2xl mx-auto px-6 py-12">
         {!isOpen ? (
           <>
+            {step === 0 && (
+              <aside className="mb-10 rounded-sm border border-primary/30 bg-primary/5 p-5 sm:p-6" aria-labelledby="assessment-guidance-title">
+                <p id="assessment-guidance-title" className="font-medium text-foreground">
+                  Responda pensando em situações reais
+                </p>
+                <div className="mt-3 space-y-2 text-sm leading-relaxed text-muted-foreground">
+                  <p>Não existem respostas certas ou erradas. Este diagnóstico busca compreender como você percebe seus comportamentos no dia a dia.</p>
+                  <p>Considere como você costuma agir na maior parte das situações, e não como gostaria de agir ou como acredita que deveria agir.</p>
+                  <p>Utilize a escala de discordância ou concordância para responder a cada afirmação.</p>
+                </div>
+              </aside>
+            )}
             <div className="flex items-start gap-4 mb-10">
               <div className="w-10 h-10 bg-primary/10 rounded-sm flex items-center justify-center text-lg shrink-0">{competency.icon}</div>
               <div>
@@ -1701,21 +1713,34 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
               </div>
             </div>
             <div className="space-y-10">
-              {QUESTIONS[competency.id].map((q, qi) => {
-                const key = `${competency.id}_${qi + 1}`;
-                const val = answers[key];
+              {competencyStatements.map((statement, qi) => {
+                const val = answers[statement.id];
                 return (
-                  <div key={qi}>
-                    <p className="text-sm leading-relaxed mb-5 text-foreground/90">{q}</p>
-                    <div className="flex gap-2">
-                      {[1, 2, 3, 4, 5].map((v) => (
-                        <button key={v} onClick={() => onAnswer(key, v)} className={`flex-1 flex flex-col items-center gap-1.5 py-3.5 rounded-sm border text-sm transition-all ${val === v ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"}`}>
-                          <span className="font-mono font-medium text-base">{v}</span>
-                          <span className="text-[9px] leading-tight text-center hidden sm:block px-1 opacity-70">{LIKERT_LABELS[v - 1]}</span>
-                        </button>
+                  <fieldset key={statement.id}>
+                    <legend className="text-sm leading-relaxed mb-5 text-foreground/90">
+                      <span className="sr-only">Afirmação {qi + 1}: </span>{statement.text}
+                    </legend>
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-5" role="radiogroup" aria-label={`Resposta para ${statement.id}`}>
+                      {likertOptions.map((option) => (
+                        <label key={option.value} className={`relative flex min-h-12 cursor-pointer items-center gap-3 rounded-sm border px-3 py-2.5 text-sm transition-all sm:flex-col sm:justify-center sm:gap-1.5 sm:px-1 sm:text-center ${val === option.value ? "border-primary bg-primary/10 text-primary ring-1 ring-primary" : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"}`}>
+                          <input
+                            type="radio"
+                            name={statement.id}
+                            value={option.value}
+                            checked={val === option.value}
+                            onChange={() => onAnswer(statement.id, option.value)}
+                            className="sr-only"
+                            aria-label={`${option.value} — ${option.label}`}
+                          />
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current font-mono font-medium">
+                            {val === option.value ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : option.value}
+                          </span>
+                          <span className="text-xs leading-tight sm:text-[9px]">{option.label}</span>
+                          {val === option.value && <span className="sr-only">Selecionado</span>}
+                        </label>
                       ))}
                     </div>
-                  </div>
+                  </fieldset>
                 );
               })}
             </div>
@@ -2278,9 +2303,9 @@ function createDemoFreeReportData() {
 
   const answers = {};
   COMPETENCIES.forEach((competency, competencyIndex) => {
-    QUESTIONS[competency.id].forEach((_, questionIndex) => {
+    getStatementsForCompetency(competency.id).forEach((statement, questionIndex) => {
       const pattern = [4, 5, 4, 3, 5];
-      answers[`${competency.id}_${questionIndex + 1}`] = pattern[(competencyIndex + questionIndex) % pattern.length];
+      answers[statement.id] = pattern[(competencyIndex + questionIndex) % pattern.length];
     });
   });
   answers.open_1 = "Comunicar melhor decisões difíceis sem parecer defensiva.";
@@ -2411,7 +2436,7 @@ export default function App() {
     trackProductEvent({
       sessionId,
       eventName: "assessment_progress",
-      metadata: { questionKey: key },
+      metadata: { questionKey: key, instrument_version: INSTRUMENT_VERSION },
       onceKey: `assessment_progress_${key}`,
     });
   };
@@ -2425,7 +2450,7 @@ export default function App() {
     navigateTo("profile");
   };
   const handleProfileSubmit = (data) => {
-    const leadProfile = { ...data, sessionId, purchaseStatus: "not_purchased" };
+    const leadProfile = { ...data, sessionId, purchaseStatus: "not_purchased", instrumentVersion: INSTRUMENT_VERSION };
     setProfileData(leadProfile);
     submitLead(leadProfile).catch(() => {});
     trackFunnelEvent({
@@ -2433,6 +2458,7 @@ export default function App() {
       eventName: "profile_submitted",
       step: "profile",
       metadata: {
+        instrument_version: INSTRUMENT_VERSION,
         professionalLevel: data.professionalLevel,
         mainArea: data.mainArea,
         marketingConsent: data.marketingConsent === true,
@@ -2442,40 +2468,51 @@ export default function App() {
       sessionId,
       eventName: "assessment_started",
       step: "assessment",
+      metadata: { instrument_version: INSTRUMENT_VERSION },
     });
     trackProductEvent({
       sessionId,
       eventName: "assessment_started",
+      metadata: { instrument_version: INSTRUMENT_VERSION },
       onceKey: "assessment_started",
     });
     navigateTo("assessment");
   };
   const handleComplete = () => {
-    const calculatedScores = calculateScores(answers);
-    const generalScore = Math.round(calculatedScores.reduce((sum, item) => sum + item.score, 0) / calculatedScores.length);
+    const assessment = calculateVersionedAssessment(answers, INSTRUMENT_VERSION);
+    const calculatedScores = assessment.scores;
+    const generalScore = assessment.generalScore;
     setScores(calculatedScores);
+    submitAssessment({
+      sessionId,
+      instrumentVersion: INSTRUMENT_VERSION,
+      answers: assessment.answers,
+      openAnswers: Object.fromEntries(Object.entries(answers).filter(([key]) => key.startsWith("open_"))),
+      scores: calculatedScores,
+      generalScore,
+    }).catch((error) => console.error("Assessment submit error", error));
     trackFunnelEvent({
       sessionId,
       eventName: "assessment_completed",
       step: "assessment",
-      metadata: { generalScore },
+      metadata: { generalScore, instrument_version: INSTRUMENT_VERSION },
     });
     trackProductEvent({
       sessionId,
       eventName: "assessment_completed",
-      metadata: { generalScore },
+      metadata: { generalScore, instrument_version: INSTRUMENT_VERSION },
       onceKey: "assessment_completed",
     });
     trackFunnelEvent({
       sessionId,
       eventName: "free_report_viewed",
       step: "free_report",
-      metadata: { generalScore },
+      metadata: { generalScore, instrument_version: INSTRUMENT_VERSION },
     });
     trackProductEvent({
       sessionId,
       eventName: "free_report_viewed",
-      metadata: { generalScore },
+      metadata: { generalScore, instrument_version: INSTRUMENT_VERSION },
       onceKey: "free_report_viewed",
     });
     navigateTo("results");
