@@ -3,6 +3,7 @@ import { storeLocalEvent } from "./sessionService";
 let initialized = false;
 let activeSessionId = null;
 const COOKIE_PREFERENCES_KEY = "raio_x_cookie_preferences_v1";
+const PURCHASE_DEDUPE_KEY = "raio_x_purchase_dedupe_v1";
 const DEFAULT_MEASUREMENT_ID = "G-RFRY1LERDY";
 const DEFAULT_CLARITY_PROJECT_ID = "xkxrzsnluj";
 
@@ -19,6 +20,7 @@ const allowedEvents = new Set([
   "feedback_submitted",
   "interest_form_opened",
   "interest_submitted",
+  "purchase",
 ]);
 
 export function initializeAnalytics(sessionId) {
@@ -85,4 +87,37 @@ export function trackEvent(name, parameters = {}) {
       ...parameters,
     });
   }
+}
+
+export function trackPurchase({ transactionId, value, currency = "BRL", items = [] }) {
+  if (!transactionId || !Number.isFinite(value) || value <= 0) return false;
+
+  let trackedTransactions = [];
+  try {
+    trackedTransactions = JSON.parse(localStorage.getItem(PURCHASE_DEDUPE_KEY) || "[]");
+    if (!Array.isArray(trackedTransactions)) trackedTransactions = [];
+    if (trackedTransactions.includes(transactionId)) return false;
+  } catch {
+    // Falhas no armazenamento não devem impedir o envio da conversão.
+  }
+
+  if (!initialized || !window.gtag) return false;
+
+  trackEvent("purchase", {
+    transaction_id: transactionId,
+    value,
+    currency,
+    items,
+  });
+
+  try {
+    localStorage.setItem(
+      PURCHASE_DEDUPE_KEY,
+      JSON.stringify([...trackedTransactions, transactionId].slice(-100))
+    );
+  } catch {
+    // O transaction_id também permite que o GA4 deduplique reenvios.
+  }
+
+  return true;
 }

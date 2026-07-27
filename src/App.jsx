@@ -8,13 +8,14 @@ import { AdminDashboardPage } from "./admin/pages/AdminDashboardPage";
 import { AdminLoginPage } from "./admin/pages/AdminLoginPage";
 import { AdminResetPasswordPage } from "./admin/pages/AdminResetPasswordPage";
 import { BrandCenterPage } from "./admin/pages/BrandCenterPage";
-import { initializeAnalytics } from "./services/analyticsService";
+import { initializeAnalytics, trackPurchase } from "./services/analyticsService";
 import { HeroReportPreview, LandingV2Content } from "./components/landing/LandingV2";
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const OWNER_WHATSAPP = "5549984361569";
 const CONTACT_EMAIL = "info@raioxdodesigner.com";
 const PRODUCT_PRICE = "R$ 49,90";
+const PRODUCT_VALUE = 49.9;
 const LAST_LEGAL_UPDATE = "10 de julho de 2026";
 const COOKIE_PREFERENCES_KEY = "raio_x_cookie_preferences_v1";
 const PROGRESS_STORAGE_KEY = "raio_x_progress_v1";
@@ -1874,6 +1875,17 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
     try {
       const result = await checkPaymentStatus({ paymentId: payment.paymentId, sessionId: profileData?.sessionId });
       if (result.paid) {
+        trackPurchase({
+          transactionId: result.paymentId,
+          value: PRODUCT_VALUE,
+          currency: "BRL",
+          items: [{
+            item_id: "diagnostico-completo",
+            item_name: "Diagnóstico completo + mentoria",
+            price: PRODUCT_VALUE,
+            quantity: 1,
+          }],
+        });
         trackFunnelEvent({
           sessionId: profileData?.sessionId,
           eventName: "payment_completed",
