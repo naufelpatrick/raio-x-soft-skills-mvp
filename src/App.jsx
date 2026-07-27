@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronLeft, ArrowRight, BarChart2, BookOpen, Target,
   Zap, Check, RefreshCw, Sparkles, Loader2, Lock,
@@ -8,7 +8,9 @@ import { AdminDashboardPage } from "./admin/pages/AdminDashboardPage";
 import { AdminLoginPage } from "./admin/pages/AdminLoginPage";
 import { AdminResetPasswordPage } from "./admin/pages/AdminResetPasswordPage";
 import { BrandCenterPage } from "./admin/pages/BrandCenterPage";
-import { initializeAnalytics, trackPurchase } from "./services/analyticsService";
+import { getAnalyticsExperiment, initializeAnalytics, setAnalyticsExperiment, trackEvent, trackPurchase } from "./services/analyticsService";
+import { getExperimentParameters, resolveHomeExperiment } from "./services/experimentService";
+import { homeVariants } from "./data/homeVariants";
 import { HeroReportPreview, LandingV2Content } from "./components/landing/LandingV2";
 import {
   INSTRUMENT_VERSION,
@@ -185,7 +187,7 @@ function getSessionId() {
 function trackFunnelEvent({ sessionId, eventName, step = "", metadata = {} }) {
   if (!sessionId || String(sessionId).startsWith("preview-")) return;
 
-  const payload = JSON.stringify({ sessionId, eventName, step, metadata });
+  const payload = JSON.stringify({ sessionId, eventName, step, metadata: { ...getAnalyticsExperiment(), ...metadata } });
 
   try {
     if (typeof navigator !== "undefined" && navigator.sendBeacon) {
@@ -250,6 +252,7 @@ function shouldTrackProductEventOnce(key) {
 function trackProductEvent({ sessionId, eventName, metadata = {}, onceKey = "" }) {
   if (!sessionId || String(sessionId).startsWith("preview-")) return;
   if (onceKey && !shouldTrackProductEventOnce(`${sessionId}:${onceKey}`)) return;
+  trackEvent(eventName, metadata);
   const attribution = readTrafficAttribution();
   const touch = attribution.lastTouch || attribution.firstTouch || {};
   const payload = JSON.stringify({
@@ -261,6 +264,7 @@ function trackProductEvent({ sessionId, eventName, metadata = {}, onceKey = "" }
     campaign: touch.campaign,
     pagePath: typeof window !== "undefined" ? window.location.pathname : "",
     metadata: {
+      ...getAnalyticsExperiment(),
       ...metadata,
       utmContent: touch.content,
       utmTerm: touch.term,
@@ -280,7 +284,7 @@ function trackLandingEvent({ sessionId, eventName, metadata = {}, onceKey = "" }
   trackProductEvent({ sessionId, eventName, metadata: landingMetadata, onceKey });
   const preferences = readCookiePreferences();
   if (preferences?.analytics && typeof window !== "undefined" && window.gtag) {
-    window.gtag("event", eventName, { session_id: sessionId, ...landingMetadata });
+    window.gtag("event", eventName, { session_id: sessionId, ...getAnalyticsExperiment(), ...landingMetadata });
   }
 }
 
@@ -1487,8 +1491,17 @@ function LegacyLanding({ onStart }) {
   );
 }
 
-function Landing({ onStart, sessionId }) {
+function Landing({ onStart, sessionId, experiment }) {
   const onTrack = (eventName, metadata, onceKey) => trackLandingEvent({ sessionId, eventName, metadata, onceKey });
+  const hero = homeVariants[experiment.variant];
+  const handleHeroStart = () => {
+    trackEvent("select_experiment_cta", {
+      cta_location: "home_hero",
+      cta_text: hero.ctaLabel,
+    });
+    onTrack("hero_cta_clicked", { cta_location: "hero", cta_text: hero.ctaLabel }, "hero_cta");
+    onStart();
+  };
   return (
     <div className="min-h-screen bg-background text-foreground">
       <TopNav onStart={() => { onTrack("hero_cta_clicked", { cta_location: "header", cta_text: "Descobrir o que está travando minha carreira" }, "header_cta"); onStart(); }} />
@@ -1498,28 +1511,31 @@ function Landing({ onStart, sessionId }) {
             <div className="absolute -left-40 -top-48 size-[42rem] rounded-full bg-amber-300/[.07] blur-3xl" />
             <div className="absolute -bottom-48 right-0 size-[38rem] rounded-full bg-indigo-500/[.12] blur-3xl" />
           </div>
-          <div className="relative mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
+          <div className={`relative mx-auto grid max-w-7xl gap-12 lg:items-center ${experiment.variant === "B" ? "lg:grid-cols-[.9fr_1.1fr]" : "lg:grid-cols-[1.05fr_.95fr]"}`}>
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/25 bg-amber-300/[.08] px-3 py-1.5 text-xs font-semibold text-amber-200">
-                <Zap className="size-3" /> Clareza para o próximo passo da sua carreira
+                <Zap className="size-3" /> {hero.eyebrow}
               </div>
               <h1 className="mt-6 max-w-4xl break-words text-[clamp(2.15rem,5.6vw,5.5rem)] font-bold leading-[1.04] tracking-[-.05em] sm:mt-8 sm:text-[clamp(2.7rem,5.6vw,5.5rem)] sm:leading-[1.02] sm:tracking-[-.055em]">
-                Descubra por que sua carreira parece <span className="text-amber-300">estagnada.</span>
+                {hero.highlightedEnding
+                  ? <>{hero.title.slice(0, -hero.highlightedEnding.length)}<span className="text-amber-300">{hero.highlightedEnding}</span></>
+                  : hero.title}
               </h1>
               <p className="mt-7 max-w-2xl text-lg leading-relaxed text-foreground/70">
-                Receba um diagnóstico que identifica as competências que mais podem estar limitando sua evolução profissional e mostra onde concentrar seu desenvolvimento primeiro.
+                {hero.description}
               </p>
               <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm text-foreground/72">
                 <span className="flex items-center gap-2"><Check className="size-4 text-amber-300" /> Resultado gratuito imediato</span>
                 <span className="flex items-center gap-2"><Clock3 className="size-4 text-amber-300" /> Cerca de 10 minutos</span>
                 <span className="flex items-center gap-2"><Brain className="size-4 text-amber-300" /> Especialistas em Design, UX e desenvolvimento profissional</span>
               </div>
-              <button onClick={() => { onTrack("hero_cta_clicked", { cta_location: "hero", cta_text: "Descobrir o que está travando minha carreira" }, "hero_cta"); onStart(); }} className="mt-6 inline-flex items-center gap-2.5 rounded-sm bg-amber-300 px-7 py-4 text-sm font-bold text-slate-950 shadow-[0_0_35px_rgba(251,191,36,.25)] transition hover:-translate-y-0.5 hover:bg-amber-200 active:scale-[.98] sm:mt-8">
-                Descobrir o que está travando minha carreira <ArrowRight className="size-4" />
+              <button onClick={handleHeroStart} className="mt-6 inline-flex items-center gap-2.5 rounded-sm bg-amber-300 px-7 py-4 text-sm font-bold text-slate-950 shadow-[0_0_35px_rgba(251,191,36,.25)] transition hover:-translate-y-0.5 hover:bg-amber-200 active:scale-[.98] sm:mt-8">
+                {hero.ctaLabel} <ArrowRight className="size-4" />
               </button>
               <button type="button" onClick={() => document.getElementById("resultado")?.scrollIntoView({ behavior: "smooth" })} className="ml-0 mt-4 inline-flex items-center gap-2 px-5 py-4 text-sm font-semibold text-foreground/65 transition hover:text-white sm:ml-3">
                 Ver o relatório <ChevronDown className="size-4" />
               </button>
+              {hero.supportingText && <p className="mt-2 max-w-xl text-xs text-foreground/60">{hero.supportingText}</p>}
             </div>
             <HeroReportPreview />
           </div>
@@ -2371,6 +2387,12 @@ export default function App() {
     }[currentPath]
     : null;
   const [initialProgress] = useState(() => readSavedProgress());
+  const [experiment] = useState(() => resolveHomeExperiment());
+  const experimentParameters = useMemo(
+    () => getExperimentParameters(experiment),
+    [experiment]
+  );
+  const experimentViewTracked = useRef(false);
   const paymentReturn = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("payment") === "success";
   const restoredView =
     paymentReturn && initialProgress?.profileData && initialProgress?.scores?.length
@@ -2384,6 +2406,7 @@ export default function App() {
   const [payment, setPayment] = useState(() => initialProgress?.payment || null);
   const [fullReportText, setFullReportText] = useState(() => initialProgress?.fullReportText || "");
   useEffect(() => {
+    setAnalyticsExperiment(experimentParameters);
     captureTrafficAttribution();
     initializeAnalytics(sessionId);
     trackProductEvent({
@@ -2392,6 +2415,12 @@ export default function App() {
       onceKey: `page_view_${window.location.pathname}`,
     });
     if (window.location.pathname === "/") {
+      if (!experimentViewTracked.current) {
+        experimentViewTracked.current = true;
+        trackEvent("experiment_view", {
+          page_location: window.location.href,
+        });
+      }
       trackProductEvent({
         sessionId,
         eventName: "landing_page_view",
@@ -2403,7 +2432,10 @@ export default function App() {
         onceKey: "landing_viewed_v3",
       });
     }
-  }, [sessionId]);
+    if (import.meta.env.DEV) {
+      console.info(`[Experiment] ${experiment.experimentId}: ${experiment.variant}`);
+    }
+  }, [sessionId, experiment.experimentId, experiment.variant, experimentParameters]);
   useEffect(() => {
     if (view !== "profile") return;
     trackLandingEvent({
@@ -2450,7 +2482,13 @@ export default function App() {
     navigateTo("profile");
   };
   const handleProfileSubmit = (data) => {
-    const leadProfile = { ...data, sessionId, purchaseStatus: "not_purchased", instrumentVersion: INSTRUMENT_VERSION };
+    const leadProfile = {
+      ...data,
+      sessionId,
+      purchaseStatus: "not_purchased",
+      instrumentVersion: INSTRUMENT_VERSION,
+      experiments: { [experiment.experimentId]: experiment.variant },
+    };
     setProfileData(leadProfile);
     submitLead(leadProfile).catch(() => {});
     trackFunnelEvent({
@@ -2490,6 +2528,7 @@ export default function App() {
       openAnswers: Object.fromEntries(Object.entries(answers).filter(([key]) => key.startsWith("open_"))),
       scores: calculatedScores,
       generalScore,
+      experiments: { [experiment.experimentId]: experiment.variant },
     }).catch((error) => console.error("Assessment submit error", error));
     trackFunnelEvent({
       sessionId,
@@ -2523,7 +2562,7 @@ export default function App() {
   if (LegalRoute) return <><LegalRoute /><CookieConsentBanner sessionId={sessionId} /></>;
   return (
     <>
-      {view === "landing" && <Landing onStart={handleStartProfile} sessionId={sessionId} />}
+      {view === "landing" && <Landing onStart={handleStartProfile} sessionId={sessionId} experiment={experiment} />}
       {view === "about" && <AboutPage onBack={() => navigateTo("landing")} onStart={handleStartProfile} />}
       {view === "profile" && <ProfileForm onSubmit={handleProfileSubmit} onBack={() => navigateTo("landing")} onFieldStart={(field) => trackFunnelEvent({ sessionId, eventName: "profile_field_started", step: "profile", metadata: { field } })} />}
       {view === "assessment" && <AssessmentForm answers={answers} onAnswer={handleAnswer} onComplete={handleComplete} onBack={() => navigateTo("profile")} />}

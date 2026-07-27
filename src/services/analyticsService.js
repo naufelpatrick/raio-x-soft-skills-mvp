@@ -1,4 +1,4 @@
-import { storeLocalEvent } from "./sessionService";
+import { storeLocalEvent } from "./sessionService.js";
 
 let initialized = false;
 let activeSessionId = null;
@@ -13,6 +13,9 @@ const allowedEvents = new Set([
   "profile_completed",
   "assessment_step_completed",
   "assessment_completed",
+  "free_report_viewed",
+  "checkout_started",
+  "payment_approved",
   "report_viewed",
   "ai_report_requested",
   "ai_report_succeeded",
@@ -21,7 +24,24 @@ const allowedEvents = new Set([
   "interest_form_opened",
   "interest_submitted",
   "purchase",
+  "experiment_view",
+  "select_experiment_cta",
 ]);
+let experimentParameters = {};
+
+export function setAnalyticsExperiment(parameters = {}) {
+  experimentParameters = { ...parameters };
+}
+
+export function getAnalyticsExperiment() {
+  return { ...experimentParameters };
+}
+
+export function resetAnalyticsForTests() {
+  initialized = false;
+  activeSessionId = null;
+  experimentParameters = {};
+}
 
 export function initializeAnalytics(sessionId) {
   activeSessionId = sessionId;
@@ -37,7 +57,7 @@ export function initializeAnalytics(sessionId) {
 
   initialized = true;
 
-  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID || DEFAULT_MEASUREMENT_ID;
+  const measurementId = import.meta.env?.VITE_GA_MEASUREMENT_ID || DEFAULT_MEASUREMENT_ID;
   if (!measurementId) return;
 
   window.dataLayer = window.dataLayer || [];
@@ -56,7 +76,7 @@ export function initializeAnalytics(sessionId) {
   script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
   document.head.appendChild(script);
 
-  const clarityProjectId = import.meta.env.VITE_CLARITY_PROJECT_ID || DEFAULT_CLARITY_PROJECT_ID;
+  const clarityProjectId = import.meta.env?.VITE_CLARITY_PROJECT_ID || DEFAULT_CLARITY_PROJECT_ID;
   if (clarityProjectId && !document.querySelector(`script[src="https://www.clarity.ms/tag/${clarityProjectId}"]`)) {
     window.clarity = window.clarity || function clarity() {
       (window.clarity.q = window.clarity.q || []).push(arguments);
@@ -76,7 +96,7 @@ export function trackEvent(name, parameters = {}) {
     name,
     sessionId: activeSessionId,
     timestamp: new Date().toISOString(),
-    parameters,
+    parameters: { ...experimentParameters, ...parameters },
   };
 
   storeLocalEvent(event);
@@ -84,6 +104,7 @@ export function trackEvent(name, parameters = {}) {
   if (window.gtag) {
     window.gtag("event", name, {
       session_id: activeSessionId,
+      ...experimentParameters,
       ...parameters,
     });
   }

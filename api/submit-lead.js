@@ -11,6 +11,12 @@ import { insertSupabaseRecord, updateSupabaseRecord } from "../server/_supabase.
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const allowedPurchaseStatus = new Set(["not_purchased", "requested", "purchased"]);
+function cleanExperiments(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(Object.entries(value)
+    .filter(([id, variant]) => /^[a-z0-9_]{1,80}$/.test(id) && ["A", "B"].includes(variant))
+    .slice(0, 10));
+}
 
 export default async function handler(req, res) {
   applySecurityHeaders(res);
@@ -42,6 +48,7 @@ export default async function handler(req, res) {
       careerGoal: cleanText(body.careerGoal, 1000),
       currentChallenge: cleanText(body.currentChallenge, 1000),
       purchaseStatus,
+      experiments: cleanExperiments(body.experiments),
       lastSeenAt: now,
     };
 

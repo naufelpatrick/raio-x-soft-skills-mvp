@@ -12,6 +12,12 @@ import { updateSupabaseRecord } from "../server/_supabase.js";
 
 const PRODUCT_VALUE = 49.9;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function cleanExperiments(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(Object.entries(value)
+    .filter(([id, variant]) => /^[a-z0-9_]{1,80}$/.test(id) && ["A", "B"].includes(variant))
+    .slice(0, 10));
+}
 
 function getAppUrl(req) {
   const configuredUrl = process.env.APP_URL || process.env.VITE_APP_URL;
@@ -54,6 +60,7 @@ export default async function handler(req, res) {
       paymentStatus: "created",
       packageRequestedAt: now,
       lastSeenAt: now,
+      experiments: cleanExperiments(body.experiments),
     };
     const cpfCnpj = sanitizeCpfCnpj(body.cpfCnpj);
 
