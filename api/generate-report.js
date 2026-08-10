@@ -3,9 +3,9 @@ function buildPrompt({ profileData, scores, answers, generalScore, generalLevel,
   const strengthsList = strengths.map(s => `- ${s.name} (${s.score})`).join('\n');
   const opportunitiesList = opportunities.map(s => `- ${s.name} (${s.score})`).join('\n');
   const openAnswers = [
-    answers.open_1 ? `Maior desafio comportamental: "${answers.open_1}"` : null,
-    answers.open_2 ? `Competência a desenvolver: "${answers.open_2}"` : null,
-    answers.open_3 ? `Situação recorrente de dificuldade: "${answers.open_3}"` : null,
+    answers.open_1 ? `Situação profissional que mais tem exigido comportamentalmente: "${answers.open_1}"` : null,
+    answers.open_2 ? `Comportamento que gostaria de mudar ou desenvolver: "${answers.open_2}"` : null,
+    answers.open_3 ? `Principal melhoria desejada na forma de trabalhar com outras pessoas: "${answers.open_3}"` : null,
   ].filter(Boolean).join('\n');
 
   return `Você é o Analista Oficial do Raio-X de Soft Skills. Produza um diagnóstico profissional, preciso e humano com base nos dados abaixo.

@@ -32,7 +32,21 @@ export function calculateCompetencyScore(answers, competencyId) {
   }, 0);
   const score = Math.round(((rawScore - 5) / 20) * 100);
 
-  return { rawScore, score, level: getMaturityLevel(score) };
+  const scoreByType = (type) => {
+    const typed = competencyStatements.filter((statement) => statement.type === type);
+    const typedRawScore = typed.reduce((sum, statement) => (
+      sum + getAdjustedScore(answers[statement.id], statement.isReverseScored)
+    ), 0);
+    return Math.round(((typedRawScore - typed.length) / (typed.length * 4)) * 100);
+  };
+
+  return {
+    rawScore,
+    score,
+    level: getMaturityLevel(score),
+    behavioralScore: scoreByType("behavioral"),
+    situationalScore: scoreByType("situational"),
+  };
 }
 
 export function calculateScores(answers) {
@@ -59,6 +73,7 @@ export function buildStoredAnswers(answers) {
       competencyId: statement.competencyId,
       order: statement.order,
       isReverseScored: statement.isReverseScored,
+      questionType: statement.type,
       value,
       adjustedValue: getAdjustedScore(value, statement.isReverseScored),
     };

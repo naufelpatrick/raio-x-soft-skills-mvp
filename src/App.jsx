@@ -14,14 +14,17 @@ import { homeVariants } from "./data/homeVariants";
 import { HeroReportPreview, LandingV2Content } from "./components/landing/LandingV2";
 import {
   INSTRUMENT_VERSION,
+  assessmentSteps,
   getStatementsForCompetency,
   likertOptions,
   openQuestions as OPEN_QUESTIONS,
+  statements as INSTRUMENT_QUESTIONS,
 } from "./data/questions";
 import {
   calculateScores,
   calculateVersionedAssessment,
 } from "./services/scoringService";
+import { stableShuffle } from "./services/questionnaireService";
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const OWNER_WHATSAPP = "5549984361569";
@@ -1723,13 +1726,12 @@ function ProfileForm({ onSubmit, onBack, onFieldStart = () => {} }) {
 }
 
 // ─── ASSESSMENT ───────────────────────────────────────────────────────────────
-function AssessmentForm({ answers, onAnswer, profileData, onProfileChange, onComplete, onBack }) {
+function AssessmentForm({ answers, onAnswer, profileData, onProfileChange, onComplete, onBack, sessionId }) {
   const [step, setStep] = useState(0);
   const TOTAL = 11;
-  const competency = COMPETENCIES[step];
   const isOpen = step === 10;
   const finalProfileFields = ["age", "experience", "currentRole", "professionalLevel", "mainArea", "careerGoal", "currentChallenge"];
-  const competencyStatements = isOpen ? [] : getStatementsForCompetency(competency?.id);
+  const competencyStatements = isOpen ? [] : assessmentSteps[step];
   const stepAnswered = () => {
     if (!isOpen) return competencyStatements.every((statement) => answers[statement.id]);
     return OPEN_QUESTIONS.every((_, i) => ((answers[`open_${i + 1}`]) || "").trim().length > 0)
@@ -1756,19 +1758,15 @@ function AssessmentForm({ answers, onAnswer, profileData, onProfileChange, onCom
                   Responda pensando em situações reais
                 </p>
                 <div className="mt-3 space-y-2 text-sm leading-relaxed text-muted-foreground">
-                  <p>Não existem respostas certas ou erradas. Este diagnóstico busca compreender como você percebe seus comportamentos no dia a dia.</p>
-                  <p>Considere como você costuma agir na maior parte das situações, e não como gostaria de agir ou como acredita que deveria agir.</p>
-                  <p>Utilize a escala de discordância ou concordância para responder a cada afirmação.</p>
+                  <p>Não existem respostas certas ou erradas. Responda pensando em como você realmente costuma agir — não em como gostaria de agir.</p>
+                  <p>Nas situações de trabalho, escolha a alternativa mais próxima da sua reação real. As opções aparecem em uma ordem própria desta avaliação.</p>
                 </div>
               </aside>
             )}
-            <div className="flex items-start gap-4 mb-10">
-              <div className="w-10 h-10 bg-primary/10 rounded-sm flex items-center justify-center text-lg shrink-0">{competency.icon}</div>
-              <div>
-                <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-1">Competência {step + 1} de 10</p>
-                <h2 className="text-2xl font-medium">{competency.name}</h2>
-                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{competency.desc}</p>
-              </div>
+            <div className="mb-10">
+              <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-1">Etapa {step + 1} de 10</p>
+              <h2 className="text-2xl font-medium">Como você age no trabalho?</h2>
+              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">Pense em situações profissionais recentes e responda com espontaneidade.</p>
             </div>
             <div className="space-y-10">
               {competencyStatements.map((statement, qi) => {
@@ -1776,11 +1774,23 @@ function AssessmentForm({ answers, onAnswer, profileData, onProfileChange, onCom
                 return (
                   <fieldset key={statement.id}>
                     <legend className="text-sm leading-relaxed mb-5 text-foreground/90">
-                      <span className="sr-only">Afirmação {qi + 1}: </span>{statement.text}
+                      <span className="sr-only">Questão {qi + 1}: </span>
+                      {statement.type === "situational" ? (
+                        <span className="block">
+                          <span className="mb-3 inline-flex rounded-full border border-primary/30 bg-primary/5 px-2.5 py-1 text-[10px] font-mono uppercase tracking-widest text-primary">Situação de trabalho</span>
+                          <span className="block text-base leading-relaxed">{statement.scenario}</span>
+                          <span className="mt-3 block text-sm font-medium">{statement.prompt}</span>
+                        </span>
+                      ) : (
+                        <span className="block">
+                          <span className="mb-2 block text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Pensando no seu comportamento profissional...</span>
+                          {statement.text}
+                        </span>
+                      )}
                     </legend>
-                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-5" role="radiogroup" aria-label={`Resposta para ${statement.id}`}>
-                      {likertOptions.map((option) => (
-                        <label key={option.value} className={`relative flex min-h-12 cursor-pointer items-center gap-3 rounded-sm border px-3 py-2.5 text-sm transition-all sm:flex-col sm:justify-center sm:gap-1.5 sm:px-1 sm:text-center ${val === option.value ? "border-primary bg-primary/10 text-primary ring-1 ring-primary" : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"}`}>
+                    <div className={statement.type === "situational" ? "grid grid-cols-1 gap-2" : "grid grid-cols-1 gap-2 sm:grid-cols-5"} role="radiogroup" aria-label={`Resposta para ${statement.id}`}>
+                      {(statement.type === "situational" ? stableShuffle(statement.options, `${sessionId}:${statement.id}`) : likertOptions).map((option) => (
+                        <label key={option.value} className={`relative flex min-h-12 cursor-pointer items-center gap-3 rounded-sm border px-3 py-2.5 text-sm transition-all focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 focus-within:ring-offset-background ${statement.type === "behavioral" ? "sm:flex-col sm:justify-center sm:gap-1.5 sm:px-1 sm:text-center" : "text-left"} ${val === option.value ? "border-primary bg-primary/10 text-primary ring-1 ring-primary" : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"}`}>
                           <input
                             type="radio"
                             name={statement.id}
@@ -1788,12 +1798,10 @@ function AssessmentForm({ answers, onAnswer, profileData, onProfileChange, onCom
                             checked={val === option.value}
                             onChange={() => onAnswer(statement.id, option.value)}
                             className="sr-only"
-                            aria-label={`${option.value} — ${option.label}`}
+                            aria-label={statement.type === "situational" ? option.text : `${option.value} — ${option.label}`}
                           />
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current font-mono font-medium">
-                            {val === option.value ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : option.value}
-                          </span>
-                          <span className="text-xs leading-tight sm:text-[9px]">{option.label}</span>
+                          {statement.type === "behavioral" && <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current font-mono font-medium">{option.value}</span>}
+                          <span className={statement.type === "situational" ? "text-left text-sm leading-relaxed sm:self-start" : "text-xs leading-tight sm:text-[9px]"}>{statement.type === "situational" ? option.text : option.label}</span>
                           {val === option.value && <span className="sr-only">Selecionado</span>}
                         </label>
                       ))}
@@ -1841,7 +1849,7 @@ function AssessmentForm({ answers, onAnswer, profileData, onProfileChange, onCom
         )}
         <div className="mt-14">
           <button onClick={advance} disabled={!stepAnswered()} className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-4 rounded-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed text-sm">
-            {step < 10 ? "Próxima competência" : "Ver meu diagnóstico"} <ArrowRight className="w-4 h-4" />
+            {step < 10 ? "Continuar" : "Ver meu diagnóstico"} <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -2543,6 +2551,13 @@ export default function App() {
       metadata: { questionKey: key, instrument_version: INSTRUMENT_VERSION },
       onceKey: `assessment_progress_${key}`,
     });
+    const question = INSTRUMENT_QUESTIONS.find((item) => item.id === key);
+    if (question) trackProductEvent({
+      sessionId,
+      eventName: "question_answered",
+      metadata: { question_id: key, question_type: question.type, instrument_version: INSTRUMENT_VERSION },
+      onceKey: `question_answered_${key}`,
+    });
   };
   const handleStartProfile = () => {
     trackFunnelEvent({
@@ -2586,6 +2601,12 @@ export default function App() {
       metadata: { instrument_version: INSTRUMENT_VERSION },
       onceKey: "assessment_started",
     });
+    trackProductEvent({
+      sessionId,
+      eventName: "diagnostic_started",
+      metadata: { instrument_version: INSTRUMENT_VERSION },
+      onceKey: "diagnostic_started",
+    });
     navigateTo("assessment");
   };
   const handleComplete = () => {
@@ -2615,6 +2636,12 @@ export default function App() {
       metadata: { generalScore, instrument_version: INSTRUMENT_VERSION },
       onceKey: "assessment_completed",
     });
+    trackProductEvent({
+      sessionId,
+      eventName: "diagnostic_completed",
+      metadata: { instrument_version: INSTRUMENT_VERSION },
+      onceKey: "diagnostic_completed",
+    });
     trackFunnelEvent({
       sessionId,
       eventName: "free_report_viewed",
@@ -2638,7 +2665,7 @@ export default function App() {
       {view === "landing" && <Landing onStart={handleStartProfile} sessionId={sessionId} experiment={experiment} />}
       {view === "about" && <AboutPage onBack={() => navigateTo("landing")} onStart={handleStartProfile} />}
       {view === "profile" && <ProfileForm onSubmit={handleProfileSubmit} onBack={() => navigateTo("landing")} onFieldStart={(field) => trackFunnelEvent({ sessionId, eventName: "profile_field_started", step: "profile", metadata: { field } })} />}
-      {view === "assessment" && <AssessmentForm answers={answers} onAnswer={handleAnswer} profileData={profileData} onProfileChange={(field, value) => setProfileData((current) => ({ ...current, [field]: value }))} onComplete={handleComplete} onBack={() => navigateTo("profile")} />}
+      {view === "assessment" && <AssessmentForm answers={answers} onAnswer={handleAnswer} profileData={profileData} onProfileChange={(field, value) => setProfileData((current) => ({ ...current, [field]: value }))} onComplete={handleComplete} onBack={() => navigateTo("profile")} sessionId={sessionId} />}
       {view === "results" && profileData && <Results profileData={profileData} scores={scores} answers={answers} fullReportText={fullReportText} setFullReportText={setFullReportText} payment={payment} setPayment={setPayment} onReset={handleReset} />}
       <CookieConsentBanner sessionId={sessionId} />
     </>

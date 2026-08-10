@@ -37,7 +37,7 @@ export default async function handler(req, res) {
     }
 
     const originalAnswers = Object.fromEntries(
-      body.answers.map((answer) => [cleanText(answer.statementId, 20), answer.value])
+      body.answers.map((answer) => [cleanText(answer.statementId, 80), answer.value])
     );
     const assessment = calculateVersionedAssessment(originalAnswers, instrumentVersion);
     const openAnswers = Object.fromEntries(

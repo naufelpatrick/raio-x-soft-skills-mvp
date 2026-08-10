@@ -24,12 +24,32 @@ export default function QuestionGroup({
 
       <div className="space-y-5">
         {questions.map((question, index) => {
+          if (question.type === "situational") {
+            return (
+              <fieldset key={question.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <legend className="font-medium text-slate-800">
+                  <span className="mb-3 block text-xs uppercase tracking-wider text-violet-600">Situação de trabalho</span>
+                  <span className="block">{index + 1}. {question.scenario}</span>
+                  <span className="mt-3 block text-sm">{question.prompt}</span>
+                </legend>
+                <div className="mt-4 grid gap-2" role="radiogroup">
+                  {question.options.map((option) => (
+                    <label key={option.id} className={`cursor-pointer rounded-xl border p-3 text-sm focus-within:ring-2 focus-within:ring-violet-500 ${answers[question.id] === option.value ? "border-violet-600 bg-violet-50 text-violet-700" : "border-slate-200 text-slate-700"}`}>
+                      <input className="sr-only" type="radio" name={question.id} checked={answers[question.id] === option.value} onChange={() => onAnswerChange(question.id, option.value)} />
+                      {option.text}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            );
+          }
           return (
             <fieldset
               key={question.id}
               className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm"
             >
               <legend className="font-medium text-slate-800">
+                <span className="mb-2 block text-xs uppercase tracking-wider text-slate-500">Pensando no seu comportamento profissional...</span>
                 {index + 1}. {question.text}
               </legend>
 

@@ -32,14 +32,16 @@ test("pontuação invertida aplica 6 - resposta", () => {
 test("competência usa valores corrigidos", () => {
   const answers = answersWith(5);
   assert.deepEqual(calculateCompetencyScore(answers, "comunicacao"), {
-    rawScore: 21,
-    score: 80,
-    level: "Avançado",
+    rawScore: 25,
+    score: 100,
+    level: "Referência",
+    behavioralScore: 100,
+    situationalScore: 100,
   });
 });
 
 test("score geral usa valores corrigidos", () => {
-  assert.equal(calculateGeneralScore(answersWith(5)), 80);
+  assert.equal(calculateGeneralScore(answersWith(5)), 100);
 });
 
 test("avaliação 1.0 não é recalculada como 2.0", () => {
@@ -59,14 +61,11 @@ test("instrumento tem 50 afirmações, cinco por competência", () => {
   }
 });
 
-test("há dez afirmações invertidas, uma por competência", () => {
-  const reverse = statements.filter((item) => item.isReverseScored);
-  assert.equal(reverse.length, 10);
+test("cada competência tem três questões comportamentais e duas situacionais", () => {
   for (const competency of competencies) {
-    assert.equal(
-      reverse.filter((item) => item.competencyId === competency.id).length,
-      1
-    );
+    const items = statements.filter((item) => item.competencyId === competency.id);
+    assert.equal(items.filter((item) => item.type === "behavioral").length, 3);
+    assert.equal(items.filter((item) => item.type === "situational").length, 2);
   }
 });
 
@@ -80,10 +79,16 @@ test("rejeita qualquer resposta fora do intervalo inteiro de 1 a 5", () => {
   }
 });
 
-test("avaliação 2.0 preserva valor original e valor corrigido", () => {
+test("avaliação 2.0 preserva tipo, valor original e valor corrigido", () => {
   const result = calculateVersionedAssessment(answersWith(5), INSTRUMENT_VERSION);
-  const reverse = result.answers.find((item) => item.statementId === "COM05");
-  assert.equal(reverse.value, 5);
-  assert.equal(reverse.isReverseScored, true);
-  assert.equal(reverse.adjustedValue, 1);
+  const situational = result.answers.find((item) => item.statementId === "comunicacao_04");
+  assert.equal(situational.value, 5);
+  assert.equal(situational.questionType, "situational");
+  assert.equal(situational.adjustedValue, 5);
+});
+
+test("todas as alternativas situacionais têm valores únicos de 1 a 5", () => {
+  for (const item of statements.filter((question) => question.type === "situational")) {
+    assert.deepEqual([...item.options.map((option) => option.value)].sort(), [1, 2, 3, 4, 5]);
+  }
 });
