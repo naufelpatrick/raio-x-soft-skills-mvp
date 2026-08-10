@@ -28,6 +28,8 @@ const OWNER_WHATSAPP = "5549984361569";
 const CONTACT_EMAIL = "info@raioxdodesigner.com";
 const PRODUCT_PRICE = "R$ 49,90";
 const PRODUCT_VALUE = 49.9;
+const PREMIUM_OFFER_MINUTES = 15;
+const PREMIUM_SOCIAL_PROOF_COUNT = 127;
 const LAST_LEGAL_UPDATE = "10 de julho de 2026";
 const COOKIE_PREFERENCES_KEY = "raio_x_cookie_preferences_v1";
 const PROGRESS_STORAGE_KEY = "raio_x_progress_v2";
@@ -84,6 +86,57 @@ function BoldFreeText({ children }) {
   return parts.map((part, index) => (
     part.toLowerCase() === "gratuito" ? <strong key={index} className="font-bold text-foreground/95">{part}</strong> : part
   ));
+}
+
+function CountdownBadge({ minutes = PREMIUM_OFFER_MINUTES }) {
+  const [secondsLeft, setSecondsLeft] = useState(() => Math.max(0, Math.round(minutes * 60)));
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setSecondsLeft((current) => Math.max(0, current - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const displayMinutes = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
+  const displaySeconds = String(secondsLeft % 60).padStart(2, "0");
+
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs text-primary" role="timer" aria-live="polite">
+      <Clock3 className="w-3.5 h-3.5" />
+      <span>Oferta de conclusão — expira em <strong className="font-mono">{displayMinutes}:{displaySeconds}</strong></span>
+    </div>
+  );
+}
+
+function SocialProof({ count = PREMIUM_SOCIAL_PROOF_COUNT }) {
+  return <p className="text-xs text-muted-foreground">+{count} designers já fizeram este diagnóstico</p>;
+}
+
+function MethodologyAuthority() {
+  const specialists = [
+    { name: "Patrick Naufel", image: "/raio-x-patrick.jpg" },
+    { name: "Marcos França", image: "/raio-x-marcos.jpg" },
+    { name: "Carlos Alencar", image: "/raio-x-carlos.jpg" },
+  ];
+
+  return (
+    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+      <div className="flex shrink-0 -space-x-2" aria-label="Especialistas responsáveis pela metodologia">
+        {specialists.map((specialist) => (
+          <img
+            key={specialist.name}
+            src={specialist.image}
+            alt={specialist.name}
+            className="h-8 w-8 rounded-full border-2 border-background object-cover"
+          />
+        ))}
+      </div>
+      <p className="max-w-xl leading-relaxed">
+        Metodologia desenvolvida por Patrick Naufel, Marcos França e Carlos Alencar — especialistas em Design e UX.
+      </p>
+    </div>
+  );
 }
 
 function readSavedProgress() {
@@ -1624,7 +1677,7 @@ function ProfileForm({ onSubmit, onBack, onFieldStart = () => {} }) {
     markFieldStarted(field);
     setForm((f) => ({ ...f, [field]: e.target.checked }));
   };
-  const requiredTextFields = ["name", "email", "age", "experience", "currentRole", "professionalLevel", "mainArea", "careerGoal", "currentChallenge"];
+  const requiredTextFields = ["name", "email"];
   const canSubmit = requiredTextFields.every((field) => form[field].trim().length > 0) && form.email.includes("@") && form.contactConsent;
   const inputCls = "w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors";
   const labelCls = "block text-xs text-muted-foreground font-mono uppercase tracking-wider mb-2";
@@ -1636,26 +1689,13 @@ function ProfileForm({ onSubmit, onBack, onFieldStart = () => {} }) {
       </nav>
       <div className="max-w-2xl mx-auto px-6 py-16">
         <h1 className="text-3xl lg:text-4xl mb-2" style={{ fontFamily: "var(--font-display)" }}>Seu perfil profissional</h1>
-        <p className="text-muted-foreground mb-10">Essas informações personalizam a análise e o plano de desenvolvimento.</p>
+        <p className="text-muted-foreground">Informe o mínimo necessário para personalizarmos seu diagnóstico.</p>
+        <p className="mt-3 mb-10 text-xs text-muted-foreground font-mono uppercase tracking-wider">10 competências · cerca de 10 minutos</p>
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><RequiredLabel className={labelCls}>Nome</RequiredLabel><input type="text" placeholder="Seu nome completo" value={form.name} onChange={update("name")} className={inputCls} /></div>
             <div><RequiredLabel className={labelCls}>E-mail</RequiredLabel><input type="email" placeholder="seu@email.com" value={form.email} onChange={update("email")} className={inputCls} /></div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div><RequiredLabel className={labelCls}>WhatsApp</RequiredLabel><input type="tel" placeholder="(49) 98436-1569" value={form.whatsapp} onChange={update("whatsapp")} className={inputCls} /></div>
-            <div><RequiredLabel className={labelCls}>Idade</RequiredLabel><input type="number" placeholder="Ex: 32" value={form.age} onChange={update("age")} className={inputCls} /></div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div><RequiredLabel className={labelCls}>Cargo atual</RequiredLabel><input type="text" placeholder="Ex: Product Designer" value={form.currentRole} onChange={update("currentRole")} className={inputCls} /></div>
-            <div><RequiredLabel className={labelCls}>Tempo de experiência</RequiredLabel><input type="text" placeholder="Ex: 5 anos" value={form.experience} onChange={update("experience")} className={inputCls} /></div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div><RequiredLabel className={labelCls}>Nível profissional</RequiredLabel><select value={form.professionalLevel} onChange={update("professionalLevel")} className={inputCls}><option value="">Selecione</option>{["Júnior", "Pleno", "Sênior", "Especialista", "Líder", "Gestor"].map((v) => <option key={v}>{v}</option>)}</select></div>
-            <div><RequiredLabel className={labelCls}>Área principal</RequiredLabel><select value={form.mainArea} onChange={update("mainArea")} className={inputCls}><option value="">Selecione</option>{["Pesquisa", "UX", "UI", "Product Design", "Design System", "Liderança", "Generalista", "Outro"].map((v) => <option key={v}>{v}</option>)}</select></div>
-          </div>
-          <div><RequiredLabel className={labelCls}>Objetivo de carreira (próximos 12 meses)</RequiredLabel><textarea placeholder="O que você quer alcançar profissionalmente no próximo ano?" value={form.careerGoal} onChange={update("careerGoal")} rows={3} className={inputCls + " resize-none"} /></div>
-          <div><RequiredLabel className={labelCls}>Principal desafio atual</RequiredLabel><textarea placeholder="Qual é o maior obstáculo que você enfrenta hoje?" value={form.currentChallenge} onChange={update("currentChallenge")} rows={3} className={inputCls + " resize-none"} /></div>
           <div className="rounded-sm border border-border bg-card p-5 text-xs text-muted-foreground leading-relaxed space-y-4">
             <p>
               Utilizaremos suas informações e respostas para calcular seus resultados e gerar um relatório profissional personalizado.
@@ -1683,15 +1723,17 @@ function ProfileForm({ onSubmit, onBack, onFieldStart = () => {} }) {
 }
 
 // ─── ASSESSMENT ───────────────────────────────────────────────────────────────
-function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
+function AssessmentForm({ answers, onAnswer, profileData, onProfileChange, onComplete, onBack }) {
   const [step, setStep] = useState(0);
   const TOTAL = 11;
   const competency = COMPETENCIES[step];
   const isOpen = step === 10;
+  const finalProfileFields = ["age", "experience", "currentRole", "professionalLevel", "mainArea", "careerGoal", "currentChallenge"];
   const competencyStatements = isOpen ? [] : getStatementsForCompetency(competency?.id);
   const stepAnswered = () => {
     if (!isOpen) return competencyStatements.every((statement) => answers[statement.id]);
-    return OPEN_QUESTIONS.every((_, i) => ((answers[`open_${i + 1}`]) || "").trim().length > 0);
+    return OPEN_QUESTIONS.every((_, i) => ((answers[`open_${i + 1}`]) || "").trim().length > 0)
+      && finalProfileFields.every((field) => String(profileData?.[field] || "").trim().length > 0);
   };
   const progress = Math.round((step / TOTAL) * 100);
   const advance = () => { if (!stepAnswered()) return; if (step < 10) { setStep((s) => s + 1); window.scrollTo(0, 0); } else onComplete(); };
@@ -1775,6 +1817,25 @@ function AssessmentForm({ answers, onAnswer, onComplete, onBack }) {
                   <textarea value={(answers[`open_${i + 1}`]) || ""} onChange={(e) => onAnswer(`open_${i + 1}`, e.target.value)} placeholder="Sua resposta..." rows={4} className="w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors resize-none" />
                 </div>
               ))}
+              <div className="border-t border-border pt-8">
+                <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mb-2">Seu contexto profissional</p>
+                <h3 className="text-xl mb-2" style={{ fontFamily: "var(--font-display)" }}>Últimos detalhes para personalizar seu resultado</h3>
+                <p className="text-sm text-muted-foreground mb-6">Essas informações entram na leitura do diagnóstico e no seu plano de desenvolvimento.</p>
+                <div className="space-y-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div><RequiredLabel className="block text-xs text-muted-foreground font-mono uppercase tracking-wider mb-2">Idade</RequiredLabel><input type="number" placeholder="Ex: 32" value={profileData?.age || ""} onChange={(e) => onProfileChange("age", e.target.value)} className="w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-primary" /></div>
+                    <div><RequiredLabel className="block text-xs text-muted-foreground font-mono uppercase tracking-wider mb-2">Tempo de experiência</RequiredLabel><input type="text" placeholder="Ex: 5 anos" value={profileData?.experience || ""} onChange={(e) => onProfileChange("experience", e.target.value)} className="w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-primary" /></div>
+                  </div>
+                  <div><RequiredLabel className="block text-xs text-muted-foreground font-mono uppercase tracking-wider mb-2">Cargo atual</RequiredLabel><input type="text" placeholder="Ex: Product Designer" value={profileData?.currentRole || ""} onChange={(e) => onProfileChange("currentRole", e.target.value)} className="w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-primary" /></div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div><RequiredLabel className="block text-xs text-muted-foreground font-mono uppercase tracking-wider mb-2">Nível profissional</RequiredLabel><select value={profileData?.professionalLevel || ""} onChange={(e) => onProfileChange("professionalLevel", e.target.value)} className="w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-primary"><option value="">Selecione</option>{["Júnior", "Pleno", "Sênior", "Especialista", "Líder", "Gestor"].map((v) => <option key={v}>{v}</option>)}</select></div>
+                    <div><RequiredLabel className="block text-xs text-muted-foreground font-mono uppercase tracking-wider mb-2">Área principal</RequiredLabel><select value={profileData?.mainArea || ""} onChange={(e) => onProfileChange("mainArea", e.target.value)} className="w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-primary"><option value="">Selecione</option>{["Pesquisa", "UX", "UI", "Product Design", "Design System", "Liderança", "Generalista", "Outro"].map((v) => <option key={v}>{v}</option>)}</select></div>
+                  </div>
+                  <div><RequiredLabel className="block text-xs text-muted-foreground font-mono uppercase tracking-wider mb-2">Objetivo de carreira (próximos 12 meses)</RequiredLabel><textarea placeholder="O que você quer alcançar profissionalmente no próximo ano?" value={profileData?.careerGoal || ""} onChange={(e) => onProfileChange("careerGoal", e.target.value)} rows={3} className="w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-primary resize-none" /></div>
+                  <div><RequiredLabel className="block text-xs text-muted-foreground font-mono uppercase tracking-wider mb-2">Principal desafio atual</RequiredLabel><textarea placeholder="Qual é o maior obstáculo que você enfrenta hoje?" value={profileData?.currentChallenge || ""} onChange={(e) => onProfileChange("currentChallenge", e.target.value)} rows={3} className="w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-primary resize-none" /></div>
+                  <div><label className="block text-xs text-muted-foreground font-mono uppercase tracking-wider mb-2">WhatsApp (opcional) — para receber seu plano de desenvolvimento</label><input type="tel" placeholder="(49) 98436-1569" value={profileData?.whatsapp || ""} onChange={(e) => onProfileChange("whatsapp", e.target.value)} className="w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm focus:outline-none focus:border-primary" /></div>
+                </div>
+              </div>
             </div>
           </>
         )}
@@ -1999,6 +2060,7 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
             <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-[10px] px-3 py-1 rounded-full font-mono uppercase tracking-widest mb-4"><Lock className="w-2.5 h-2.5" /> Conteúdo exclusivo</div>
             <h2 className="text-2xl lg:text-3xl mb-2" style={{ fontFamily: "var(--font-display)" }}>Diagnóstico Completo</h2>
             <p className="text-sm text-muted-foreground max-w-lg leading-relaxed">Análise narrativa personalizada com IA, plano de ação concreto e uma sessão de mentoria para transformar o diagnóstico em evolução real.</p>
+            <div className="mt-4"><CountdownBadge minutes={PREMIUM_OFFER_MINUTES} /></div>
           </div>
           <div className="text-right shrink-0"><div className="text-3xl font-mono font-medium">{PRODUCT_PRICE}</div><div className="text-xs text-muted-foreground mt-1 font-mono">pagamento único</div></div>
         </div>
@@ -2022,7 +2084,7 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
         </div>
       </div>
       <div className="p-8 lg:p-10">
-        {phase === "preview" && (<button onClick={() => { trackProductEvent({ sessionId: profileData?.sessionId, eventName: "premium_cta_clicked", step: "premium_offer", onceKey: "premium_cta_clicked" }); setPhase("form"); }} className="flex items-center gap-2 bg-primary text-primary-foreground px-7 py-3.5 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity"><Sparkles className="w-4 h-4" /> Quero o diagnóstico completo</button>)}
+        {phase === "preview" && (<div className="space-y-4"><MethodologyAuthority /><SocialProof count={PREMIUM_SOCIAL_PROOF_COUNT} /><button onClick={() => { trackProductEvent({ sessionId: profileData?.sessionId, eventName: "premium_cta_clicked", step: "premium_offer", onceKey: "premium_cta_clicked" }); setPhase("form"); }} className="flex items-center gap-2 bg-primary text-primary-foreground px-7 py-3.5 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity"><Sparkles className="w-4 h-4" /> Quero o diagnóstico completo</button></div>)}
         {phase === "form" && (
           <div className="max-w-md space-y-6">
             <p className="text-sm text-muted-foreground leading-relaxed">Confirme seus dados para gerar o link seguro de pagamento do Asaas. Após a confirmação, seu diagnóstico completo será liberado automaticamente.</p>
@@ -2189,6 +2251,7 @@ function PaidReportNps({ profileData }) {
 
 // ─── RESULTS ──────────────────────────────────────────────────────────────────
 function Results({ profileData, scores, answers, fullReportText = "", setFullReportText = () => {}, payment = null, setPayment = () => {}, onReset }) {
+  const upgradeSectionRef = useRef(null);
   const generalScore = Math.round(scores.reduce((s, c) => s + c.score, 0) / scores.length);
   const generalLevel = getLevel(generalScore);
   const profile = getProfileResult(scores);
@@ -2197,12 +2260,21 @@ function Results({ profileData, scores, answers, fullReportText = "", setFullRep
   const strengths = sorted.slice(0, 3);
   const opportunities = sorted.slice(-3).reverse();
   const radarData = COMPETENCIES.map((c) => { const s = scores.find((x) => x.id === c.id); return { score: s ? s.score : 0 }; });
+  const hasPremiumAccess = Boolean(fullReportText || payment?.paid || profileData?.purchaseStatus === "purchased");
+  const handleExport = () => {
+    if (!hasPremiumAccess) {
+      trackProductEvent({ sessionId: profileData?.sessionId, eventName: "premium_pdf_clicked", metadata: { access: "locked" } });
+      upgradeSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    exportPDF({ profileData, scores, generalScore, generalLevel, profileName: profile.name, profileDesc: profile.desc, profileCompetencies: profile.competencies, strengths, opportunities, crossResults, aiText: fullReportText });
+  };
   return (
     <div className="min-h-screen bg-background text-foreground">
       <nav className="flex items-center justify-between px-6 lg:px-12 py-5 border-b border-border">
         <img src="/raio-x-logo-branco.svg" alt="Raio-X do Designer" className="h-8 w-auto" />
         <div className="flex items-center gap-3">
-          <button onClick={() => exportPDF({ profileData, scores, generalScore, generalLevel, profileName: profile.name, profileDesc: profile.desc, profileCompetencies: profile.competencies, strengths, opportunities, crossResults, aiText: fullReportText })} className="flex items-center gap-2 border border-border text-muted-foreground px-4 py-2 rounded-sm text-sm hover:border-primary hover:text-foreground transition-colors"><Download className="w-3.5 h-3.5" /> {fullReportText ? "Exportar relatório completo" : "Exportar PDF"}</button>
+          <button onClick={handleExport} aria-label={hasPremiumAccess ? "Exportar relatório completo em PDF" : "Exportar PDF, recurso premium"} className="flex items-center gap-2 border border-border text-muted-foreground px-4 py-2 rounded-sm text-sm hover:border-primary hover:text-foreground transition-colors">{hasPremiumAccess ? <Download className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5 text-primary" />} {hasPremiumAccess ? "Exportar relatório completo" : "Exportar PDF · Premium"}</button>
           <button onClick={onReset} className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm transition-colors"><RefreshCw className="w-4 h-4" /> Nova avaliação</button>
         </div>
       </nav>
@@ -2266,7 +2338,7 @@ function Results({ profileData, scores, answers, fullReportText = "", setFullRep
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{crossResults.map((r) => (<div key={r.id} className="bg-card border border-border rounded-sm p-5"><h4 className="text-sm font-medium mb-2">{r.title}</h4><p className="text-xs text-muted-foreground leading-relaxed">{r.interpretation}</p></div>))}</div>
           </div>
         )}
-        <div>
+        <div ref={upgradeSectionRef} id="diagnostico-completo" tabIndex={-1}>
           <div className="flex items-center gap-3 mb-8"><div className="flex-1 border-t border-border" /><span className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest px-3">Próximo nível</span><div className="flex-1 border-t border-border" /></div>
           <UpgradeSection profileData={profileData} scores={scores} answers={answers} generalScore={generalScore} generalLevel={generalLevel} profileName={profile.name} profileDesc={profile.desc} profileCompetencies={profile.competencies} strengths={strengths} opportunities={opportunities} payment={payment} setPayment={setPayment} initialAiText={fullReportText} onAiReportGenerated={setFullReportText} />
         </div>
@@ -2521,6 +2593,7 @@ export default function App() {
     const calculatedScores = assessment.scores;
     const generalScore = assessment.generalScore;
     setScores(calculatedScores);
+    submitLead(profileData).catch(() => {});
     submitAssessment({
       sessionId,
       instrumentVersion: INSTRUMENT_VERSION,
@@ -2565,7 +2638,7 @@ export default function App() {
       {view === "landing" && <Landing onStart={handleStartProfile} sessionId={sessionId} experiment={experiment} />}
       {view === "about" && <AboutPage onBack={() => navigateTo("landing")} onStart={handleStartProfile} />}
       {view === "profile" && <ProfileForm onSubmit={handleProfileSubmit} onBack={() => navigateTo("landing")} onFieldStart={(field) => trackFunnelEvent({ sessionId, eventName: "profile_field_started", step: "profile", metadata: { field } })} />}
-      {view === "assessment" && <AssessmentForm answers={answers} onAnswer={handleAnswer} onComplete={handleComplete} onBack={() => navigateTo("profile")} />}
+      {view === "assessment" && <AssessmentForm answers={answers} onAnswer={handleAnswer} profileData={profileData} onProfileChange={(field, value) => setProfileData((current) => ({ ...current, [field]: value }))} onComplete={handleComplete} onBack={() => navigateTo("profile")} />}
       {view === "results" && profileData && <Results profileData={profileData} scores={scores} answers={answers} fullReportText={fullReportText} setFullReportText={setFullReportText} payment={payment} setPayment={setPayment} onReset={handleReset} />}
       <CookieConsentBanner sessionId={sessionId} />
     </>
