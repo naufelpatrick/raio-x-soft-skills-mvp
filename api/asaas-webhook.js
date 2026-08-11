@@ -1,6 +1,6 @@
 import { applySecurityHeaders, parseBody, requirePost } from "../server/_security.js";
 import { extractWebhookToken, isPaidAsaasStatus } from "../server/_asaas.js";
-import { adminInsert, adminUpdateWhere } from "../server/_admin.js";
+import { adminInsert, adminRpc, adminUpdateWhere } from "../server/_admin.js";
 
 const paidEvents = new Set(["PAYMENT_CONFIRMED", "PAYMENT_RECEIVED", "PAYMENT_RECEIVED_IN_CASH"]);
 
@@ -84,6 +84,7 @@ export default async function handler(req, res) {
         : [["asaas_payment_id", "eq", paymentId]];
       const updatedLeads = await adminUpdateWhere("leads", filters, leadUpdate);
       if (!updatedLeads?.length) throw new Error("Nenhum lead corresponde ao pagamento do ASAAS.");
+      if (paid) await Promise.all(updatedLeads.map((lead) => adminRpc("cancel_post_diagnostic_for_lead", { p_lead_id: lead.id, p_reason: "purchase" })));
       if (body.id) {
         await adminUpdateWhere("payment_webhook_events", [["external_event_id", "eq", body.id]], {
           processed: true,

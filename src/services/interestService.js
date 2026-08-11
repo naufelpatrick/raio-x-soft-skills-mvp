@@ -1,5 +1,5 @@
 export async function submitInterest(interest) {
-  const response = await fetch("/api/submit-interest", {
+  const response = await fetch("/api/submit-feedback?action=interest", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

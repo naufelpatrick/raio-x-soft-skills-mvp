@@ -389,6 +389,15 @@ async function unsubscribeMarketing(token) {
   return result;
 }
 
+async function loadResultFromSecureLink(token) {
+  const response = await fetch(`/api/email-sequence?action=result&token=${encodeURIComponent(token)}`);
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || !result.profileData || !Array.isArray(result.scores)) {
+    throw new Error(result.error || "Não foi possível carregar este resultado.");
+  }
+  return result;
+}
+
 async function createPayment(leadData) {
   const response = await fetch("/api/create-payment", {
     method: "POST",
@@ -2552,8 +2561,13 @@ export default function App() {
   );
   const experimentViewTracked = useRef(false);
   const paymentReturn = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("payment") === "success";
+  const resultAccessToken = typeof window !== "undefined" && currentPath === "/resultado"
+    ? new URLSearchParams(window.location.search).get("token") || ""
+    : "";
   const restoredView =
-    paymentReturn && initialProgress?.profileData && initialProgress?.scores?.length
+    resultAccessToken
+      ? "loading-result"
+      : paymentReturn && initialProgress?.profileData && initialProgress?.scores?.length
       ? "results"
       : initialProgress?.view || "landing";
   const [view, setView] = useState(() => (restoredView === "results" && !initialProgress?.profileData ? "landing" : restoredView));
@@ -2565,6 +2579,26 @@ export default function App() {
   const [assessmentId, setAssessmentId] = useState(() => initialProgress?.assessmentId || "");
   const [payment, setPayment] = useState(() => initialProgress?.payment || null);
   const [fullReportText, setFullReportText] = useState(() => initialProgress?.fullReportText || "");
+  const [resultLinkError, setResultLinkError] = useState("");
+  useEffect(() => {
+    if (!resultAccessToken) return;
+    let active = true;
+    loadResultFromSecureLink(resultAccessToken)
+      .then((result) => {
+        if (!active) return;
+        setProfileData(result.profileData);
+        setAnswers(result.answers || {});
+        setScores(result.scores);
+        setAssessmentId(result.assessmentId || "");
+        setView("results");
+      })
+      .catch((error) => {
+        if (!active) return;
+        setResultLinkError(error.message || "Link inválido ou expirado.");
+        setView("result-link-error");
+      });
+    return () => { active = false; };
+  }, [resultAccessToken]);
   useEffect(() => {
     setAnalyticsExperiment(experimentParameters);
     captureTrafficAttribution();
@@ -2745,6 +2779,8 @@ export default function App() {
   if (LegalRoute) return <><LegalRoute /><CookieConsentBanner sessionId={sessionId} /></>;
   return (
     <>
+      {view === "loading-result" && <main className="min-h-screen grid place-items-center bg-background text-foreground"><div className="text-center"><Loader2 className="mx-auto mb-4 h-7 w-7 animate-spin text-primary" /><p>Carregando seu Raio X…</p></div></main>}
+      {view === "result-link-error" && <main className="min-h-screen grid place-items-center bg-background px-6 text-foreground"><div className="max-w-md text-center"><h1 className="mb-3 text-2xl">Não foi possível abrir seu Raio X</h1><p className="mb-6 text-sm text-muted-foreground">{resultLinkError}</p><a href="/" className="inline-flex bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground">Voltar ao início</a></div></main>}
       {view === "landing" && <Landing onStart={handleStartProfile} sessionId={sessionId} experiment={experiment} />}
       {view === "about" && <AboutPage onBack={() => navigateTo("landing")} onStart={handleStartProfile} />}
       {view === "profile" && <ProfileForm onSubmit={handleProfileSubmit} onBack={() => navigateTo("landing")} onFieldStart={(field) => trackFunnelEvent({ sessionId, eventName: "profile_field_started", step: "profile", metadata: { field } })} />}

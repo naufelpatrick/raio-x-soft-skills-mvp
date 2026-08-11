@@ -129,6 +129,13 @@ export async function adminUpdate(table, id, record) {
   });
 }
 
+export async function adminRpc(functionName, args = {}) {
+  return supabaseFetch(`/rest/v1/rpc/${functionName}`, {
+    method: "POST",
+    body: args,
+  });
+}
+
 export async function adminDelete(table, id, filters = []) {
   const params = new URLSearchParams();
   if (id) params.set("id", `eq.${id}`);

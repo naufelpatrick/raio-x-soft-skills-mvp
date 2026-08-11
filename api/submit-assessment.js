@@ -11,6 +11,7 @@ import {
 import { insertSupabaseRecord } from "../server/_supabase.js";
 import { INSTRUMENT_VERSION } from "../src/data/questions.js";
 import { calculateVersionedAssessment } from "../src/services/scoringService.js";
+import { enrollAssessment, processDueTestDeliveries } from "../server/email-sequence.js";
 
 function cleanExperiments(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
@@ -65,6 +66,14 @@ export default async function handler(req, res) {
 
     if (!supabaseResult.saved) {
       return res.status(503).json({ error: "Avaliação não salva. Verifique a configuração do Supabase." });
+    }
+    if (["test", "live"].includes(process.env.EMAIL_SEQUENCE_MODE)) {
+      try {
+        const enrollment = await enrollAssessment(assessmentId);
+        if (enrollment?.steps?.includes(0)) await processDueTestDeliveries(1);
+      } catch (error) {
+        if (process.env.EMAIL_SEQUENCE_MODE === "live") console.error("Email sequence enrollment error", error);
+      }
     }
     return res.status(201).json({ saved: true, assessmentId });
   } catch (error) {

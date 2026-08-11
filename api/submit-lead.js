@@ -7,7 +7,7 @@ import {
   requireJson,
   requirePost,
 } from "../server/_security.js";
-import { adminSelect, adminUpdateWhere, adminUpsert } from "../server/_admin.js";
+import { adminRpc, adminSelect, adminUpdateWhere, adminUpsert } from "../server/_admin.js";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -42,7 +42,7 @@ export default async function handler(req, res) {
       }
 
       const matches = await adminSelect("leads", {
-        select: "email",
+        select: "id,email",
         filters: [["unsubscribe_token", "eq", token]],
         limit: 1,
       });
@@ -55,6 +55,8 @@ export default async function handler(req, res) {
         unsubscribe_at: unsubscribedAt,
         last_seen_at: unsubscribedAt,
       });
+      const affectedLeads = await adminSelect("leads", { select: "id", filters: [["email", "eq", email.toLowerCase()]], limit: 100 });
+      await Promise.all((affectedLeads || []).map((lead) => adminRpc("cancel_post_diagnostic_for_lead", { p_lead_id: lead.id, p_reason: "unsubscribe" })));
       return res.status(200).json({ unsubscribed: true });
     }
 

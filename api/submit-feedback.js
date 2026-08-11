@@ -16,21 +16,44 @@ const allowedUsefulParts = new Set([
   "Análise completa com IA",
   "Ainda não encontrei valor",
 ]);
+const allowedInterests = new Set(["individual_guidance", "advanced_report", "teams", "progress_tracking"]);
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default async function handler(req, res) {
   applySecurityHeaders(res);
+  const isInterest = req.query?.action === "interest";
 
   if (
     !requirePost(req, res) ||
     !requireJson(req, res) ||
     !requireAllowedOrigin(req, res) ||
-    !checkRateLimit(req, res, "feedback", 10, 10 * 60 * 1000)
+    !checkRateLimit(req, res, isInterest ? "interest" : "feedback", isInterest ? 5 : 10, 10 * 60 * 1000)
   ) {
     return;
   }
 
   try {
     const body = parseBody(req);
+    if (isInterest) {
+      const interest = {
+        sessionId: cleanText(body.sessionId, 100), interest: cleanText(body.interest, 80),
+        name: cleanText(body.name, 120), email: cleanText(body.email, 254).toLowerCase(),
+        contactConsent: body.contactConsent === true, recommendation: Number(body.recommendation),
+        source: cleanText(body.source, 50), submittedAt: new Date().toISOString(),
+      };
+      if (!interest.sessionId || !allowedInterests.has(interest.interest) || !interest.name || !emailPattern.test(interest.email) || !interest.contactConsent || interest.source !== "post_feedback") {
+        return res.status(400).json({ error: "Dados de interesse incompletos ou inválidos." });
+      }
+      if (!Number.isInteger(interest.recommendation) || interest.recommendation < 0 || interest.recommendation > 10) delete interest.recommendation;
+      const supabaseResult = await insertSupabaseRecord("validation_interest", interest);
+      let forwarded = false;
+      if (process.env.INTEREST_WEBHOOK_URL) {
+        const webhookResponse = await fetch(process.env.INTEREST_WEBHOOK_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(interest) });
+        forwarded = webhookResponse.ok;
+      }
+      return res.status(201).json({ received: true, forwarded, saved: Boolean(supabaseResult.saved) });
+    }
+
     const feedback = {
       sessionId: cleanText(body.sessionId, 100),
       accuracy: Number(body.accuracy),

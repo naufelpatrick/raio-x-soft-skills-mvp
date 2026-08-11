@@ -8,7 +8,7 @@ import {
   requirePost,
 } from "../server/_security.js";
 import { getAsaasPayment, isPaidAsaasStatus } from "../server/_asaas.js";
-import { adminUpdateWhere } from "../server/_admin.js";
+import { adminRpc, adminUpdateWhere } from "../server/_admin.js";
 
 export default async function handler(req, res) {
   applySecurityHeaders(res);
@@ -58,6 +58,7 @@ export default async function handler(req, res) {
     try {
       const updatedLeads = await adminUpdateWhere("leads", [["session_id", "eq", sessionId]], leadUpdate);
       if (!updatedLeads?.length) throw new Error("Lead do pagamento não encontrado.");
+      if (paid) await Promise.all(updatedLeads.map((lead) => adminRpc("cancel_post_diagnostic_for_lead", { p_lead_id: lead.id, p_reason: "purchase" })));
     } catch (error) {
       console.error("Payment status lead update error", error);
       return res.status(503).json({ error: "Pagamento confirmado, mas a liberação ainda está sendo sincronizada." });
