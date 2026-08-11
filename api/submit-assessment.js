@@ -19,6 +19,8 @@ function cleanExperiments(value) {
     .slice(0, 10));
 }
 
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export default async function handler(req, res) {
   applySecurityHeaders(res);
   if (
@@ -31,6 +33,8 @@ export default async function handler(req, res) {
   try {
     const body = parseBody(req);
     const sessionId = cleanText(body.sessionId, 100);
+    const requestedLeadId = cleanText(body.leadId, 80);
+    const leadId = uuidPattern.test(requestedLeadId) ? requestedLeadId : null;
     const instrumentVersion = cleanText(body.instrumentVersion, 20);
     if (!sessionId || instrumentVersion !== INSTRUMENT_VERSION || !Array.isArray(body.answers)) {
       return res.status(400).json({ error: "Avaliação inválida ou incompatível." });
@@ -48,6 +52,7 @@ export default async function handler(req, res) {
     const assessmentId = randomUUID();
     const supabaseResult = await insertSupabaseRecord("assessments", {
       id: assessmentId,
+      leadId,
       sessionId,
       instrumentVersion,
       answers: assessment.answers,

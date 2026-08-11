@@ -7,9 +7,10 @@ import {
   requireJson,
   requirePost,
 } from "../server/_security.js";
-import { insertSupabaseRecord, updateSupabaseRecord } from "../server/_supabase.js";
+import { adminSelect, adminUpdateWhere, adminUpsert } from "../server/_admin.js";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const allowedPurchaseStatus = new Set(["not_purchased", "requested", "purchased"]);
 function cleanExperiments(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
@@ -21,17 +22,42 @@ function cleanExperiments(value) {
 export default async function handler(req, res) {
   applySecurityHeaders(res);
 
+  const isUnsubscribe = req.query?.action === "unsubscribe";
+
   if (
     !requirePost(req, res) ||
     !requireJson(req, res) ||
     !requireAllowedOrigin(req, res) ||
-    !checkRateLimit(req, res, "lead", 15, 10 * 60 * 1000)
+    !checkRateLimit(req, res, isUnsubscribe ? "unsubscribe" : "lead", isUnsubscribe ? 10 : 15, 10 * 60 * 1000)
   ) {
     return;
   }
 
   try {
     const body = parseBody(req);
+    if (isUnsubscribe) {
+      const token = cleanText(body.token, 80);
+      if (!uuidPattern.test(token)) {
+        return res.status(400).json({ error: "Link de descadastro inválido." });
+      }
+
+      const matches = await adminSelect("leads", {
+        select: "email",
+        filters: [["unsubscribe_token", "eq", token]],
+        limit: 1,
+      });
+      const email = matches?.[0]?.email;
+      if (!email) return res.status(200).json({ unsubscribed: true });
+
+      const unsubscribedAt = new Date().toISOString();
+      await adminUpdateWhere("leads", [["email", "eq", email.toLowerCase()]], {
+        marketing_consent: false,
+        unsubscribe_at: unsubscribedAt,
+        last_seen_at: unsubscribedAt,
+      });
+      return res.status(200).json({ unsubscribed: true });
+    }
+
     const purchaseStatus = cleanText(body.purchaseStatus, 40) || "not_purchased";
     const now = new Date().toISOString();
     const lead = {
@@ -40,6 +66,11 @@ export default async function handler(req, res) {
       email: cleanText(body.email, 254).toLowerCase(),
       whatsapp: cleanText(body.whatsapp, 40),
       contactConsent: body.contactConsent === true,
+      marketingConsent: body.marketingConsent === true,
+      marketingConsentAt: body.marketingConsent === true ? now : null,
+      marketingConsentSource: body.marketingConsent === true ? "profile_form" : null,
+      instrumentVersion: cleanText(body.instrumentVersion, 20) || null,
+      assessmentStartedAt: now,
       age: cleanText(body.age, 20),
       experience: cleanText(body.experience, 80),
       currentRole: cleanText(body.currentRole, 120),
@@ -71,38 +102,13 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Lead incompleto ou inválido." });
     }
 
-    let saved = false;
     try {
-      if (purchaseStatus === "not_purchased") {
-        const supabaseResult = await insertSupabaseRecord("leads", lead);
-        saved = Boolean(supabaseResult.saved);
-      } else {
-        const updateTargets = [
-          ["session_id", lead.sessionId],
-          ["email", lead.email],
-          ["whatsapp", lead.whatsapp],
-        ].filter(([, value]) => Boolean(value));
-
-        for (const [column, value] of updateTargets) {
-          await updateSupabaseRecord("leads", lead, column, value);
-        }
-
-        saved = true;
-      }
+      const records = await adminUpsert("leads", lead, "session_id");
+      return res.status(201).json({ received: true, saved: true, leadId: records?.[0]?.id || null });
     } catch (storageError) {
-      if (purchaseStatus === "not_purchased" && String(storageError).includes("409")) {
-        try {
-          const supabaseResult = await updateSupabaseRecord("leads", lead, "session_id", lead.sessionId);
-          saved = Boolean(supabaseResult.saved);
-        } catch (updateError) {
-          console.error("Lead Supabase update error", updateError);
-        }
-      } else {
-        console.error("Lead Supabase error", storageError);
-      }
+      console.error("Lead Supabase error", storageError);
+      return res.status(503).json({ error: "Não foi possível registrar o lead." });
     }
-
-    return res.status(201).json({ received: true, saved });
   } catch (error) {
     console.error("Lead error", error);
     return res.status(400).json({ error: "Não foi possível registrar o lead." });

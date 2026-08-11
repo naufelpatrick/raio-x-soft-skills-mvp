@@ -1,6 +1,6 @@
 import { applySecurityHeaders, parseBody, requirePost } from "../server/_security.js";
 import { extractWebhookToken, isPaidAsaasStatus } from "../server/_asaas.js";
-import { updateSupabaseRecord } from "../server/_supabase.js";
+import { adminInsert, adminUpdateWhere } from "../server/_admin.js";
 
 const paidEvents = new Set(["PAYMENT_CONFIRMED", "PAYMENT_RECEIVED", "PAYMENT_RECEIVED_IN_CASH"]);
 
@@ -12,11 +12,12 @@ export default async function handler(req, res) {
   }
 
   const expectedToken = process.env.ASAAS_WEBHOOK_TOKEN;
-  if (expectedToken) {
-    const receivedToken = extractWebhookToken(req);
-    if (receivedToken !== expectedToken) {
-      return res.status(401).json({ error: "Webhook não autorizado." });
-    }
+  if (!expectedToken) {
+    return res.status(503).json({ error: "Webhook não configurado." });
+  }
+  const receivedToken = extractWebhookToken(req);
+  if (receivedToken !== expectedToken) {
+    return res.status(401).json({ error: "Webhook não autorizado." });
   }
 
   try {
@@ -39,6 +40,8 @@ export default async function handler(req, res) {
       asaasCustomerId: payment.customer,
       paymentStatus: status,
       paymentUrl: payment.invoiceUrl || payment.bankSlipUrl || "",
+      paymentCreatedAt: payment.dateCreated || now,
+      packageRequestedAt: payment.dateCreated || now,
       lastSeenAt: now,
     };
 
@@ -49,17 +52,58 @@ export default async function handler(req, res) {
       leadUpdate.paymentConfirmedAt = now;
     }
 
-    const updateTargets = [
-      ["asaas_payment_id", paymentId],
-      ["session_id", sessionId],
-    ].filter(([, value]) => Boolean(value));
+    try {
+      await adminInsert("payment_webhook_events", {
+        provider: "asaas",
+        external_event_id: body.id || null,
+        event_type: event || status,
+        payment_id: paymentId,
+        payload: {
+          event,
+          payment: {
+            id: paymentId,
+            status,
+            externalReference: sessionId || null,
+            customer: payment.customer || null,
+            value: payment.value || null,
+            billingType: payment.billingType || null,
+            confirmedDate: payment.confirmedDate || null,
+            paymentDate: payment.paymentDate || null,
+          },
+        },
+        processed: false,
+      });
+    } catch (error) {
+      // Eventos repetidos são idempotentes pelo external_event_id.
+      if (!String(error).includes("409")) console.error("Asaas webhook audit error", error);
+    }
 
-    for (const [column, value] of updateTargets) {
-      try {
-        await updateSupabaseRecord("leads", leadUpdate, column, value);
-      } catch (error) {
-        console.error("Asaas webhook lead update error", { column, error });
+    try {
+      const filters = sessionId
+        ? [["session_id", "eq", sessionId]]
+        : [["asaas_payment_id", "eq", paymentId]];
+      const updatedLeads = await adminUpdateWhere("leads", filters, leadUpdate);
+      if (!updatedLeads?.length) throw new Error("Nenhum lead corresponde ao pagamento do ASAAS.");
+      if (body.id) {
+        await adminUpdateWhere("payment_webhook_events", [["external_event_id", "eq", body.id]], {
+          processed: true,
+          processed_at: now,
+          processing_error: null,
+        });
       }
+    } catch (error) {
+      console.error("Asaas webhook lead update error", error);
+      if (body.id) {
+        try {
+          await adminUpdateWhere("payment_webhook_events", [["external_event_id", "eq", body.id]], {
+            processed: false,
+            processing_error: String(error).slice(0, 500),
+          });
+        } catch (auditError) {
+          console.error("Asaas webhook processing audit error", auditError);
+        }
+      }
+      return res.status(500).json({ received: true, processed: false });
     }
 
     return res.status(200).json({ received: true, paid, event, status });

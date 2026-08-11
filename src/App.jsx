@@ -305,7 +305,7 @@ function shouldTrackProductEventOnce(key) {
   }
 }
 
-function trackProductEvent({ sessionId, eventName, metadata = {}, onceKey = "" }) {
+function trackProductEvent({ sessionId, assessmentId = "", eventName, metadata = {}, onceKey = "" }) {
   if (!sessionId || String(sessionId).startsWith("preview-")) return;
   if (onceKey && !shouldTrackProductEventOnce(`${sessionId}:${onceKey}`)) return;
   trackEvent(eventName, metadata);
@@ -313,6 +313,7 @@ function trackProductEvent({ sessionId, eventName, metadata = {}, onceKey = "" }
   const touch = attribution.lastTouch || attribution.firstTouch || {};
   const payload = JSON.stringify({
     sessionId,
+    assessmentId,
     eventName,
     anonymousUserId: sessionId,
     source: touch.source,
@@ -371,6 +372,19 @@ async function submitAssessment(assessment) {
   const result = await response.json().catch(() => ({}));
   if (!response.ok || result.saved !== true) {
     throw new Error(result.error || "Não foi possível registrar a avaliação.");
+  }
+  return result;
+}
+
+async function unsubscribeMarketing(token) {
+  const response = await fetch("/api/submit-lead?action=unsubscribe", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || result.unsubscribed !== true) {
+    throw new Error(result.error || "Não foi possível concluir o descadastro.");
   }
   return result;
 }
@@ -1086,6 +1100,38 @@ function PrivacyRequestPage() {
   );
 }
 
+function UnsubscribePage() {
+  const token = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("token") || "" : "";
+  const [status, setStatus] = useState("idle");
+  const confirm = async () => {
+    if (!token || status === "loading") return;
+    setStatus("loading");
+    try {
+      await unsubscribeMarketing(token);
+      setStatus("success");
+    } catch {
+      setStatus("error");
+    }
+  };
+  return (
+    <LegalLayout title="Cancelar comunicações" eyebrow="Preferências de e-mail">
+      <LegalSection title="Descadastro de conteúdos e ofertas">
+        {status === "success" ? (
+          <p>Descadastro concluído. Este e-mail não entrará em segmentos de comunicação enquanto essa preferência permanecer ativa.</p>
+        ) : (
+          <>
+            <p>Confirme abaixo para deixar de receber conteúdos, novidades e ofertas do Raio-X do Designer. O acesso ao diagnóstico e aos resultados não será afetado.</p>
+            {status === "error" && <p className="text-red-400">Não foi possível concluir agora. Verifique o link ou tente novamente mais tarde.</p>}
+            <button type="button" onClick={confirm} disabled={!token || status === "loading"} className="rounded-sm bg-primary px-5 py-3 text-sm font-medium text-primary-foreground disabled:opacity-40">
+              {status === "loading" ? "Confirmando..." : "Confirmar descadastro"}
+            </button>
+          </>
+        )}
+      </LegalSection>
+    </LegalLayout>
+  );
+}
+
 // ─── LANDING ─────────────────────────────────────────────────────────────────
 const DEMO_SCORES = [85, 72, 68, 91, 77, 63, 88, 74, 80, 59];
 
@@ -1667,6 +1713,8 @@ function AboutPage({ onBack, onStart }) {
 function ProfileForm({ onSubmit, onBack, onFieldStart = () => {} }) {
   const [form, setForm] = useState({ name: "", email: "", whatsapp: "", contactConsent: false, marketingConsent: false, age: "", experience: "", currentRole: "", professionalLevel: "", mainArea: "", careerGoal: "", currentChallenge: "" });
   const [fieldStarted, setFieldStarted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const markFieldStarted = (field) => {
     if (fieldStarted) return;
     setFieldStarted(true);
@@ -1684,6 +1732,18 @@ function ProfileForm({ onSubmit, onBack, onFieldStart = () => {} }) {
   const canSubmit = requiredTextFields.every((field) => form[field].trim().length > 0) && form.email.includes("@") && form.contactConsent;
   const inputCls = "w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors";
   const labelCls = "block text-xs text-muted-foreground font-mono uppercase tracking-wider mb-2";
+  const handleSubmit = async () => {
+    if (!canSubmit || submitting) return;
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      await onSubmit(form);
+    } catch {
+      setSubmitError("Não foi possível salvar seus dados agora. Tente novamente em instantes.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-background text-foreground">
       <nav className="flex items-center justify-between px-6 lg:px-12 py-5 border-b border-border sticky top-0 bg-background z-10">
@@ -1714,11 +1774,12 @@ function ProfileForm({ onSubmit, onBack, onFieldStart = () => {} }) {
             </label>
             <label className="flex items-start gap-3">
               <input type="checkbox" checked={form.marketingConsent} onChange={updateChecked("marketingConsent")} className="mt-0.5 accent-primary" />
-              <span>Quero receber conteúdos, novidades e materiais sobre carreira e desenvolvimento profissional.</span>
+              <span><strong>Opcional:</strong> quero receber conteúdos de desenvolvimento profissional, novidades e ofertas do Raio-X do Designer. Posso cancelar a qualquer momento.</span>
             </label>
             <p>Você poderá solicitar a exclusão dos seus dados a qualquer momento.</p>
           </div>
-          <button onClick={() => canSubmit && onSubmit(form)} disabled={!canSubmit} className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-4 rounded-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">Iniciar avaliação <ArrowRight className="w-5 h-5" /></button>
+          {submitError && <p role="alert" className="text-sm text-red-400">{submitError}</p>}
+          <button onClick={handleSubmit} disabled={!canSubmit || submitting} className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-4 rounded-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">{submitting ? "Salvando..." : "Iniciar avaliação"} <ArrowRight className="w-5 h-5" /></button>
         </div>
       </div>
     </div>
@@ -2258,7 +2319,23 @@ function PaidReportNps({ profileData }) {
 }
 
 // ─── RESULTS ──────────────────────────────────────────────────────────────────
-function Results({ profileData, scores, answers, fullReportText = "", setFullReportText = () => {}, payment = null, setPayment = () => {}, onReset }) {
+function Results({ profileData, scores, answers, assessmentId = "", fullReportText = "", setFullReportText = () => {}, payment = null, setPayment = () => {}, onReset }) {
+  useEffect(() => {
+    if (!profileData?.sessionId || String(profileData.sessionId).startsWith("preview-")) return;
+    trackFunnelEvent({
+      sessionId: profileData.sessionId,
+      eventName: "free_report_viewed",
+      step: "free_report",
+      metadata: { instrument_version: INSTRUMENT_VERSION },
+    });
+    trackProductEvent({
+      sessionId: profileData.sessionId,
+      assessmentId,
+      eventName: "free_report_viewed",
+      metadata: { instrument_version: INSTRUMENT_VERSION },
+      onceKey: "free_report_viewed",
+    });
+  }, [assessmentId, profileData?.sessionId]);
   const upgradeSectionRef = useRef(null);
   const generalScore = Math.round(scores.reduce((s, c) => s + c.score, 0) / scores.length);
   const generalLevel = getLevel(generalScore);
@@ -2377,6 +2454,7 @@ const LEGAL_ROUTES = {
   "/cookies": CookiesPage,
   "/uso-de-ia": AIUsagePage,
   "/privacidade/solicitacao": PrivacyRequestPage,
+  "/descadastrar": UnsubscribePage,
 };
 
 function createDemoFreeReportData() {
@@ -2483,6 +2561,8 @@ export default function App() {
   const [profileData, setProfileData] = useState(() => initialProgress?.profileData || null);
   const [answers, setAnswers] = useState(() => initialProgress?.answers || {});
   const [scores, setScores] = useState(() => initialProgress?.scores || []);
+  const [leadId, setLeadId] = useState(() => initialProgress?.leadId || "");
+  const [assessmentId, setAssessmentId] = useState(() => initialProgress?.assessmentId || "");
   const [payment, setPayment] = useState(() => initialProgress?.payment || null);
   const [fullReportText, setFullReportText] = useState(() => initialProgress?.fullReportText || "");
   useEffect(() => {
@@ -2537,8 +2617,8 @@ export default function App() {
   useEffect(() => {
     const hasProgress = profileData || Object.keys(answers).length > 0 || scores.length > 0 || payment || fullReportText || view !== "landing";
     if (!hasProgress) return;
-    writeSavedProgress({ view, sessionId, profileData, answers, scores, payment, fullReportText });
-  }, [view, sessionId, profileData, answers, scores, payment, fullReportText]);
+    writeSavedProgress({ view, sessionId, profileData, answers, scores, leadId, assessmentId, payment, fullReportText });
+  }, [view, sessionId, profileData, answers, scores, leadId, assessmentId, payment, fullReportText]);
   const navigateTo = (nextView) => {
     setView(nextView);
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
@@ -2568,7 +2648,7 @@ export default function App() {
     });
     navigateTo("profile");
   };
-  const handleProfileSubmit = (data) => {
+  const handleProfileSubmit = async (data) => {
     const leadProfile = {
       ...data,
       sessionId,
@@ -2577,7 +2657,13 @@ export default function App() {
       experiments: { [experiment.experimentId]: experiment.variant },
     };
     setProfileData(leadProfile);
-    submitLead(leadProfile).catch(() => {});
+    try {
+      const result = await submitLead(leadProfile);
+      setLeadId(result.leadId || "");
+    } catch (error) {
+      console.error("Lead submit error", error);
+      throw error;
+    }
     trackFunnelEvent({
       sessionId,
       eventName: "profile_submitted",
@@ -2609,23 +2695,31 @@ export default function App() {
     });
     navigateTo("assessment");
   };
-  const handleComplete = () => {
+  const handleComplete = async () => {
     const assessment = calculateVersionedAssessment(answers, INSTRUMENT_VERSION);
     const calculatedScores = assessment.scores;
     const generalScore = assessment.generalScore;
     setScores(calculatedScores);
-    submitLead(profileData).catch(() => {});
-    submitAssessment({
-      sessionId,
-      instrumentVersion: INSTRUMENT_VERSION,
-      answers: assessment.answers,
-      openAnswers: Object.fromEntries(Object.entries(answers).filter(([key]) => key.startsWith("open_"))),
-      scores: calculatedScores,
-      generalScore,
-      experiments: { [experiment.experimentId]: experiment.variant },
-    }).catch((error) => console.error("Assessment submit error", error));
+    let savedAssessmentId = "";
+    try {
+      const result = await submitAssessment({
+        sessionId,
+        leadId,
+        instrumentVersion: INSTRUMENT_VERSION,
+        answers: assessment.answers,
+        openAnswers: Object.fromEntries(Object.entries(answers).filter(([key]) => key.startsWith("open_"))),
+        scores: calculatedScores,
+        generalScore,
+        experiments: { [experiment.experimentId]: experiment.variant },
+      });
+      savedAssessmentId = result.assessmentId || "";
+      setAssessmentId(savedAssessmentId);
+    } catch (error) {
+      console.error("Assessment submit error", error);
+    }
     trackFunnelEvent({
       sessionId,
+      assessmentId: savedAssessmentId,
       eventName: "assessment_completed",
       step: "assessment",
       metadata: { generalScore, instrument_version: INSTRUMENT_VERSION },
@@ -2638,25 +2732,14 @@ export default function App() {
     });
     trackProductEvent({
       sessionId,
+      assessmentId: savedAssessmentId,
       eventName: "diagnostic_completed",
       metadata: { instrument_version: INSTRUMENT_VERSION },
       onceKey: "diagnostic_completed",
     });
-    trackFunnelEvent({
-      sessionId,
-      eventName: "free_report_viewed",
-      step: "free_report",
-      metadata: { generalScore, instrument_version: INSTRUMENT_VERSION },
-    });
-    trackProductEvent({
-      sessionId,
-      eventName: "free_report_viewed",
-      metadata: { generalScore, instrument_version: INSTRUMENT_VERSION },
-      onceKey: "free_report_viewed",
-    });
     navigateTo("results");
   };
-  const handleReset = () => { clearSavedProgress(); navigateTo("landing"); setProfileData(null); setAnswers({}); setScores([]); setPayment(null); setFullReportText(""); };
+  const handleReset = () => { clearSavedProgress(); navigateTo("landing"); setProfileData(null); setAnswers({}); setScores([]); setLeadId(""); setAssessmentId(""); setPayment(null); setFullReportText(""); };
   if (AdminRoute) return <AdminRoute />;
   if (PreviewRoute) return <><PreviewRoute /><CookieConsentBanner sessionId={sessionId} /></>;
   if (LegalRoute) return <><LegalRoute /><CookieConsentBanner sessionId={sessionId} /></>;
@@ -2666,7 +2749,7 @@ export default function App() {
       {view === "about" && <AboutPage onBack={() => navigateTo("landing")} onStart={handleStartProfile} />}
       {view === "profile" && <ProfileForm onSubmit={handleProfileSubmit} onBack={() => navigateTo("landing")} onFieldStart={(field) => trackFunnelEvent({ sessionId, eventName: "profile_field_started", step: "profile", metadata: { field } })} />}
       {view === "assessment" && <AssessmentForm answers={answers} onAnswer={handleAnswer} profileData={profileData} onProfileChange={(field, value) => setProfileData((current) => ({ ...current, [field]: value }))} onComplete={handleComplete} onBack={() => navigateTo("profile")} sessionId={sessionId} />}
-      {view === "results" && profileData && <Results profileData={profileData} scores={scores} answers={answers} fullReportText={fullReportText} setFullReportText={setFullReportText} payment={payment} setPayment={setPayment} onReset={handleReset} />}
+      {view === "results" && profileData && <Results profileData={profileData} scores={scores} answers={answers} assessmentId={assessmentId} fullReportText={fullReportText} setFullReportText={setFullReportText} payment={payment} setPayment={setPayment} onReset={handleReset} />}
       <CookieConsentBanner sessionId={sessionId} />
     </>
   );

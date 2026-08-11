@@ -8,6 +8,7 @@ import {
   requirePost,
 } from "../server/_security.js";
 import { insertSupabaseRecord } from "../server/_supabase.js";
+import { adminUpdateWhere } from "../server/_admin.js";
 
 const allowedEvents = new Set([
   "profile_started",
@@ -69,6 +70,19 @@ export default async function handler(req, res) {
     const supabaseResult = await insertSupabaseRecord("funnel_events", event);
     if (!supabaseResult.saved) {
       return res.status(503).json({ error: "Evento não salvo. Verifique a configuração do Supabase." });
+    }
+
+    const lifecycleUpdates = {
+      assessment_started: ["assessment_started_at", { assessmentStartedAt: new Date().toISOString() }],
+      free_report_viewed: ["result_viewed_at", { resultViewedAt: new Date().toISOString() }],
+    };
+    if (lifecycleUpdates[eventName]) {
+      const [timestampColumn, update] = lifecycleUpdates[eventName];
+      await adminUpdateWhere(
+        "leads",
+        [["session_id", "eq", event.sessionId], [timestampColumn, "is", null]],
+        update
+      );
     }
 
     return res.status(201).json({ received: true, saved: true });

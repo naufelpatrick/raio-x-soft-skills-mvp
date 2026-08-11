@@ -117,6 +117,14 @@ create table if not exists public.leads (
   email text not null,
   whatsapp text,
   contact_consent boolean not null default false,
+  marketing_consent boolean not null default false,
+  marketing_consent_at timestamptz,
+  marketing_consent_source text,
+  instrument_version text,
+  assessment_started_at timestamptz,
+  result_viewed_at timestamptz,
+  unsubscribe_at timestamptz,
+  unsubscribe_token uuid not null default gen_random_uuid(),
   age text,
   experience text,
   "current_role" text,
@@ -147,8 +155,14 @@ alter table public.leads
   add column if not exists payment_created_at timestamptz,
   add column if not exists payment_confirmed_at timestamptz;
 
+alter table public.assessments
+  add column if not exists lead_id uuid references public.leads(id) on delete set null;
+
 create index if not exists leads_asaas_payment_id_idx
 on public.leads (asaas_payment_id);
+create unique index if not exists leads_unsubscribe_token_uidx on public.leads (unsubscribe_token);
+create index if not exists leads_email_lower_idx on public.leads (lower(email));
+create index if not exists assessments_lead_id_idx on public.assessments (lead_id);
 create index if not exists admin_users_user_id_idx on public.admin_users (user_id);
 create index if not exists admin_users_email_idx on public.admin_users (email);
 create index if not exists product_events_event_name_idx on public.product_events (event_name);
@@ -224,16 +238,7 @@ with check (true);
 
 drop policy if exists "Allow anonymous lead insert" on public.leads;
 drop policy if exists "Allow anonymous lead update" on public.leads;
+drop policy if exists "Allow public lead update" on public.leads;
+drop policy if exists "Allow public lead insert" on public.leads;
 
-create policy "Allow public lead insert"
-on public.leads
-for insert
-to public
-with check (true);
-
-create policy "Allow public lead update"
-on public.leads
-for update
-to public
-using (true)
-with check (true);
+-- Leads são inseridos e atualizados somente pelas APIs server-side com service role.

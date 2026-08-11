@@ -1,6 +1,13 @@
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+function toSnakeCaseRecord(record) {
+  return Object.fromEntries(Object.entries(record).map(([key, value]) => [
+    key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`),
+    value,
+  ]));
+}
+
 export function isAdminBackendConfigured() {
   return Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
 }
@@ -11,14 +18,14 @@ function getAccessToken(req) {
   return match?.[1] || "";
 }
 
-async function supabaseFetch(path, { method = "GET", token = SUPABASE_SERVICE_ROLE_KEY, body, query = "" } = {}) {
+async function supabaseFetch(path, { method = "GET", token = SUPABASE_SERVICE_ROLE_KEY, body, query = "", prefer = "return=representation" } = {}) {
   const response = await fetch(`${SUPABASE_URL}${path}${query}`, {
     method,
     headers: {
       apikey: SUPABASE_SERVICE_ROLE_KEY,
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
-      Prefer: "return=representation",
+      Prefer: prefer,
     },
     body: body ? JSON.stringify(body) : undefined,
   });
@@ -83,15 +90,41 @@ export async function adminSelect(table, { select = "*", filters = [], order, li
 export async function adminInsert(table, record) {
   return supabaseFetch(`/rest/v1/${table}`, {
     method: "POST",
-    body: record,
+    body: toSnakeCaseRecord(record),
     query: "?select=*",
+  });
+}
+
+export async function adminUpsert(table, record, conflictKey) {
+  const query = conflictKey
+    ? `?on_conflict=${encodeURIComponent(conflictKey)}&select=*`
+    : "?select=*";
+  return supabaseFetch(`/rest/v1/${table}`, {
+    method: "POST",
+    body: toSnakeCaseRecord(record),
+    query,
+    prefer: "resolution=merge-duplicates,return=representation",
+  });
+}
+
+export async function adminUpdateWhere(table, filters, record) {
+  const params = new URLSearchParams();
+  filters.forEach(([column, operator, value]) => {
+    if (value === null && operator === "is") params.append(column, "is.null");
+    else if (value !== undefined && value !== null && value !== "") params.append(column, `${operator}.${value}`);
+  });
+  params.set("select", "*");
+  return supabaseFetch(`/rest/v1/${table}`, {
+    method: "PATCH",
+    body: toSnakeCaseRecord(record),
+    query: `?${params.toString()}`,
   });
 }
 
 export async function adminUpdate(table, id, record) {
   return supabaseFetch(`/rest/v1/${table}`, {
     method: "PATCH",
-    body: record,
+    body: toSnakeCaseRecord(record),
     query: `?id=eq.${encodeURIComponent(id)}&select=*`,
   });
 }

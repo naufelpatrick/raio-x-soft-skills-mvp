@@ -8,7 +8,7 @@ import {
   requirePost,
 } from "../server/_security.js";
 import { getAsaasPayment, isPaidAsaasStatus } from "../server/_asaas.js";
-import { updateSupabaseRecord } from "../server/_supabase.js";
+import { adminUpdateWhere } from "../server/_admin.js";
 
 export default async function handler(req, res) {
   applySecurityHeaders(res);
@@ -56,10 +56,11 @@ export default async function handler(req, res) {
     }
 
     try {
-      await updateSupabaseRecord("leads", leadUpdate, "session_id", sessionId);
-      await updateSupabaseRecord("leads", leadUpdate, "asaas_payment_id", payment.id);
+      const updatedLeads = await adminUpdateWhere("leads", [["session_id", "eq", sessionId]], leadUpdate);
+      if (!updatedLeads?.length) throw new Error("Lead do pagamento não encontrado.");
     } catch (error) {
       console.error("Payment status lead update error", error);
+      return res.status(503).json({ error: "Pagamento confirmado, mas a liberação ainda está sendo sincronizada." });
     }
 
     return res.status(200).json({

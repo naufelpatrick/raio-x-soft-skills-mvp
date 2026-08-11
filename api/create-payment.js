@@ -8,7 +8,7 @@ import {
   requirePost,
 } from "../server/_security.js";
 import { createAsaasCustomer, createAsaasPayment, sanitizeCpfCnpj } from "../server/_asaas.js";
-import { updateSupabaseRecord } from "../server/_supabase.js";
+import { adminSelect, adminUpdateWhere } from "../server/_admin.js";
 
 const PRODUCT_VALUE = 49.9;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -68,6 +68,15 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Dados incompletos para criar o pagamento." });
     }
 
+    const linkedLeads = await adminSelect("leads", {
+      select: "id",
+      filters: [["session_id", "eq", lead.sessionId]],
+      limit: 1,
+    });
+    if (!linkedLeads?.length) {
+      return res.status(409).json({ error: "Diagnóstico não identificado para este pagamento." });
+    }
+
     const customer = await createAsaasCustomer({ ...lead, cpfCnpj });
     const payment = await createAsaasPayment({
       customerId: customer.id,
@@ -93,9 +102,11 @@ export default async function handler(req, res) {
     };
 
     try {
-      await updateSupabaseRecord("leads", paymentLead, "session_id", lead.sessionId);
+      const updatedLeads = await adminUpdateWhere("leads", [["session_id", "eq", lead.sessionId]], paymentLead);
+      if (!updatedLeads?.length) throw new Error("Lead do checkout não encontrado.");
     } catch (error) {
       console.error("Lead payment update error", error);
+      return res.status(503).json({ error: "Pagamento criado, mas o checkout ainda está sendo sincronizado." });
     }
 
     return res.status(201).json({
