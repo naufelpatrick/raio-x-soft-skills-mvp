@@ -1,4 +1,10 @@
 {
+  "crons": [
+    {
+      "path": "/api/email-sequence?action=process",
+      "schedule": "0 * * * *"
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",
