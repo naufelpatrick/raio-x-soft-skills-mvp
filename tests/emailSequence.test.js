@@ -12,6 +12,7 @@ test("quatro templates possuem assuntos, CTAs seguros e unsubscribe comercial", 
     const email = buildPostDiagnosticEmail({ step, name: "Patrick Naufel", resultToken: token, unsubscribeToken: token });
     assert.equal(email.subject, subject);
     assert.match(email.html, /Olá, Patrick\./);
+    assert.match(email.html, /raio-x-favicon-512\.png/);
     assert.match(email.ctaUrl, /^https:\/\/www\.raioxdodesigner\.com\/resultado\?token=/);
     if (step === 0) assert.doesNotMatch(email.html, /Não quero mais receber/);
     else assert.match(email.html, /Não quero mais receber estes e-mails/);
@@ -41,4 +42,3 @@ test("modo de teste bloqueia destinatários diferentes do autorizado", async () 
   assert.match(source, /IdempotencyKey|idempotencyKey/);
   assert.doesNotMatch(source, /VITE_RESEND_API_KEY/);
 });
-
