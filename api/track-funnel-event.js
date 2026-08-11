@@ -75,6 +75,7 @@ export default async function handler(req, res) {
     const lifecycleUpdates = {
       assessment_started: ["assessment_started_at", { assessmentStartedAt: new Date().toISOString() }],
       free_report_viewed: ["result_viewed_at", { resultViewedAt: new Date().toISOString() }],
+      payment_started: ["checkout_started_at", { checkoutStartedAt: new Date().toISOString() }],
     };
     if (lifecycleUpdates[eventName]) {
       const [timestampColumn, update] = lifecycleUpdates[eventName];

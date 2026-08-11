@@ -8,6 +8,7 @@ import {
   requirePost,
 } from "../server/_security.js";
 import { insertSupabaseRecord } from "../server/_supabase.js";
+import { adminUpdateWhere } from "../server/_admin.js";
 
 const allowedEvents = new Set([
   "page_view",
@@ -79,6 +80,14 @@ export default async function handler(req, res) {
     const supabaseResult = await insertSupabaseRecord("product_events", event);
     if (!supabaseResult.saved) {
       return res.status(503).json({ error: "Evento não salvo. Verifique a configuração do Supabase." });
+    }
+
+    if (eventName === "checkout_started") {
+      await adminUpdateWhere(
+        "leads",
+        [["session_id", "eq", event.sessionId], ["checkout_started_at", "is", null]],
+        { checkoutStartedAt: new Date().toISOString() }
+      );
     }
 
     return res.status(201).json({ received: true, saved: true });

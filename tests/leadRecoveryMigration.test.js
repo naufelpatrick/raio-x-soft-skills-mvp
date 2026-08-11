@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const migrationUrl = new URL("../supabase/migrations/202608101-lead-recovery-infrastructure.sql", import.meta.url);
+const checkoutMigrationUrl = new URL("../supabase/migrations/202608102-checkout-started-lifecycle.sql", import.meta.url);
 
 test("consentimento começa desativado e nunca é promovido automaticamente", async () => {
   const sql = await readFile(migrationUrl, "utf8");
@@ -46,4 +47,17 @@ test("view exige conclusão, consentimento, ausência de compra e unsubscribe", 
 test("migration futura não executa backfill de assessments históricos", async () => {
   const sql = await readFile(migrationUrl, "utf8");
   assert.doesNotMatch(sql, /update\s+public\.assessments/i);
+});
+
+test("checkout iniciado é persistido antes da criação da cobrança", async () => {
+  const [sql, productEvent, funnelEvent] = await Promise.all([
+    readFile(checkoutMigrationUrl, "utf8"),
+    readFile(new URL("../api/track-product-event.js", import.meta.url), "utf8"),
+    readFile(new URL("../api/track-funnel-event.js", import.meta.url), "utf8"),
+  ]);
+  assert.match(sql, /add column if not exists checkout_started_at timestamptz/i);
+  assert.match(sql, /coalesce\(lead\.checkout_started_at, lead\.payment_created_at, lead\.package_requested_at\)/i);
+  assert.match(productEvent, /eventName === "checkout_started"/);
+  assert.match(productEvent, /checkoutStartedAt/);
+  assert.match(funnelEvent, /payment_started: \["checkout_started_at"/);
 });

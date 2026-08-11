@@ -123,6 +123,7 @@ create table if not exists public.leads (
   instrument_version text,
   assessment_started_at timestamptz,
   result_viewed_at timestamptz,
+  checkout_started_at timestamptz,
   unsubscribe_at timestamptz,
   unsubscribe_token uuid not null default gen_random_uuid(),
   age text,
