@@ -690,7 +690,7 @@ function exportPDF({ profileData, scores, generalScore, generalLevel, profileNam
 // ─── SHARED NAV ───────────────────────────────────────────────────────────────
 function TopNav({ onStart, rightSlot }) {
   return (
-    <nav className="flex items-center justify-between px-6 lg:px-12 py-5 border-b border-border">
+    <nav className="fixed inset-x-0 top-0 z-50 flex items-center justify-between bg-background px-6 lg:px-12 py-5 border-b border-border">
       <div className="flex flex-col items-start gap-1">
         <img src="/raio-x-logo-branco.svg" alt="Raio-X do Designer" className="h-9 w-auto" />
         <p className="text-[10px] text-foreground/55 tracking-[0.22em] uppercase">Enxergue além das ferramentas.</p>
