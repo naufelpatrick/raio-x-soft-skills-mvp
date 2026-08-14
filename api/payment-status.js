@@ -7,7 +7,7 @@ import {
   requireJson,
   requirePost,
 } from "../server/_security.js";
-import { getAsaasPayment, isPaidAsaasStatus } from "../server/_asaas.js";
+import { getStripeCheckoutSession, isPaidStripeSession } from "../server/_stripe.js";
 import { adminRpc, adminUpdateWhere } from "../server/_admin.js";
 
 export default async function handler(req, res) {
@@ -31,20 +31,21 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Pagamento não identificado." });
     }
 
-    const payment = await getAsaasPayment(paymentId);
+    const payment = await getStripeCheckoutSession(paymentId);
 
-    if (payment.externalReference && payment.externalReference !== sessionId) {
+    if ((payment.client_reference_id || payment.metadata?.session_id) !== sessionId) {
       return res.status(403).json({ error: "Pagamento não corresponde a esta sessão." });
     }
 
-    const paid = isPaidAsaasStatus(payment.status);
+    const paid = isPaidStripeSession(payment);
     const now = new Date().toISOString();
     const leadUpdate = {
       sessionId,
-      asaasPaymentId: payment.id,
-      asaasCustomerId: payment.customer,
-      paymentStatus: payment.status,
-      paymentUrl: payment.invoiceUrl || payment.bankSlipUrl || "",
+      stripeCheckoutSessionId: payment.id,
+      stripeCustomerId: payment.customer || null,
+      stripePaymentIntentId: payment.payment_intent || null,
+      paymentStatus: payment.payment_status || payment.status,
+      paymentUrl: payment.url || "",
       lastSeenAt: now,
     };
 
@@ -66,7 +67,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       paid,
-      status: payment.status,
+      status: payment.payment_status || payment.status,
       paymentId: payment.id,
     });
   } catch (error) {

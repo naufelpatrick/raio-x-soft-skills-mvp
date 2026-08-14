@@ -949,7 +949,7 @@ function PrivacyPolicyPage() {
           "Vercel: hospedagem da aplicação e execução das funções serverless.",
           "Supabase: armazenamento de leads, feedbacks e manifestações de interesse, quando configurado.",
           "OpenRouter: geração do relatório narrativo com IA.",
-          "Asaas: processamento do pagamento do diagnóstico completo, incluindo CPF/CNPJ quando exigido para emissão da cobrança.",
+          "Stripe: processamento seguro do pagamento do diagnóstico completo.",
           "WhatsApp: canal externo usado para dúvidas, contato e mentoria.",
           "Google Analytics 4: existe código opcional, mas ele não está inicializado na aplicação atual; se for ativado no futuro, deverá depender de gestão de cookies/preferências.",
           "Webhooks de feedback/interesse: existem variáveis opcionais no backend, mas não foram confirmadas como ativas em produção.",
@@ -1015,7 +1015,7 @@ function TermsPage() {
         ["8. Usos proibidos", "É proibido tentar burlar a liberação de acesso, sobrecarregar APIs, copiar a ferramenta, explorar vulnerabilidades ou usar resultados de terceiros sem autorização."],
         ["9. Disponibilidade do serviço", "O serviço pode passar por instabilidades, manutenção ou alterações. Buscamos manter a experiência disponível, mas não garantimos operação ininterrupta."],
         ["10. Limitação razoável de responsabilidade", "O Raio-X do Designer oferece informações para reflexão e desenvolvimento. O usuário é responsável por suas decisões profissionais e pelo uso prático das recomendações."],
-        ["11. Pagamentos e reembolsos", `O produto possui uma opção paga de relatório completo no valor atual de ${PRODUCT_PRICE}, processada pelo Asaas. Condições de reembolso devem ser tratadas pelo contato oficial: ${CONTACT_EMAIL}.`],
+        ["11. Pagamentos e reembolsos", `O produto possui uma opção paga de relatório completo no valor atual de ${PRODUCT_PRICE}, processada pela Stripe. Condições de reembolso devem ser tratadas pelo contato oficial: ${CONTACT_EMAIL}.`],
         ["12. Cancelamento e encerramento", "Não há conta de usuário ou assinatura recorrente no fluxo atual. O usuário pode solicitar exclusão de dados pela página de solicitação de privacidade."],
         ["13. Alterações dos termos", "Estes termos podem ser atualizados para refletir mudanças no produto, na legislação ou no fluxo operacional."],
         ["14. Legislação aplicável", "Estes termos são regidos pela legislação brasileira."],
@@ -1959,14 +1959,13 @@ function PdiCard({ competencyId }) {
 // ─── UPGRADE SECTION ──────────────────────────────────────────────────────────
 function UpgradeSection({ profileData, scores, answers, generalScore, generalLevel, profileName, profileDesc, profileCompetencies = [], strengths, opportunities, payment, setPayment, initialAiText = "", onAiReportGenerated }) {
   const [phase, setPhase] = useState(() => (initialAiText ? "report" : payment?.paymentId ? "payment" : "preview"));
-  const [lead, setLead] = useState({ name: profileData?.name || "", email: profileData?.email || "", whatsapp: profileData?.whatsapp || "", cpfCnpj: "" });
+  const [lead, setLead] = useState({ name: profileData?.name || "", email: profileData?.email || "", whatsapp: profileData?.whatsapp || "" });
   const [aiText, setAiText] = useState(initialAiText);
   const [aiError, setAiError] = useState(null);
   const inputCls = "w-full bg-muted border border-border rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors";
   const labelCls = "block text-xs text-muted-foreground font-mono uppercase tracking-wider mb-2";
   const whatsappDigits = lead.whatsapp.replace(/\D/g, "");
-  const cpfCnpjDigits = lead.cpfCnpj.replace(/\D/g, "");
-  const canSubmit = lead.name.trim() && lead.email.includes("@") && whatsappDigits.length >= 10 && [11, 14].includes(cpfCnpjDigits.length);
+  const canSubmit = lead.name.trim() && lead.email.includes("@") && whatsappDigits.length >= 10;
   useEffect(() => {
     if (initialAiText) return;
     trackProductEvent({
@@ -2093,9 +2092,9 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
           : "Gerando sua análise personalizada";
     const loadingDescription =
       phase === "creating-payment"
-        ? "Estamos abrindo o checkout do Asaas. Isso leva alguns segundos..."
+        ? "Estamos abrindo o checkout da Stripe. Isso leva alguns segundos..."
         : phase === "checking-payment"
-          ? "Consultando o Asaas para liberar seu diagnóstico completo..."
+          ? "Consultando a Stripe para liberar seu diagnóstico completo..."
           : "O Claude está analisando seu perfil. Isso leva alguns segundos...";
     return (
       <div className="rounded-sm border border-primary/20 bg-card p-12 flex flex-col items-center justify-center gap-5 text-center">
@@ -2165,28 +2164,27 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
         {phase === "preview" && (<div className="space-y-4"><MethodologyAuthority /><SocialProof count={PREMIUM_SOCIAL_PROOF_COUNT} /><button onClick={() => { trackProductEvent({ sessionId: profileData?.sessionId, eventName: "premium_cta_clicked", step: "premium_offer", onceKey: "premium_cta_clicked" }); setPhase("form"); }} className="flex items-center gap-2 bg-primary text-primary-foreground px-7 py-3.5 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity"><Sparkles className="w-4 h-4" /> Quero o diagnóstico completo</button></div>)}
         {phase === "form" && (
           <div className="max-w-md space-y-6">
-            <p className="text-sm text-muted-foreground leading-relaxed">Confirme seus dados para gerar o link seguro de pagamento do Asaas. Após a confirmação, seu diagnóstico completo será liberado automaticamente.</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">Confirme seus dados para abrir o checkout seguro da Stripe. Após a confirmação, seu diagnóstico completo será liberado automaticamente.</p>
             {aiError && (<div className="p-3 bg-red-500/10 border border-red-500/20 rounded-sm text-xs text-red-400">{aiError}</div>)}
             <div className="space-y-4">
               <div><RequiredLabel className={labelCls}>Nome completo</RequiredLabel><input type="text" value={lead.name} onChange={(e) => setLead((l) => ({ ...l, name: e.target.value }))} placeholder="Seu nome" className={inputCls} /></div>
               <div><RequiredLabel className={labelCls}>E-mail</RequiredLabel><input type="email" value={lead.email} onChange={(e) => setLead((l) => ({ ...l, email: e.target.value }))} placeholder="seu@email.com" className={inputCls} /></div>
               <div><RequiredLabel className={labelCls}>WhatsApp (com DDD)</RequiredLabel><input type="tel" value={lead.whatsapp} onChange={(e) => setLead((l) => ({ ...l, whatsapp: e.target.value }))} placeholder="(49) 98436-1569" className={inputCls} /></div>
-              <div><RequiredLabel className={labelCls}>CPF ou CNPJ</RequiredLabel><input type="text" inputMode="numeric" value={lead.cpfCnpj} onChange={(e) => setLead((l) => ({ ...l, cpfCnpj: e.target.value }))} placeholder="Somente números" className={inputCls} /></div>
               <div className="flex gap-3 pt-2">
-                <button onClick={handleSubmit} disabled={!canSubmit} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"><Sparkles className="w-4 h-4" /> Pagar com Asaas</button>
+                <button onClick={handleSubmit} disabled={!canSubmit} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-sm text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"><Sparkles className="w-4 h-4" /> Pagar com Stripe</button>
                 <button onClick={() => setPhase("preview")} className="px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors">Cancelar</button>
               </div>
-              <p className="text-[10px] text-muted-foreground">Pagamento único de {PRODUCT_PRICE}. CPF/CNPJ é exigido pelo Asaas para gerar a cobrança e não é salvo pelo Raio-X do Designer.</p>
+              <p className="text-[10px] text-muted-foreground">Pagamento único de {PRODUCT_PRICE}, processado com segurança pela Stripe.</p>
             </div>
           </div>
         )}
         {phase === "payment" && (
           <div className="max-w-md space-y-6">
-            <div className="flex items-center gap-3"><Sparkles className="w-5 h-5 text-primary" /><div><p className="text-sm font-medium">Pagamento iniciado</p><p className="text-xs text-muted-foreground">Finalize o pagamento no Asaas. Depois volte para esta tela para liberar o diagnóstico completo.</p></div></div>
+            <div className="flex items-center gap-3"><Sparkles className="w-5 h-5 text-primary" /><div><p className="text-sm font-medium">Pagamento iniciado</p><p className="text-xs text-muted-foreground">Finalize o pagamento na Stripe. Depois volte para esta tela para liberar o diagnóstico completo.</p></div></div>
             <div className="bg-card border border-border rounded-sm p-5 text-xs text-muted-foreground leading-relaxed space-y-1">
               <p className="font-mono text-primary uppercase tracking-widest text-[10px] mb-2">Liberação automática</p>
-              <p>1. Pague {PRODUCT_PRICE} no checkout seguro do Asaas</p>
-              <p>2. O Asaas confirma o pagamento automaticamente</p>
+              <p>1. Pague {PRODUCT_PRICE} no checkout seguro da Stripe</p>
+              <p>2. A Stripe confirma o pagamento automaticamente</p>
               <p>3. Clique em verificar para gerar sua análise completa</p>
             </div>
             {aiError && (<div className="p-3 bg-red-500/10 border border-red-500/20 rounded-sm text-xs text-red-400">{aiError}</div>)}

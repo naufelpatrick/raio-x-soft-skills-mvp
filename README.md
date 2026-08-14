@@ -36,12 +36,17 @@ Copie `.env.example` para `.env.local` e preencha as variáveis necessárias.
 
 - `OPENROUTER_API_KEY`: obrigatória para gerar a análise com IA.
 - `APP_ORIGIN`: domínio autorizado a chamar as APIs. Aceita origens separadas por vírgula.
+- `APP_URL`: URL pública usada no retorno do checkout.
+- `STRIPE_SECRET_KEY`: chave secreta da Stripe usada somente pelo backend.
+- `STRIPE_WEBHOOK_SECRET`: segredo de assinatura do endpoint `/api/stripe-webhook`.
 - `FEEDBACK_WEBHOOK_URL`: opcional. Encaminha feedbacks para Make, Zapier, Google Apps Script ou serviço equivalente.
 - `INTEREST_WEBHOOK_URL`: opcional. Encaminha nome, e-mail, autorização de contato e interesse principal para o fluxo de relacionamento.
 - `VITE_GA_MEASUREMENT_ID`: opcional. O projeto usa `G-RFRY1LERDY` como fallback e só carrega o Google Analytics 4 quando o usuário aceita Analytics no banner de cookies.
 - `VITE_CLARITY_PROJECT_ID`: opcional. O projeto usa `xkxrzsnluj` como fallback e só carrega o Microsoft Clarity quando o usuário aceita Analytics no banner de cookies.
 
 Os endpoints não registram payloads pessoais completos em logs de aplicação. Erros técnicos podem ser registrados para depuração.
+
+Na Stripe, cadastre `/api/stripe-webhook` como endpoint e habilite `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed` e `checkout.session.expired`. Antes do deploy, aplique `supabase/migrations/202608141-stripe-checkout.sql`.
 
 ## Eventos de validação
 

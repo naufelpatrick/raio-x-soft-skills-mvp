@@ -255,7 +255,7 @@ export default async function handler(req, res) {
         product: "Relatório completo",
         value: lead.purchased_package || lead.purchase_status === "purchased" ? PRODUCT_PRICE : 0,
         status: leadStatus(lead),
-        provider: "Asaas",
+        provider: "Stripe",
       }));
 
     await insertAdminAuditLog({

@@ -7,7 +7,7 @@ import {
   requireJson,
   requirePost,
 } from "../server/_security.js";
-import { createAsaasCustomer, createAsaasPayment, sanitizeCpfCnpj } from "../server/_asaas.js";
+import { createStripeCheckoutSession } from "../server/_stripe.js";
 import { adminSelect, adminUpdateWhere } from "../server/_admin.js";
 
 const PRODUCT_VALUE = 49.9;
@@ -62,9 +62,7 @@ export default async function handler(req, res) {
       lastSeenAt: now,
       experiments: cleanExperiments(body.experiments),
     };
-    const cpfCnpj = sanitizeCpfCnpj(body.cpfCnpj);
-
-    if (!lead.sessionId || !lead.name || !emailPattern.test(lead.email) || !lead.contactConsent || ![11, 14].includes(cpfCnpj.length)) {
+    if (!lead.sessionId || !lead.name || !emailPattern.test(lead.email) || !lead.contactConsent) {
       return res.status(400).json({ error: "Dados incompletos para criar o pagamento." });
     }
 
@@ -77,26 +75,26 @@ export default async function handler(req, res) {
       return res.status(409).json({ error: "Diagnóstico não identificado para este pagamento." });
     }
 
-    const customer = await createAsaasCustomer({ ...lead, cpfCnpj });
-    const payment = await createAsaasPayment({
-      customerId: customer.id,
+    const payment = await createStripeCheckoutSession({
       sessionId: lead.sessionId,
       name: lead.name,
+      email: lead.email,
       value: PRODUCT_VALUE,
       appUrl: getAppUrl(req),
     });
 
-    const paymentUrl = payment.invoiceUrl || payment.bankSlipUrl;
+    const paymentUrl = payment.url;
 
     if (!payment.id || !paymentUrl) {
-      return res.status(502).json({ error: "O Asaas não retornou um link de pagamento válido." });
+      return res.status(502).json({ error: "A Stripe não retornou um link de pagamento válido." });
     }
 
     const paymentLead = {
       ...lead,
-      asaasCustomerId: customer.id,
-      asaasPaymentId: payment.id,
-      paymentStatus: payment.status || "PENDING",
+      stripeCustomerId: payment.customer || null,
+      stripeCheckoutSessionId: payment.id,
+      stripePaymentIntentId: payment.payment_intent || null,
+      paymentStatus: payment.payment_status || payment.status || "unpaid",
       paymentUrl,
       paymentCreatedAt: now,
     };
@@ -112,7 +110,7 @@ export default async function handler(req, res) {
     return res.status(201).json({
       paymentId: payment.id,
       paymentUrl,
-      status: payment.status,
+      status: payment.payment_status || payment.status,
       value: PRODUCT_VALUE,
     });
   } catch (error) {

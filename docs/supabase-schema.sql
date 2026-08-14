@@ -140,6 +140,9 @@ create table if not exists public.leads (
   package_purchased_at timestamptz,
   asaas_customer_id text,
   asaas_payment_id text,
+  stripe_customer_id text,
+  stripe_checkout_session_id text,
+  stripe_payment_intent_id text,
   payment_status text,
   payment_url text,
   payment_created_at timestamptz,
@@ -151,6 +154,9 @@ create table if not exists public.leads (
 alter table public.leads
   add column if not exists asaas_customer_id text,
   add column if not exists asaas_payment_id text,
+  add column if not exists stripe_customer_id text,
+  add column if not exists stripe_checkout_session_id text,
+  add column if not exists stripe_payment_intent_id text,
   add column if not exists payment_status text,
   add column if not exists payment_url text,
   add column if not exists payment_created_at timestamptz,
@@ -161,6 +167,14 @@ alter table public.assessments
 
 create index if not exists leads_asaas_payment_id_idx
 on public.leads (asaas_payment_id);
+
+create unique index if not exists leads_stripe_checkout_session_id_idx
+on public.leads (stripe_checkout_session_id)
+where stripe_checkout_session_id is not null;
+
+create index if not exists leads_stripe_payment_intent_id_idx
+on public.leads (stripe_payment_intent_id)
+where stripe_payment_intent_id is not null;
 create unique index if not exists leads_unsubscribe_token_uidx on public.leads (unsubscribe_token);
 create index if not exists leads_email_lower_idx on public.leads (lower(email));
 create index if not exists assessments_lead_id_idx on public.assessments (lead_id);
