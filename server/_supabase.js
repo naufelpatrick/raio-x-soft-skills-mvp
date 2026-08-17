@@ -46,6 +46,15 @@ export async function insertSupabaseRecord(table, record) {
   return sendSupabaseRecord(table, record);
 }
 
+export async function insertSupabaseRecordIgnore(table, record, conflictKey) {
+  const query = conflictKey ? `?on_conflict=${encodeURIComponent(conflictKey)}` : "";
+  return sendSupabaseRecord(table, record, {
+    method: "POST",
+    query,
+    prefer: "resolution=ignore-duplicates,return=minimal",
+  });
+}
+
 export async function upsertSupabaseRecord(table, record, conflictKey) {
   const query = conflictKey ? `?on_conflict=${encodeURIComponent(conflictKey)}` : "";
   return sendSupabaseRecord(table, record, {

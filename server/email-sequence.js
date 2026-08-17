@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import {
   adminInsert,
+  adminInsertIgnore,
   adminRpc,
   adminSelect,
   adminUpdateWhere,
@@ -16,9 +17,28 @@ function exactTestRecipient() {
   return String(process.env.TEST_EMAIL_RECIPIENT || "").trim().toLowerCase();
 }
 
+function normalizedEmail(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+async function findExistingEnrollmentByEmail(recipientEmail) {
+  const matchingLeads = await adminSelect("leads", {
+    select: "id",
+    filters: [["email", "eq", recipientEmail]],
+    limit: 100,
+  });
+  const enrollmentGroups = await Promise.all((matchingLeads || []).map((matchingLead) => adminSelect("email_sequence_enrollments", {
+    select: "id,lead_id,assessment_id,status",
+    filters: [["lead_id", "eq", matchingLead.id], ["sequence_key", "eq", SEQUENCE_KEY]],
+    limit: 1,
+  })));
+  return enrollmentGroups.flat().find(Boolean) || null;
+}
+
 export function assertSafeEmailMode({ testOnly = false } = {}) {
   const mode = process.env.EMAIL_SEQUENCE_MODE;
   if (!new Set(["test", "live"]).has(mode)) throw new Error("EMAIL_SEQUENCE_MODE_DISABLED");
+  if (process.env.EMAIL_SEQUENCE_DEDUPE_READY !== "true") throw new Error("EMAIL_SEQUENCE_DEDUPE_NOT_READY");
   if (testOnly && mode !== "test") throw new Error("TEST_OPERATION_BLOCKED");
   if (mode === "test") {
     if (exactTestRecipient() !== AUTHORIZED_TEST_EMAIL) throw new Error("TEST_EMAIL_RECIPIENT_NOT_AUTHORIZED");
@@ -75,15 +95,28 @@ export async function enrollAssessment(assessmentId, { testOnly = false } = {}) 
   const lead = leads?.[0];
   if (!lead || isPurchased(lead) || lead.unsubscribe_at || lead.email_suppressed_at) throw new Error("TEST_LEAD_NOT_ELIGIBLE");
 
-  const enrollments = await adminUpsert("email_sequence_enrollments", {
+  const recipientEmail = normalizedEmail(lead.email);
+  const dedupeKey = `${SEQUENCE_KEY}:${recipientEmail}`;
+  const existingEnrollment = await findExistingEnrollmentByEmail(recipientEmail);
+  if (existingEnrollment) {
+    await recordSequenceEvent(lead, assessment, "post_diagnostic_email_duplicate_blocked", -1, { recipient_email: recipientEmail });
+    return { enrollmentId: existingEnrollment.id, lead, assessment, steps: [], duplicate: true };
+  }
+
+  const enrollments = await adminInsertIgnore("email_sequence_enrollments", {
     leadId: lead.id,
     assessmentId: assessment.id,
     sequenceKey: SEQUENCE_KEY,
+    recipientEmail,
+    dedupeKey,
     status: "active",
     updatedAt: new Date().toISOString(),
-  }, "assessment_id,sequence_key");
+  }, "dedupe_key");
   const enrollment = enrollments?.[0];
-  if (!enrollment?.id) throw new Error("ENROLLMENT_NOT_CREATED");
+  if (!enrollment?.id) {
+    await recordSequenceEvent(lead, assessment, "post_diagnostic_email_duplicate_blocked", -1, { recipient_email: recipientEmail });
+    return { enrollmentId: null, lead, assessment, steps: [], duplicate: true };
+  }
 
   const completedAt = new Date(assessment.completed_at).getTime();
   const steps = lead.marketing_consent === true && lead.marketing_consent_at ? [0, 1, 2, 3] : [0];
@@ -102,7 +135,7 @@ export async function enrollAssessment(assessmentId, { testOnly = false } = {}) 
     await recordSequenceEvent(lead, assessment, "post_diagnostic_email_scheduled", step);
   }
 
-  return { enrollmentId: enrollment.id, lead, assessment, steps };
+  return { enrollmentId: enrollment.id, lead, assessment, steps, duplicate: false };
 }
 
 export function enrollTestAssessment(assessmentId) {
@@ -121,9 +154,20 @@ async function cancelDelivery(delivery, lead, reason) {
   return { id: delivery.id, step: delivery.step, status };
 }
 
+async function cancelDuplicateDelivery(delivery) {
+  const now = new Date().toISOString();
+  await adminUpdateWhere("email_deliveries", [["id", "eq", delivery.id]], {
+    status: "cancelled_duplicate",
+    error: "duplicate_recipient_sequence_step",
+    processingStartedAt: null,
+    updatedAt: now,
+  });
+  return { id: delivery.id, step: delivery.step, status: "cancelled_duplicate" };
+}
+
 async function sendClaimedDelivery(delivery) {
   const allowedEmail = assertSafeEmailMode();
-  const [leads, assessments] = await Promise.all([
+  const [leads, assessments, enrollments] = await Promise.all([
     adminSelect("leads", {
       select: "id,session_id,name,email,marketing_consent,marketing_consent_at,unsubscribe_at,unsubscribe_token,result_access_token,email_suppressed_at,purchased_package,purchase_status,payment_confirmed_at,package_purchased_at",
       filters: [["id", "eq", delivery.lead_id], ...(allowedEmail ? [["email", "eq", allowedEmail]] : [])], limit: 1,
@@ -131,10 +175,18 @@ async function sendClaimedDelivery(delivery) {
     adminSelect("assessments", {
       select: "id,instrument_version,completed_at", filters: [["id", "eq", delivery.assessment_id]], limit: 1,
     }),
+    adminSelect("email_sequence_enrollments", {
+      select: "id,status,recipient_email,dedupe_key", filters: [["id", "eq", delivery.enrollment_id]], limit: 1,
+    }),
   ]);
   const lead = leads?.[0];
   const assessment = assessments?.[0];
+  const enrollment = enrollments?.[0];
   if (!lead || !assessment?.completed_at) throw new Error("DELIVERY_RELATION_NOT_FOUND");
+  const recipientEmail = normalizedEmail(lead.email);
+  if (!enrollment || enrollment.status !== "active" || enrollment.dedupe_key !== `${SEQUENCE_KEY}:${recipientEmail}`) {
+    return cancelDuplicateDelivery(delivery);
+  }
   if (isPurchased(lead)) return cancelDelivery(delivery, lead, "purchase");
   if (lead.unsubscribe_at || lead.email_suppressed_at) return cancelDelivery(delivery, lead, "unsubscribe");
   if (delivery.step > 0 && !isCommerciallyEligible(lead, assessment)) return cancelDelivery(delivery, lead, "unsubscribe");
@@ -150,7 +202,7 @@ async function sendClaimedDelivery(delivery) {
     unsubscribeToken: lead.unsubscribe_token,
   });
   const resend = new Resend(apiKey);
-  const idempotencyKey = `raiox:${assessment.id}:${SEQUENCE_KEY}:${delivery.step}`;
+  const idempotencyKey = `raiox:${SEQUENCE_KEY}:${recipientEmail}:${delivery.step}`;
   const { data, error } = await resend.emails.send({
     from,
     to: [allowedEmail || lead.email],

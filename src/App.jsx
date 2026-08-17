@@ -1798,6 +1798,8 @@ function ProfileForm({ onSubmit, onBack, onFieldStart = () => {} }) {
 // ─── ASSESSMENT ───────────────────────────────────────────────────────────────
 function AssessmentForm({ answers, onAnswer, profileData, onProfileChange, onComplete, onBack, sessionId }) {
   const [step, setStep] = useState(0);
+  const [completing, setCompleting] = useState(false);
+  const completionInFlight = useRef(false);
   const TOTAL = 11;
   const isOpen = step === 10;
   const finalProfileFields = ["age", "experience", "currentRole", "professionalLevel", "mainArea", "careerGoal", "currentChallenge"];
@@ -1808,7 +1810,23 @@ function AssessmentForm({ answers, onAnswer, profileData, onProfileChange, onCom
       && finalProfileFields.every((field) => String(profileData?.[field] || "").trim().length > 0);
   };
   const progress = Math.round((step / TOTAL) * 100);
-  const advance = () => { if (!stepAnswered()) return; if (step < 10) { setStep((s) => s + 1); window.scrollTo(0, 0); } else onComplete(); };
+  const advance = async () => {
+    if (!stepAnswered()) return;
+    if (step < 10) {
+      setStep((s) => s + 1);
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (completionInFlight.current) return;
+    completionInFlight.current = true;
+    setCompleting(true);
+    try {
+      await onComplete();
+    } finally {
+      completionInFlight.current = false;
+      setCompleting(false);
+    }
+  };
   const retreat = () => { if (step === 0) onBack(); else { setStep((s) => s - 1); window.scrollTo(0, 0); } };
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -1918,8 +1936,8 @@ function AssessmentForm({ answers, onAnswer, profileData, onProfileChange, onCom
           </>
         )}
         <div className="mt-14">
-          <button onClick={advance} disabled={!stepAnswered()} className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-4 rounded-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed text-sm">
-            {step < 10 ? "Continuar" : "Ver meu diagnóstico"} <ArrowRight className="w-4 h-4" />
+          <button onClick={advance} disabled={!stepAnswered() || completing} className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-4 rounded-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed text-sm">
+            {completing ? "Gerando diagnóstico..." : step < 10 ? "Continuar" : "Ver meu diagnóstico"} {completing ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
           </button>
         </div>
       </div>
@@ -2575,6 +2593,7 @@ export default function App() {
   const [scores, setScores] = useState(() => initialProgress?.scores || []);
   const [leadId, setLeadId] = useState(() => initialProgress?.leadId || "");
   const [assessmentId, setAssessmentId] = useState(() => initialProgress?.assessmentId || "");
+  const [assessmentSubmissionId, setAssessmentSubmissionId] = useState(() => initialProgress?.assessmentSubmissionId || crypto.randomUUID());
   const [payment, setPayment] = useState(() => initialProgress?.payment || null);
   const [fullReportText, setFullReportText] = useState(() => initialProgress?.fullReportText || "");
   const [resultLinkError, setResultLinkError] = useState("");
@@ -2649,8 +2668,8 @@ export default function App() {
   useEffect(() => {
     const hasProgress = profileData || Object.keys(answers).length > 0 || scores.length > 0 || payment || fullReportText || view !== "landing";
     if (!hasProgress) return;
-    writeSavedProgress({ view, sessionId, profileData, answers, scores, leadId, assessmentId, payment, fullReportText });
-  }, [view, sessionId, profileData, answers, scores, leadId, assessmentId, payment, fullReportText]);
+    writeSavedProgress({ view, sessionId, profileData, answers, scores, leadId, assessmentId, assessmentSubmissionId, payment, fullReportText });
+  }, [view, sessionId, profileData, answers, scores, leadId, assessmentId, assessmentSubmissionId, payment, fullReportText]);
   const navigateTo = (nextView) => {
     setView(nextView);
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
@@ -2735,6 +2754,7 @@ export default function App() {
     let savedAssessmentId = "";
     try {
       const result = await submitAssessment({
+        submissionId: assessmentSubmissionId,
         sessionId,
         leadId,
         instrumentVersion: INSTRUMENT_VERSION,
@@ -2771,7 +2791,7 @@ export default function App() {
     });
     navigateTo("results");
   };
-  const handleReset = () => { clearSavedProgress(); navigateTo("landing"); setProfileData(null); setAnswers({}); setScores([]); setLeadId(""); setAssessmentId(""); setPayment(null); setFullReportText(""); };
+  const handleReset = () => { clearSavedProgress(); navigateTo("landing"); setProfileData(null); setAnswers({}); setScores([]); setLeadId(""); setAssessmentId(""); setAssessmentSubmissionId(crypto.randomUUID()); setPayment(null); setFullReportText(""); };
   if (AdminRoute) return <AdminRoute />;
   if (PreviewRoute) return <><PreviewRoute /><CookieConsentBanner sessionId={sessionId} /></>;
   if (LegalRoute) return <><LegalRoute /><CookieConsentBanner sessionId={sessionId} /></>;

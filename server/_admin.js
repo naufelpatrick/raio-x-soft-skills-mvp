@@ -95,6 +95,18 @@ export async function adminInsert(table, record) {
   });
 }
 
+export async function adminInsertIgnore(table, record, conflictKey) {
+  const query = conflictKey
+    ? `?on_conflict=${encodeURIComponent(conflictKey)}&select=*`
+    : "?select=*";
+  return supabaseFetch(`/rest/v1/${table}`, {
+    method: "POST",
+    body: toSnakeCaseRecord(record),
+    query,
+    prefer: "resolution=ignore-duplicates,return=representation",
+  });
+}
+
 export async function adminUpsert(table, record, conflictKey) {
   const query = conflictKey
     ? `?on_conflict=${encodeURIComponent(conflictKey)}&select=*`

@@ -8,7 +8,7 @@ import {
   requireJson,
   requirePost,
 } from "../server/_security.js";
-import { insertSupabaseRecord } from "../server/_supabase.js";
+import { insertSupabaseRecordIgnore } from "../server/_supabase.js";
 import { INSTRUMENT_VERSION } from "../src/data/questions.js";
 import { calculateVersionedAssessment } from "../src/services/scoringService.js";
 import { enrollAssessment, processDueTestDeliveries } from "../server/email-sequence.js";
@@ -36,6 +36,7 @@ export default async function handler(req, res) {
     const sessionId = cleanText(body.sessionId, 100);
     const requestedLeadId = cleanText(body.leadId, 80);
     const leadId = uuidPattern.test(requestedLeadId) ? requestedLeadId : null;
+    const requestedSubmissionId = cleanText(body.submissionId, 80);
     const instrumentVersion = cleanText(body.instrumentVersion, 20);
     if (!sessionId || instrumentVersion !== INSTRUMENT_VERSION || !Array.isArray(body.answers)) {
       return res.status(400).json({ error: "Avaliação inválida ou incompatível." });
@@ -50,8 +51,8 @@ export default async function handler(req, res) {
         .filter(([key]) => /^open_[1-3]$/.test(key))
         .map(([key, value]) => [key, cleanText(value, 2000)])
     );
-    const assessmentId = randomUUID();
-    const supabaseResult = await insertSupabaseRecord("assessments", {
+    const assessmentId = uuidPattern.test(requestedSubmissionId) ? requestedSubmissionId : randomUUID();
+    const supabaseResult = await insertSupabaseRecordIgnore("assessments", {
       id: assessmentId,
       leadId,
       sessionId,
@@ -62,7 +63,7 @@ export default async function handler(req, res) {
       generalScore: assessment.generalScore,
       completedAt: new Date().toISOString(),
       experiments: cleanExperiments(body.experiments),
-    });
+    }, "id");
 
     if (!supabaseResult.saved) {
       return res.status(503).json({ error: "Avaliação não salva. Verifique a configuração do Supabase." });
