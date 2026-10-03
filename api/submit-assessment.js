@@ -68,12 +68,12 @@ export default async function handler(req, res) {
     if (!supabaseResult.saved) {
       return res.status(503).json({ error: "Avaliação não salva. Verifique a configuração do Supabase." });
     }
-    if (["test", "live"].includes(process.env.EMAIL_SEQUENCE_MODE)) {
+    if (["test", "pilot", "live"].includes(process.env.EMAIL_SEQUENCE_MODE)) {
       try {
         const enrollment = await enrollAssessment(assessmentId);
         if (enrollment?.steps?.includes(0)) await processDueTestDeliveries(1);
       } catch (error) {
-        if (process.env.EMAIL_SEQUENCE_MODE === "live") console.error("Email sequence enrollment error", error);
+        if (["pilot", "live"].includes(process.env.EMAIL_SEQUENCE_MODE)) console.error("Email sequence enrollment error", error);
       }
     }
     return res.status(201).json({ saved: true, assessmentId });

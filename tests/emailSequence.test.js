@@ -48,6 +48,16 @@ test("modo de teste bloqueia destinatários diferentes do autorizado", async () 
   assert.doesNotMatch(source, /VITE_RESEND_API_KEY/);
 });
 
+test("modo piloto agenda somente a primeira etapa", async () => {
+  const [sequence, api] = await Promise.all([
+    readFile(sequenceUrl, "utf8"),
+    readFile(submitAssessmentUrl, "utf8"),
+  ]);
+  assert.match(sequence, /new Set\(\["test", "pilot", "live"\]\)/);
+  assert.match(sequence, /!pilotOnly[\s\S]*\? \[0, 1, 2, 3\] : \[0\]/);
+  assert.match(api, /\["test", "pilot", "live"\]/);
+});
+
 test("régua bloqueia nova inscrição para o mesmo e-mail", async () => {
   const [sql, source] = await Promise.all([
     readFile(recipientDedupeMigrationUrl, "utf8"),

@@ -37,7 +37,7 @@ async function findExistingEnrollmentByEmail(recipientEmail) {
 
 export function assertSafeEmailMode({ testOnly = false } = {}) {
   const mode = process.env.EMAIL_SEQUENCE_MODE;
-  if (!new Set(["test", "live"]).has(mode)) throw new Error("EMAIL_SEQUENCE_MODE_DISABLED");
+  if (!new Set(["test", "pilot", "live"]).has(mode)) throw new Error("EMAIL_SEQUENCE_MODE_DISABLED");
   if (process.env.EMAIL_SEQUENCE_DEDUPE_READY !== "true") throw new Error("EMAIL_SEQUENCE_DEDUPE_NOT_READY");
   if (testOnly && mode !== "test") throw new Error("TEST_OPERATION_BLOCKED");
   if (mode === "test") {
@@ -119,7 +119,8 @@ export async function enrollAssessment(assessmentId, { testOnly = false } = {}) 
   }
 
   const completedAt = new Date(assessment.completed_at).getTime();
-  const steps = lead.marketing_consent === true && lead.marketing_consent_at ? [0, 1, 2, 3] : [0];
+  const pilotOnly = process.env.EMAIL_SEQUENCE_MODE === "pilot";
+  const steps = !pilotOnly && lead.marketing_consent === true && lead.marketing_consent_at ? [0, 1, 2, 3] : [0];
   for (const step of steps) {
     await adminUpsert("email_deliveries", {
       enrollmentId: enrollment.id,
