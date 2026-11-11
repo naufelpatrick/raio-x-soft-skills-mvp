@@ -138,3 +138,23 @@ export async function fetchAdminSession() {
   if (!response.ok) throw new Error(result.error || "Acesso administrativo não autorizado.");
   return result;
 }
+
+export async function fetchAdminAssessments({ filter, page, email }, signal) {
+  const session = getStoredAdminSession();
+  if (!session?.accessToken) throw new Error("Sessão administrativa não encontrada.");
+
+  const params = new URLSearchParams({ scope: "assessments", filter, page });
+  if (email) params.set("email", email);
+  const response = await fetch(`/api/admin-dashboard?${params}`, {
+    headers: { Authorization: `Bearer ${session.accessToken}` },
+    signal,
+  });
+  const result = await response.json().catch(() => ({}));
+
+  if (response.status === 401) {
+    clearAdminSession();
+    throw new Error("Sessão administrativa expirada.");
+  }
+  if (!response.ok) throw new Error(result.error || "Não foi possível carregar os diagnósticos.");
+  return result;
+}

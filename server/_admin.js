@@ -73,7 +73,7 @@ export async function getAuthenticatedAdmin(req) {
   }
 }
 
-export async function adminSelect(table, { select = "*", filters = [], order, limit } = {}) {
+export async function adminSelect(table, { select = "*", filters = [], order, limit, offset } = {}) {
   const params = new URLSearchParams();
   params.set("select", select);
   filters.forEach(([column, operator, value]) => {
@@ -83,6 +83,7 @@ export async function adminSelect(table, { select = "*", filters = [], order, li
   });
   if (order) params.set("order", order);
   if (limit) params.set("limit", String(limit));
+  if (offset) params.set("offset", String(offset));
 
   return supabaseFetch(`/rest/v1/${table}`, { query: `?${params.toString()}` });
 }

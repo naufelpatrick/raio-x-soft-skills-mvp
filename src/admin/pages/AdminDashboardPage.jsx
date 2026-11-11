@@ -96,7 +96,10 @@ export function AdminDashboardPage() {
           <h2 className="mt-2 text-2xl font-semibold">Cockpit do negócio</h2>
           <p className="mt-2 text-sm text-muted-foreground">Funil e vendas no Supabase, aquisição e engajamento no Google Analytics 4.</p>
         </div>
-        <DateRangeFilter value={range} onChange={handleRangeChange} />
+        <div className="flex flex-wrap items-center gap-3">
+          <a href="/admin/diagnosticos" className="rounded-sm border border-border px-3 py-2 text-xs text-primary lg:hidden">Ver diagnósticos</a>
+          <DateRangeFilter value={range} onChange={handleRangeChange} />
+        </div>
       </div>
 
       {loading && !data ? <LoadingSkeleton /> : null}

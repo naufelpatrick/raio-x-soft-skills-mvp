@@ -3,7 +3,7 @@ import { BarChart2, LogOut, Settings, Users, LineChart, Target, Wallet, Megaphon
 const navItems = [
   { label: "Visão geral", Icon: BarChart2, href: "/admin/dashboard" },
   { label: "Funil", Icon: Target },
-  { label: "Diagnósticos", Icon: LineChart },
+  { label: "Diagnósticos", Icon: LineChart, href: "/admin/diagnosticos" },
   { label: "Leads", Icon: Users },
   { label: "Vendas", Icon: Wallet },
   { label: "Marketing", Icon: Megaphone },
@@ -44,9 +44,9 @@ export function AdminLayout({ children, admin, rangeLabel, onRefresh, onLogout, 
               <h1 className="text-2xl font-semibold mt-1">{title}</h1>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <div className="rounded-sm border border-border px-3 py-2 text-xs text-muted-foreground">
+              {rangeLabel && <div className="rounded-sm border border-border px-3 py-2 text-xs text-muted-foreground">
                 Período: <span className="text-foreground">{rangeLabel}</span>
-              </div>
+              </div>}
               <button onClick={onRefresh} disabled={loading} className="rounded-sm border border-border px-3 py-2 text-xs text-muted-foreground hover:border-primary hover:text-foreground disabled:opacity-50">
                 {loading ? "Atualizando..." : "Atualizar dados"}
               </button>

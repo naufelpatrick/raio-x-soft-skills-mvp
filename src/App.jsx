@@ -4,6 +4,7 @@ import {
   Zap, Check, RefreshCw, Sparkles, Loader2, Lock,
   Brain, Calendar, Clock3, MessageCircle, ExternalLink, ChevronDown, ChevronUp, Download,
 } from "lucide-react";
+import { AdminAssessmentsPage } from "./admin/pages/AdminAssessmentsPage";
 import { AdminDashboardPage } from "./admin/pages/AdminDashboardPage";
 import { AdminLoginPage } from "./admin/pages/AdminLoginPage";
 import { AdminResetPasswordPage } from "./admin/pages/AdminResetPasswordPage";
@@ -1799,6 +1800,7 @@ function ProfileForm({ onSubmit, onBack, onFieldStart = () => {} }) {
 function AssessmentForm({ answers, onAnswer, profileData, onProfileChange, onComplete, onBack, sessionId }) {
   const [step, setStep] = useState(0);
   const [completing, setCompleting] = useState(false);
+  const [completionError, setCompletionError] = useState(false);
   const completionInFlight = useRef(false);
   const TOTAL = 11;
   const isOpen = step === 10;
@@ -1820,8 +1822,11 @@ function AssessmentForm({ answers, onAnswer, profileData, onProfileChange, onCom
     if (completionInFlight.current) return;
     completionInFlight.current = true;
     setCompleting(true);
+    setCompletionError(false);
     try {
       await onComplete();
+    } catch {
+      setCompletionError(true);
     } finally {
       completionInFlight.current = false;
       setCompleting(false);
@@ -1936,6 +1941,7 @@ function AssessmentForm({ answers, onAnswer, profileData, onProfileChange, onCom
           </>
         )}
         <div className="mt-14">
+          {completionError && <p role="alert" className="mb-4 text-sm text-red-300">Não foi possível salvar o diagnóstico. Suas respostas continuam preenchidas. Tente novamente.</p>}
           <button onClick={advance} disabled={!stepAnswered() || completing} className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-4 rounded-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed text-sm">
             {completing ? "Gerando diagnóstico..." : step < 10 ? "Continuar" : "Ver meu diagnóstico"} {completing ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
           </button>
@@ -2559,6 +2565,7 @@ export default function App() {
       "/admin/login": AdminLoginPage,
       "/admin/reset-password": AdminResetPasswordPage,
       "/admin/dashboard": AdminDashboardPage,
+      "/admin/diagnosticos": AdminAssessmentsPage,
       "/admin/brand": BrandCenterPage,
     }[currentPath]
     : null;
@@ -2751,24 +2758,19 @@ export default function App() {
     const calculatedScores = assessment.scores;
     const generalScore = assessment.generalScore;
     setScores(calculatedScores);
-    let savedAssessmentId = "";
-    try {
-      const result = await submitAssessment({
-        submissionId: assessmentSubmissionId,
-        sessionId,
-        leadId,
-        instrumentVersion: INSTRUMENT_VERSION,
-        answers: assessment.answers,
-        openAnswers: Object.fromEntries(Object.entries(answers).filter(([key]) => key.startsWith("open_"))),
-        scores: calculatedScores,
-        generalScore,
-        experiments: { [experiment.experimentId]: experiment.variant },
-      });
-      savedAssessmentId = result.assessmentId || "";
-      setAssessmentId(savedAssessmentId);
-    } catch (error) {
-      console.error("Assessment submit error", error);
-    }
+    const result = await submitAssessment({
+      submissionId: assessmentSubmissionId,
+      sessionId,
+      leadId,
+      instrumentVersion: INSTRUMENT_VERSION,
+      answers: assessment.answers,
+      openAnswers: Object.fromEntries(Object.entries(answers).filter(([key]) => key.startsWith("open_"))),
+      scores: calculatedScores,
+      generalScore,
+      experiments: { [experiment.experimentId]: experiment.variant },
+    });
+    const savedAssessmentId = result.assessmentId || "";
+    setAssessmentId(savedAssessmentId);
     trackFunnelEvent({
       sessionId,
       assessmentId: savedAssessmentId,

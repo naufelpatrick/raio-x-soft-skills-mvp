@@ -1,3 +1,4 @@
+import { getAdminAssessments } from "../server/admin-assessments.js";
 import { applySecurityHeaders, requireAllowedOrigin } from "../server/_security.js";
 import { adminSelect, getAuthenticatedAdmin, insertAdminAuditLog } from "../server/_admin.js";
 import { fetchGa4Report } from "../server/ga4.js";
@@ -209,6 +210,20 @@ export default async function handler(req, res) {
   }
   if (req.query?.scope === "session") {
     return res.status(200).json({ admin: { email: auth.user.email, role: auth.admin.role } });
+  }
+
+  if (req.query?.scope === "assessments") {
+    if (req.method !== "GET") return res.status(405).json({ error: "Método não permitido." });
+    if (!["owner", "admin"].includes(auth.admin.role)) {
+      return res.status(403).json({ error: "Seu perfil não tem acesso aos diagnósticos individuais." });
+    }
+    try {
+      const data = await getAdminAssessments(req.query, auth.admin.id);
+      return res.status(200).json({ ...data, admin: { email: auth.user.email, role: auth.admin.role } });
+    } catch (error) {
+      console.error("Admin assessments error", error);
+      return res.status(500).json({ error: "Não foi possível carregar os diagnósticos." });
+    }
   }
 
   const query = req.query || {};
