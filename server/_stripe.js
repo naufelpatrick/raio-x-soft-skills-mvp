@@ -26,7 +26,7 @@ async function requestStripe(path, { method = "GET", params } = {}) {
   return data;
 }
 
-export function createStripeCheckoutSession({ sessionId, name, email, value, appUrl }) {
+export function createStripeCheckoutSession({ sessionId, assessmentId, name, email, value, appUrl }) {
   const successUrl = `${appUrl}/?payment=success&sessionId=${encodeURIComponent(sessionId)}`;
   const cancelUrl = `${appUrl}/?payment=cancelled&sessionId=${encodeURIComponent(sessionId)}`;
   return requestStripe("/checkout/sessions", {
@@ -38,6 +38,7 @@ export function createStripeCheckoutSession({ sessionId, name, email, value, app
       success_url: successUrl,
       cancel_url: cancelUrl,
       "metadata[session_id]": sessionId,
+      "metadata[assessment_id]": assessmentId,
       "line_items[0][quantity]": "1",
       "line_items[0][price_data][currency]": "brl",
       "line_items[0][price_data][unit_amount]": String(Math.round(value * 100)),

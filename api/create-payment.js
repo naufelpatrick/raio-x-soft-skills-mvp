@@ -11,6 +11,8 @@ import { createStripeCheckoutSession } from "../server/_stripe.js";
 import { adminSelect, adminUpdateWhere } from "../server/_admin.js";
 
 const PRODUCT_VALUE = 49.9;
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const missingAssessmentMessage = "Para comprar, conclua o diagnóstico no Raio X. O pagamento só fica disponível depois que o resultado é salvo.";
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function cleanExperiments(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
@@ -42,6 +44,10 @@ export default async function handler(req, res) {
 
   try {
     const body = parseBody(req);
+    const requestedAssessmentId = cleanText(body.assessmentId, 80);
+    if (requestedAssessmentId && !uuidPattern.test(requestedAssessmentId)) {
+      return res.status(400).json({ error: missingAssessmentMessage });
+    }
     const now = new Date().toISOString();
     const lead = {
       sessionId: cleanText(body.sessionId, 100),
@@ -71,12 +77,22 @@ export default async function handler(req, res) {
       filters: [["session_id", "eq", lead.sessionId]],
       limit: 1,
     });
-    if (!linkedLeads?.length) {
-      return res.status(409).json({ error: "Diagnóstico não identificado para este pagamento." });
-    }
+    const linkedLead = linkedLeads?.[0];
+    if (!linkedLead) return res.status(409).json({ error: missingAssessmentMessage });
+
+    const filters = [["session_id", "eq", lead.sessionId], ["completed_at", "not.is", "null"]];
+    if (requestedAssessmentId) filters.push(["id", "eq", requestedAssessmentId]);
+    const options = { select: "id", order: "completed_at.desc,id.desc", limit: 1 };
+    const [linkedAssessments, legacyAssessments] = await Promise.all([
+      adminSelect("assessments", { ...options, filters: [...filters, ["lead_id", "eq", linkedLead.id]] }),
+      adminSelect("assessments", { ...options, filters: [...filters, ["lead_id", "is", "null"]] }),
+    ]);
+    const assessment = linkedAssessments[0] || legacyAssessments[0];
+    if (!assessment) return res.status(409).json({ error: missingAssessmentMessage });
 
     const payment = await createStripeCheckoutSession({
       sessionId: lead.sessionId,
+      assessmentId: assessment.id,
       name: lead.name,
       email: lead.email,
       value: PRODUCT_VALUE,

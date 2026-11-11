@@ -1981,7 +1981,7 @@ function PdiCard({ competencyId }) {
 }
 
 // ─── UPGRADE SECTION ──────────────────────────────────────────────────────────
-function UpgradeSection({ profileData, scores, answers, generalScore, generalLevel, profileName, profileDesc, profileCompetencies = [], strengths, opportunities, payment, setPayment, initialAiText = "", onAiReportGenerated }) {
+function UpgradeSection({ profileData, assessmentId, scores, answers, generalScore, generalLevel, profileName, profileDesc, profileCompetencies = [], strengths, opportunities, payment, setPayment, initialAiText = "", onAiReportGenerated }) {
   const [phase, setPhase] = useState(() => (initialAiText ? "report" : payment?.paymentId ? "payment" : "preview"));
   const [lead, setLead] = useState({ name: profileData?.name || "", email: profileData?.email || "", whatsapp: profileData?.whatsapp || "" });
   const [aiText, setAiText] = useState(initialAiText);
@@ -2045,6 +2045,7 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
       const result = await createPayment({
         ...profileData,
         ...lead,
+        assessmentId,
         contactConsent: profileData?.contactConsent === true,
         purchaseStatus: "requested",
       });
@@ -2057,8 +2058,8 @@ function UpgradeSection({ profileData, scores, answers, generalScore, generalLev
       });
       window.open(result.paymentUrl, "_blank", "noopener,noreferrer");
       setPhase("payment");
-    } catch {
-      setAiError("Não foi possível criar o pagamento agora. Tente novamente em instantes.");
+    } catch (error) {
+      setAiError(error.message || "Não foi possível criar o pagamento agora. Tente novamente em instantes.");
       trackProductEvent({
         sessionId: profileData?.sessionId,
         eventName: "payment_failed",
@@ -2456,7 +2457,7 @@ function Results({ profileData, scores, answers, assessmentId = "", fullReportTe
         )}
         <div ref={upgradeSectionRef} id="diagnostico-completo" tabIndex={-1}>
           <div className="flex items-center gap-3 mb-8"><div className="flex-1 border-t border-border" /><span className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest px-3">Próximo nível</span><div className="flex-1 border-t border-border" /></div>
-          <UpgradeSection profileData={profileData} scores={scores} answers={answers} generalScore={generalScore} generalLevel={generalLevel} profileName={profile.name} profileDesc={profile.desc} profileCompetencies={profile.competencies} strengths={strengths} opportunities={opportunities} payment={payment} setPayment={setPayment} initialAiText={fullReportText} onAiReportGenerated={setFullReportText} />
+          <UpgradeSection profileData={profileData} assessmentId={assessmentId} scores={scores} answers={answers} generalScore={generalScore} generalLevel={generalLevel} profileName={profile.name} profileDesc={profile.desc} profileCompetencies={profile.competencies} strengths={strengths} opportunities={opportunities} payment={payment} setPayment={setPayment} initialAiText={fullReportText} onAiReportGenerated={setFullReportText} />
         </div>
         {fullReportText && <PaidReportNps profileData={profileData} />}
         <div className="border-t border-border pt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
